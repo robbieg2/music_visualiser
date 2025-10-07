@@ -1,5 +1,5 @@
 const clientId = "de2b80fd8ec441fab7a41253c8a2ba35";
-const redirectUri = "https://robbieg2.github.io/music_visualiser/app/";
+const redirectUri = "https://robbieg2.github.io/music_visualiser/";
 const scopes = "user-top-read playlist-read-private";
 
 async function generateCodeChallenge(codeVerifier) {
