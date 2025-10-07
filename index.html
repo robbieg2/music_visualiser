@@ -2,18 +2,32 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=1920, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Music Recommendation Visualiser</title>
 
     <!-- Libraries and stylesheets imports -->
-	<link rel="stylesheet" href="styles/main.css">
+	<link rel="stylesheet" href="styles/style.css">
 	
 	<script src="libs/d3.v7.min.js"></script>
 	<script src="libs/popper.v2.min.js"></script>
 	<script src="libs/tippy.v6.min.js"></script>
-	<script src="libs/topojson.v3.min.js"></script>
 </head>
 <body>
-Hello World
+	<header>
+		<h1> TuneVis</h1>
+		<button id="login-btn">Login with Spotify</button>
+	</header>
+	
+	<main>
+		<section id="profile"></section>
+		<section id="visualisation"></section>
+	</main>
+	
+	<footer>
+		<p>2025 TuneVis | Built using Spotify API & D3.js</p>
+	</footer>
+	
+	<script src="scripts/auth.js"></script>
+	<script src="scripts/main.js"></script>
 </body>
 </html>

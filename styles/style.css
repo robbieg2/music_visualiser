@@ -1,0 +1,25 @@
+body {
+  background: #121212;
+  color: #fff;
+  font-family: "Poppins", sans-serif;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  padding: 20px;
+}
+
+button {
+  background: #1db954;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+#visualisation svg {
+  margin-top: 20px;
+}
