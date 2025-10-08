@@ -81,6 +81,8 @@ async function init() {
   if (code) {
     const token = await getAccessToken();
     if (token) await fetchSpotifyData(token);
+	
+	window.history.replaceSTate({}, document.title, redirectUri);
   }
 
   loginBtn.addEventListener("click", redirectToSpotifyAuth);
