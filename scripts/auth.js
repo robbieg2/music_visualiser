@@ -42,6 +42,8 @@ export async function redirectToSpotifyAuth() {
   window.location = authUrl.toString();
 }
 
+console.log("Req token with code:", code);
+
 export async function getAccessToken() {
   const code = new URLSearchParams(window.location.search).get('code');
   if (!code) return null;
@@ -54,6 +56,8 @@ export async function getAccessToken() {
     redirect_uri: redirectUri,
     code_verifier: codeVerifier,
   });
+  
+console.log("Token response:", data);
 
   const response = await fetch('https://accounts.spotify.com/api/token', {
     method: 'POST',
