@@ -55,8 +55,8 @@ export async function getAccessToken() {
     code_verifier: codeVerifier,
   });
   
-console.log("Token response:", data);
-
+console.log("Req token with code:", code);
+  
   const response = await fetch('https://accounts.spotify.com/api/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -64,6 +64,7 @@ console.log("Token response:", data);
   });
 
   const data = await response.json();
+  console.log("Token response:", data);
   
   if (!response.ok) {
   console.error("Token fetch failed:", data);
