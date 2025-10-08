@@ -62,6 +62,12 @@ export async function getAccessToken() {
   });
 
   const data = await response.json();
+  
+  if (!response.ok) {
+  console.error("Token fetch failed:", data);
+  throw new Error(`Token error: ${data.error_description || data.error}`);
+}
+
   localStorage.setItem('access_token', data.access_token);
   return data.access_token;
 }
