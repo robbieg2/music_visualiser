@@ -42,7 +42,7 @@ export async function redirectToSpotifyAuth() {
   window.location = authUrl.toString();
 }
 
-console.log("Req token with code:", code);
+//console.log("Req token with code:", code);
 
 export async function getAccessToken() {
   const code = new URLSearchParams(window.location.search).get('code');
