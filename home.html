@@ -13,37 +13,44 @@
 	<script src="libs/tippy.v6.min.js"></script>
 </head>
 <body>
-	  <header style="text-align:center; margin-top:20px;">
-		<h1>Your Spotify Profile</h1>
+	<header style="text-align:center; margin-top:20px;">
 		<button id="logout-btn" style="position:absolute; right:20px; top:20px;">Logout</button>
-	  </header>
+	</header>
 
-	  <section id="profile" style="text-align:center; margin-top:40px;"></section>
+	<section id="profile" style="text-align:center; margin-top:40px;"></section>
 
-	  <section id="top-artists" style="margin:40px;">
+	<div id="search-section">
+		<input type="text" id="search-input" placeholder="Search for a song..." />
+		<button id="search-btn">Search</button>
+	</div>
+	
+	<div id="search-reults"></div>
+	
+	<div id="visualisation"></div>
+		
+	<section id="top-artists" style="margin:40px;">
 		<h2>Your Top Artists</h2>
 		<div id="artists-list" style="display:flex; flex-wrap:wrap; justify-content:center; gap:20px;"></div>
-	  </section>
+	</section>
 
-	  <section id="top-tracks" style="margin:40px;">
+	<section id="top-tracks" style="margin:40px;">
 		<h2>Your Top Tracks</h2>
 		<div id="tracks-list" style="display:flex; flex-wrap:wrap; justify-content:center; gap:20px;"></div>
-	  </section>
+	</section>
 
-	  <script type="module">
+	<script type="module">
 		import { getAccessToken } from "./scripts/auth.js";
 
 		async function fetchSpotifyData(token) {
-		  try {
+			try {
 			// Fetch user profile
 			const profileRes = await fetch("https://api.spotify.com/v1/me", {
 			  headers: { Authorization: `Bearer ${token}` },
 			});
 			const profile = await profileRes.json();
 			document.getElementById("profile").innerHTML = `
-			  <h2>Welcome, ${profile.display_name}</h2>
+			  <h1>Welcome, ${profile.display_name}</h1>
 			  <img src="${profile.images?.[0]?.url || ''}" alt="Profile" width="100" style="border-radius:50%;">
-			  <p>${profile.email}</p>
 			`;
 
 			// Fetch top artists
@@ -77,35 +84,41 @@
 			  `;
 			});
 
-		  } catch (err) {
-			console.error("Error fetching data:", err);
-			document.body.innerHTML = `<p>Error loading your data. Please try logging in again.</p>`;
-		  }
+			} catch (err) {
+				console.error("Error fetching data:", err);
+				document.body.innerHTML = `<p>Error loading your data. Please try logging in again.</p>`;
+			}
 		}
 
 		async function init() {
-		  const token = localStorage.getItem("access_token");
-		  if (!token) {
+			const token = localStorage.getItem("access_token");
+			if (!token) {
 			// If redirected with code, exchange for token
 			const urlParams = new URLSearchParams(window.location.search);
 			if (urlParams.get("code")) {
-			  const newToken = await getAccessToken();
-			  if (newToken) await fetchSpotifyData(newToken);
+				const newToken = await getAccessToken();
+				if (newToken) await fetchSpotifyData(newToken);
 			} else {
-			  window.location.href = "index.html"; // Go back to login if not authenticated
+				window.location.href = "index.html"; // Go back to login if not authenticated
 			}
-		  } else {
-			await fetchSpotifyData(token);
-		  }
+			} else {
+				await fetchSpotifyData(token);
+			}
 
-		  // Logout
-		  document.getElementById("logout-btn").addEventListener("click", () => {
+			// Logout
+			document.getElementById("logout-btn").addEventListener("click", () => {
 			localStorage.removeItem("access_token");
 			window.location.href = "index.html";
 		  });
 		}
 
 		init();
-	  </script>
-	</body>
+	</script>
+	  
+	<footer>
+		<p>© 2025 TuneVis | Built using Spotify API & D3.js</p>
+	</footer>
+	
+	<script type="module" src="home.js"></script>
+</body>
 </html>
