@@ -46,13 +46,13 @@ function displaySearchResults(tracks) {
 		const div = document.createElement("div");
 		div.className = "track-result";
 		
-		const hasPreview = !track.preview_url;
+		const hasPreview = !!track.preview_url;
 		
 		div.innerHTML = `
 			<img src="${track.album.images[0]?.url}" width="64" height="64" />
 			<strong>${track.name}</strong><br/>
 			<em>${track.artists.map((a) => a.name).join(", ")}</em><br/>
-			${has.preview ? <button class='preview-btn'>▶ Preview</button>" : "<p><em>No preview available</em></p"}
+			${hasPreview ? "<button class='preview-btn'>▶ Preview</button>" : "<p><em>No preview available</em></p"}
 		`;
 
 		resultsDiv.appendChild(div);
