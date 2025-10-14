@@ -94,45 +94,6 @@ async function showTrackFeatures(trackId) {
 		.attr("width", 300)
 		.attr("height", 200);
 
-  // Simple bar chart of a few attributes
-  const features = [
-		{ name: "Danceability", value: data.danceability },
-		{ name: "Energy", value: data.energy },
-		{ name: "Valence", value: data.valence },
-		{ name: "Speechiness", value: data.speechiness },
-		{ name: "Acousticness", value: data.acousticness },
-	];
-
-	const xScale = d3.scaleBand()
-		.domain(features.map(f => f.name))
-		.range([20, 280])
-		.padding(0.1);
-
-	const yScale = d3.scaleLinear()
-		.domain([0, 1])
-		.range([180, 20]);
-
-	svg.selectAll("rect")
-		.data(features)
-		.enter()
-		.append("rect")
-		.attr("x", d => xScale(d.name))
-		.attr("y", d => yScale(d.value))
-		.attr("width", xScale.bandwidth())
-		.attr("height", d => 180 - yScale(d.value))
-		.attr("fill", "steelblue");
-
-	svg.selectAll("text.label")
-		.data(features)
-		.enter()
-		.append("text")
-		.attr("x", d => xScale(d.name) + xScale.bandwidth() / 2)
-		.attr("y", d => yScale(d.value) - 5)
-		.attr("text-anchor", "middle")
-		.attr("font-size", "10px")
-		.text(d => d.value.toFixed(2));
-}
-
 async function init() {
 	const token = localStorage.getItem("access_token") || await getAccessToken();
 	if (!token) {
