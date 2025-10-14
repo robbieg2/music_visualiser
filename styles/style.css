@@ -20,10 +20,6 @@ button {
 	cursor: pointer;
 }
 
-#visualisation svg {
-	margin-top: 20px;
-}
-
 #search-section {
 	margin: 20px;
 	text-align: center;
@@ -41,6 +37,7 @@ button {
 	border-radius: 8px;
 	padding: 10px;
 	text-align: center;
+	color: #1db954;
 	width: 150px;
 	cursor: pointer;
 	transition: transform 0.2s;
