@@ -3,7 +3,7 @@ import { getAccessToken } from "./auth.js";
 
 const profileSection = document.getElementById("profile");
 const artistsList = document.getElementById("artists-list");
-const tracksList = dcoument.getElementById("tracks-list");
+const tracksList = document.getElementById("tracks-list");
 const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
 const resultsDiv = document.getElementById("search-results");
