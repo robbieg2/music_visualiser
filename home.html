@@ -68,12 +68,6 @@
 			  `;
 			});
 
-			} catch (err) {
-				console.error("Error fetching data:", err);
-				document.body.innerHTML = `<p>Error loading your data. Please try logging in again.</p>`;
-			}
-		}
-
 			// Logout
 			document.getElementById("logout-btn").addEventListener("click", () => {
 			localStorage.removeItem("access_token");
