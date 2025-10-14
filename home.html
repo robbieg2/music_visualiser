@@ -24,9 +24,7 @@
 		<button id="search-btn">Search</button>
 	</div>
 	
-	<div id="search-reults"></div>
-	
-	<div id="visualisation"></div>
+	<div id="search-results" style="margin-top:30px; text-align:center;"></div>
 		
 	<section id="top-artists" style="margin:40px;">
 		<h2>Your Top Artists</h2>
@@ -37,84 +35,7 @@
 		<h2>Your Top Tracks</h2>
 		<div id="tracks-list" style="display:flex; flex-wrap:wrap; justify-content:center; gap:20px;"></div>
 	</section>
-
-	<script type="module">
-		import { getAccessToken } from "./scripts/auth.js";
-
-		async function fetchSpotifyData(token) {
-			try {
-			// Fetch user profile
-			const profileRes = await fetch("https://api.spotify.com/v1/me", {
-			  headers: { Authorization: `Bearer ${token}` },
-			});
-			const profile = await profileRes.json();
-			document.getElementById("profile").innerHTML = `
-			  <h1>Welcome, ${profile.display_name}</h1>
-			  <img src="${profile.images?.[0]?.url || ''}" alt="Profile" width="100" style="border-radius:50%;">
-			`;
-
-			// Fetch top artists
-			const artistsRes = await fetch("https://api.spotify.com/v1/me/top/artists?limit=5", {
-			  headers: { Authorization: `Bearer ${token}` },
-			});
-			const artists = await artistsRes.json();
-			const artistList = document.getElementById("artists-list");
-			artists.items.forEach(a => {
-			  artistList.innerHTML += `
-				<div style="text-align:center;">
-				  <img src="${a.images?.[0]?.url || ''}" alt="${a.name}" width="120" height="120" style="border-radius:50%;">
-				  <p>${a.name}</p>
-				</div>
-			  `;
-			});
-
-			// Fetch top tracks
-			const tracksRes = await fetch("https://api.spotify.com/v1/me/top/tracks?limit=5", {
-			  headers: { Authorization: `Bearer ${token}` },
-			});
-			const tracks = await tracksRes.json();
-			const trackList = document.getElementById("tracks-list");
-			tracks.items.forEach(t => {
-			  trackList.innerHTML += `
-				<div style="text-align:center;">
-				  <img src="${t.album.images?.[0]?.url || ''}" alt="${t.name}" width="120" height="120">
-				  <p>${t.name}</p>
-				  <p style="color:gray;">${t.artists.map(a => a.name).join(', ')}</p>
-				</div>
-			  `;
-			});
-
-			} catch (err) {
-				console.error("Error fetching data:", err);
-				document.body.innerHTML = `<p>Error loading your data. Please try logging in again.</p>`;
-			}
-		}
-
-		async function init() {
-			const token = localStorage.getItem("access_token");
-			if (!token) {
-			// If redirected with code, exchange for token
-			const urlParams = new URLSearchParams(window.location.search);
-			if (urlParams.get("code")) {
-				const newToken = await getAccessToken();
-				if (newToken) await fetchSpotifyData(newToken);
-			} else {
-				window.location.href = "index.html"; // Go back to login if not authenticated
-			}
-			} else {
-				await fetchSpotifyData(token);
-			}
-
-			// Logout
-			document.getElementById("logout-btn").addEventListener("click", () => {
-			localStorage.removeItem("access_token");
-			window.location.href = "index.html";
-		  });
-		}
-
-		init();
-	</script>
-	  
+<!-- -->	  
 	<footer>
 		<p>© 2025 TuneVis | Built using Spotify API & D3.js</p>
 	</footer>
