@@ -5,7 +5,6 @@ const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
 const resultsDiv = document.getElementById("search-results");
 const profileSection = document.getElementById("profile");
-const visualisation = document.getElementById("visualisation");
 
 async function fetchUserProfile(token) {
 	const res = await fetch("https://api.spotify.com/v1/me", {
@@ -81,18 +80,6 @@ function displaySearchResults(tracks) {
 		div.addEventListener("click", () => showTrackFeatures(track.id));
 	});
 }
-
-async function showTrackFeatures(trackId) {
-	const token = localStorage.getItem("access_token");
-	const res = await fetch(`https://api.spotify.com/v1/audio-features/${trackId}`, {
-		headers: { Authorization: `Bearer ${token}` },
-	});
-	const data = await res.json();
-
-	visualisation.innerHTML = "<h3>Track Audio Features</h3>";
-	const svg = d3.select("#visualisation").append("svg")
-		.attr("width", 300)
-		.attr("height", 200);
 
 async function init() {
 	const token = localStorage.getItem("access_token") || await getAccessToken();
