@@ -33,11 +33,11 @@ button {
 }
 
 .track-result {
-	background: #f0f0f0;
+	background: #1db954;
 	border-radius: 8px;
 	padding: 10px;
 	text-align: center;
-	color: #1db954;
+	color: #f0f0f0;
 	width: 150px;
 	cursor: pointer;
 	transition: transform 0.2s;
@@ -45,5 +45,5 @@ button {
 
 .track-result:hover {
 	transform: scale(1.05);
-	background: #e0e0e0;
+	background: #1db954;
 }
