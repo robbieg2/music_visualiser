@@ -87,7 +87,7 @@ function displaySearchResults(tracks) {
 	}
 
 	tracks.forEach((track) => {
-		console.log(`&{track.name} preview:`, track.preview_url);
+		console.log(`${track.name} preview:`, track.preview_url);
 		
 		const hasPreview = !!track.preview_url;
 		const div = document.createElement("div");
