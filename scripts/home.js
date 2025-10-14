@@ -95,8 +95,8 @@ function displaySearchResults(tracks) {
 		div.innerHTML = `
 			<img src="${track.album.images[0]?.url}" width="64" height="64"><br/>
 			<strong>${track.name}</strong><br/>
-			<em>${track.artists.map((a) => a.name).join(", ")}</em><br/>
-			${hasPreview ? "<button class='preview-btn'>▶ Preview</button>" : "<em>No preview available</em>"}
+			<em>${track.artists.map((a) => a.name).join(", ")}</em><br><br/>
+			${hasPreview ? "<button class='preview-btn'>▶ Preview</button>" : "<p><em>No preview available</em></p>"}
 		`;
 
 		resultsDiv.appendChild(div);
