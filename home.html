@@ -36,46 +36,6 @@
 		<div id="tracks-list" style="display:flex; flex-wrap:wrap; justify-content:center; gap:20px;"></div>
 	</section>
 <!-- -->
-	<script type="module">
-			// Fetch top artists
-			const artistsRes = await fetch("https://api.spotify.com/v1/me/top/artists?limit=5", {
-			  headers: { Authorization: `Bearer ${token}` },
-			});
-			const artists = await artistsRes.json();
-			const artistList = document.getElementById("artists-list");
-			artists.items.forEach(a => {
-			  artistList.innerHTML += `
-				<div style="text-align:center;">
-				  <img src="${a.images?.[0]?.url || ''}" alt="${a.name}" width="120" height="120" style="border-radius:50%;">
-				  <p>${a.name}</p>
-				</div>
-			  `;
-			});
-
-			// Fetch top tracks
-			const tracksRes = await fetch("https://api.spotify.com/v1/me/top/tracks?limit=5", {
-			  headers: { Authorization: `Bearer ${token}` },
-			});
-			const tracks = await tracksRes.json();
-			const trackList = document.getElementById("tracks-list");
-			tracks.items.forEach(t => {
-			  trackList.innerHTML += `
-				<div style="text-align:center;">
-				  <img src="${t.album.images?.[0]?.url || ''}" alt="${t.name}" width="120" height="120">
-				  <p>${t.name}</p>
-				  <p style="color:gray;">${t.artists.map(a => a.name).join(', ')}</p>
-				</div>
-			  `;
-			});
-
-			// Logout
-			document.getElementById("logout-btn").addEventListener("click", () => {
-			localStorage.removeItem("access_token");
-			window.location.href = "index.html";
-		  });
-
-		init();
-	</script>
 	<footer>
 		<p>© 2025 TuneVis | Built using Spotify API & D3.js</p>
 	</footer>
