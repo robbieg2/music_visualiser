@@ -7,7 +7,7 @@ const tracksList = document.getElementById("tracks-list");
 const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
 const resultsDiv = document.getElementById("search-results");
-const logoutBtn = document.getElementByID("logout-btn");
+const logoutBtn = document.getElementById("logout-btn");
 
 
 async function fetchSpotifyData(token) {
