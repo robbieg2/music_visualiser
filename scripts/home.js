@@ -87,6 +87,8 @@ function displaySearchResults(tracks) {
 		resultsDiv.innerHTML = "<p>No results found.</p>";
 		return;
 	}
+	
+	resultsDiv.className = "results-grid";
 
 	tracks.forEach((track) => {
 		const div = document.createElement("div");
