@@ -87,22 +87,20 @@ function displaySearchResults(tracks) {
 		resultsDiv.innerHTML = "<p>No results found.</p>";
 		return;
 	}
-	
-	resultsDiv.className = "results-grid";
 
 	tracks.forEach((track) => {
 		const div = document.createElement("div");
 		div.className = "track-result";
-		div.style.margin = "15px";
+		div.style.margin = "5px";
 		div.style.textAlign = "center";
-		div.style.width = "320px";
+		div.style.width = "250px";
 
 		div.innerHTML = `
 			<img src="${track.album.images[0]?.url}" width="120" height="120" style+"border-radius:10px"><br/>
 			<strong>${track.name}</strong><br/>
 			<em>${track.artists.map((a) => a.name).join(", ")}</em><br><br/>
 			<iframe src="https://open.spotify.com/embed/track/${track.id}"
-					width="300" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media">
+					width="250" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media">
 			</iframe>
 		`;
 
