@@ -80,45 +80,31 @@ async function searchTracks(token, query) {
 }
 
 function displaySearchResults(tracks) {
+	const resultsDiv = document.getElementById("search-results");
 	resultsDiv.innerHTML = "";
+	
 	if (!tracks || !tracks.length) {
 		resultsDiv.innerHTML = "<p>No results found.</p>";
 		return;
 	}
 
 	tracks.forEach((track) => {
-		console.log(`${track.name} preview:`, track.preview_url);
-		
-		const hasPreview = !!track.preview_url;
 		const div = document.createElement("div");
 		div.className = "track-result";
-		div.style.margin = "10px 0";
+		div.style.margin = "15px";
+		div.style.textAlign = "center";
+		div.style.width = "320px";
 
 		div.innerHTML = `
-			<img src="${track.album.images[0]?.url}" width="64" height="64"><br/>
+			<img src="${track.album.images[0]?.url}" width="120" height="120" style+"border-radius:10px"><br/>
 			<strong>${track.name}</strong><br/>
 			<em>${track.artists.map((a) => a.name).join(", ")}</em><br><br/>
-			${hasPreview ? "<button class='preview-btn'>▶ Preview</button>" : "<p><em>No preview available</em></p>"}
+			<iframe src="https://open.spotify.com/embed/track/${track.id}"
+					width="300" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media">
+			</iframe>
 		`;
 
 		resultsDiv.appendChild(div);
-
-		if (hasPreview) {
-			const previewBtn = div.querySelector(".preview-btn");
-			const audio = new Audio(track.preview_url);
-			previewBtn.addEventListener("click", () => {
-				if (!audio.paused) {
-					audio.pause();
-					previewBtn.textContent = "▶ Preview";
-				} else {
-					document.querySelectorAll("audio").forEach((a) => a.pause());
-					audio.play();
-					previewBtn.textContent = "⏸ Pause";
-					audio.onended = () => (previewBtn.textContent = "▶ Preview");
-				}
-			});
-			div.appendChild(audio);
-		}
 	});
 }
 

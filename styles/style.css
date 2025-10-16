@@ -23,6 +23,7 @@ button {
 #search-section {
 	margin: 20px;
 	text-align: center;
+	border-radius: 20px;
 }
 
 #search-results {
