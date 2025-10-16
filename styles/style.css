@@ -19,7 +19,7 @@ button {
 	padding: 10px 20px;
 	cursor: pointer;
 }
-/*
+
 #search-section {
 	margin: 20px;
 	text-align: center;
@@ -31,7 +31,7 @@ button {
 	flex-wrap: wrap;
 	justify-content: center;
 	gap: 10px;
-} */
+}
 
 .track-result {
 	display: flex;
