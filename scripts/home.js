@@ -65,7 +65,7 @@ async function fetchSpotifyData(token) {
 async function searchTracks(token, query) {
 	try {
 		const res = await fetch(
-			`https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=10`,
+			`https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=5`,
 			{
 				headers: { Authorization: `Bearer ${token}` },
 			}

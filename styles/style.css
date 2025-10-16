@@ -34,12 +34,12 @@ button {
 }
 
 .track-result {
-	background: #1e1e1e;
+	background: #1db954;
 	border-radius: 12px;
 	padding: 15px;
 	text-align: center;
 	color: white;
-	width: 200px;
+	width: 120px;
 	cursor: pointer;
 	transition: transform 0.2s ease, box-shadow 0.2s ease;
 	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
@@ -48,7 +48,7 @@ button {
 .track-result:hover {
 	transform: translateY(-5px);
 	box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-/*	background: #1db954; */
+	background: #1db954;
 }
 
 .results-grid {
