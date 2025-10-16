@@ -100,7 +100,7 @@ function displaySearchResults(tracks) {
 			<strong>${track.name}</strong><br/>
 			<em>${track.artists.map((a) => a.name).join(", ")}</em><br><br/>
 			<iframe src="https://open.spotify.com/embed/track/${track.id}"
-					width="300" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media">
+					width="300" height="85" frameborder="0" allowtransparency="true" allow="encrypted-media">
 			</iframe>
 		`;
 
