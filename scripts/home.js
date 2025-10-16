@@ -91,16 +91,16 @@ function displaySearchResults(tracks) {
 	tracks.forEach((track) => {
 		const div = document.createElement("div");
 		div.className = "track-result";
-		div.style.margin = "5px";
+		div.style.margin = "10px";
 		div.style.textAlign = "center";
-		div.style.width = "250px";
+		div.style.width = "270px";
 
 		div.innerHTML = `
 			<img src="${track.album.images[0]?.url}" width="120" height="120" style+"border-radius:10px"><br/>
 			<strong>${track.name}</strong><br/>
 			<em>${track.artists.map((a) => a.name).join(", ")}</em><br><br/>
 			<iframe src="https://open.spotify.com/embed/track/${track.id}"
-					width="250" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media">
+					width="270" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media">
 			</iframe>
 		`;
 
