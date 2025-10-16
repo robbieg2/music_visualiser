@@ -34,31 +34,13 @@ button {
 }
 
 .track-result {
-	display: flex;
-	overflow-x: auto;
 	background: #1db954;
 	border-radius: 12px;
-	gap: 15px;
 	padding: 10px;
 	text-align: center;
 	color: white;
 	width: 120px;
 	cursor: pointer;
-	scroll-behaviour: smooth;
-}
-
-.track-result::-webkit-scrollbar {
-	height: 10px;
-}
-
-.results-scroll::-webkit-scrollbar-thumb {
-	background: #1db954;
-	border-radius: 10px;
-}
-
-.results-scroll::-webkit-scrollbar-track {
-	background: #121212;
-	border-radius: 10px;
 }
 
 .track-result:hover {
