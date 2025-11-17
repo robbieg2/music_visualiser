@@ -61,11 +61,11 @@ async function fetchSpotifyData(token) {
 		profileSection.innerHTML = `<p>Error loading your data. Please try logging in again.</p>`;
 	}
 }
-
+// Search bar
 async function searchTracks(token, query) {
 	try {
 		const res = await fetch(
-			`https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=5`,
+			`https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=7`,
 			{
 				headers: { Authorization: `Bearer ${token}` },
 			}
@@ -100,7 +100,7 @@ function displaySearchResults(tracks) {
 			<strong>${track.name}</strong><br/>
 			<em>${track.artists.map((a) => a.name).join(", ")}</em><br><br/>
 			<iframe src="https://open.spotify.com/embed/track/${track.id}"
-					width="300" height="85" frameborder="0" allowtransparency="true" allow="encrypted-media">
+					width="300" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media">
 			</iframe>
 		`;
 
