@@ -125,8 +125,16 @@ async function showTrackFeatures(track) {
 		const res = await fetch(`https://api.spotify.com/v1/audio-features/${track.id}`, {
 			headers: { Authorization: `Bearer ${token}` },
 		});
+		
 		if (!res.ok) {
-			console.error("Failed fetching audio features:", res.status);
+			const msgContainer = document.getElementById("visualisation");
+			msgContainer.innerHTML = `
+				<h2>Audio Features for: ${track.name}<h2>
+				<p><em>${track.artists.map(a => a.name).join(", ")}</em></p>
+				<p>Audio features are not available for this track (Spotify returned ${res.status}).</p>
+			`;
+			const errText = await res.text();
+			console.error("Failed fetching audio features:", res.status, errText);
 			return;
 		}
 		const features = await res.json();
