@@ -102,9 +102,106 @@ function displaySearchResults(tracks) {
 		`;
 
 		resultsDiv.appendChild(div);
+		
+		const featuresBtn = div.querySelector(".features-btn");
+		featuresBtn.addEventListener("click", () => showTrackFeatures(track));
 	});
 	
 	updateScrollButtons();
+}
+
+async function showTrackFeatures(track) {
+	const token = localStorage.getItem("access_token");
+	if (!token) {
+		window.location.href = "index.html"
+		return;
+	}
+	
+	try {
+		const res = await fetch(`https://api.spotify.com/v1/audio-features/${track.id}`, {
+			headers: { Authorization: `Bearer ${token}` },
+		});
+		if (!res.ok) {
+			console.error("Failed fetching audio features:", res.status);
+			return;
+		}
+		const features = await res.json();
+		drawAudioFeaturesChart(track, features);
+	} catch (err) {
+		console.error("Error fetching audio features:", err);
+	}
+}
+
+function drawAudioFeaturesChart(track, features) {
+	const container = document.getElementById("visualisation");
+	container.innerHTML = `
+		<h2>Audio Features for: ${track.name}</h2>
+		<p><em>${track.artists.map(a => a.name).join(", ")}</em></p>
+	`;
+	
+	const margin = { top: 30, right: 20, bottom: 60, left: 50 };
+	const width = 600 - margin.left - margin.right;
+	const height = 350 - margin.top - margin.bottom;
+	
+	const svg = d3.select("#visualisation")
+		.append("svg")
+		.attr("width", width + margin.left + margin.right)
+		.attr("height", height + margin.top + margin.bottom)
+		.append("g")
+		.attr("transform", `translate(${margin.left},${margin.top})`);
+		
+	const data = [
+		{ name: "Danceability", value: features.danceability },
+		{ name: "Energy", value: features.energy },
+		{ name: "Valence", value: features.valence },
+		{ name: "Speechiness", value: features.speechiness },
+		{ name: "Acousticness", value: features.acousticness },
+		{ name: "Instrumental", value: features.instrumentalness },
+	];
+	
+	const x = d3.scaleBand()
+		.domain(data.map(d => d.name))
+		.range([0, width])
+		.padding(0.2);
+		
+	const y = d3.scaleLinear()
+		.domain([0, 1])
+		.range([height, 0]);
+		
+	svg.append("g")
+		.attr("transform", `translate(0, ${height})`)
+		.call(d3.axisBottom(x))
+		.selectAll("text")
+		.attr("transform", "rotate(-30)")
+		.style("text-anchor", "end")
+		.style("fill", "#fff");
+		
+	svg.append("g")
+		.call(d3.axisLeft(y).ticks(5))
+		.selectAll("text")
+		.style("fill", "#fff");
+		
+	svg.selectAll(".bar")
+		.data(data)
+		.enter()
+		.append("rect")
+		.attr("class", "bar")
+		.attr("x", d => x(d.name))
+		.attr("y", d => y(d.value))
+		.attr("width", x.bandwith())
+		.attr("height", d => height - y(d.value))
+		.attr("fill", "#1db954");
+		
+	svg.selectAll(".label")
+		.data(data)
+		.enter()
+		.append("text")
+		.attr("x", d => x(d.anme) + x.bandwith() / 2)
+		.attr("y", d => y(d.value) - 5)
+		.attr("text-anchor", "middle")
+		.attr("fill", "#fff")
+		.attr("font-size", "11px")
+		.text(d => d.value.toFixed(2));
 }
 
 function scrollCarouselBy(offset) {
