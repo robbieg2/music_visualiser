@@ -24,7 +24,11 @@
 		<button id="search-btn">Search</button>
 	</div>
 	
-	<div id="search-results" style="margin-top:30px; text-align:center;"></div>
+	<div class="carousel-wrapper">
+		<button id="scroll-left" class="scroll-btn">◀</button>
+		<div id="search-results" class="carousel"></div>
+		<button id="scroll-right" class="scroll-btn">◀</button>
+	</div>
 		
 	<section id="top-artists" style="margin:40px;">
 		<h2>Your Top Artists</h2>
@@ -35,7 +39,7 @@
 		<h2>Your Top Tracks</h2>
 		<div id="tracks-list" style="display:flex; flex-wrap:wrap; justify-content:center; gap:20px;"></div>
 	</section>
-<!-- -->
+
 	<footer>
 		<p>© 2025 TuneVis | Built using Spotify API & D3.js</p>
 	</footer>

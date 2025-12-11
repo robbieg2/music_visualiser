@@ -8,7 +8,8 @@ const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
 const resultsDiv = document.getElementById("search-results");
 const logoutBtn = document.getElementById("logout-btn");
-
+const scrollLeftBtn = document.getElementById("scroll-left");
+const scrollRightBtn = document.getElementById("scroll-right");
 
 async function fetchSpotifyData(token) {
 	try {
@@ -80,7 +81,6 @@ async function searchTracks(token, query) {
 }
 
 function displaySearchResults(tracks) {
-	const resultsDiv = document.getElementById("search-results");
 	resultsDiv.innerHTML = "";
 	
 	if (!tracks || !tracks.length) {
@@ -91,12 +91,9 @@ function displaySearchResults(tracks) {
 	tracks.forEach((track) => {
 		const div = document.createElement("div");
 		div.className = "track-result";
-		div.style.margin = "15px";
-		div.style.textAlign = "center";
-		div.style.width = "330px";
 
 		div.innerHTML = `
-			<img src="${track.album.images[0]?.url}" width="120" height="120" style+"border-radius:10px"><br/>
+			<img src="${track.album.images[0]?.url}" width="120" height="120" style="border-radius:10px;"><br/>
 			<strong>${track.name}</strong><br/>
 			<em>${track.artists.map((a) => a.name).join(", ")}</em><br><br/>
 			<iframe src="https://open.spotify.com/embed/track/${track.id}"
@@ -106,6 +103,20 @@ function displaySearchResults(tracks) {
 
 		resultsDiv.appendChild(div);
 	});
+	
+	updateScrollButtons();
+}
+
+function scrollCarouselBy(offset) {
+	resultsDiv.scrollBy({ left: offset, behaviour: "smooth" });
+}
+
+function updateScrollButtons() {
+	if (!scrollLeftBtn || !scrollRightBtn) return;
+	const maxScrollLeft = resultsDiv.scrollWidth - resultsDiv.clientWidth;
+	
+	scrollLeftBtn.style.display = resultsDiv.scrollLeft <= 0 ? "none" : "block";
+	scrollRightBtn.style.display = resultsDiv.scrollRight >= maxScrollLeft - 1 ? "none" : "block";
 }
 
 async function init() {
@@ -129,12 +140,29 @@ async function init() {
 		const query = searchInput.value.trim();
 		if (query) searchTracks(token, query);
 	});
+	
+	searchInput.addEventListener("keydown", (e) => {
+		if (e.key === "Enter") {
+			const query = searchInput.value.trim();
+			if (query) searchTracks(toke, query);
+		}
+	});
 
 	// Logout
 	logoutBtn.addEventListener("click", () => {
 		localStorage.removeItem("access_token");
 		window.location.href = "index.html";
 	});
+	
+	// Carousel scroll buttons
+	if (scrollLeftBtn && scrollRightBtn) {
+		scrollLeftBtn.addEventListener("click", () => scrollCarouselBy(-320));
+		scrollRightBtn.addEventListener("click", () => scrollCarouselBy(320));
+		
+		resultsDiv.addEventListener("scroll", updateScrollButtons);
+		window.addEventListener("resize", updateScrollButtons);
+		updateScrollButtons();
+	}
 }
 
 init();

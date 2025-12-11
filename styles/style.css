@@ -26,11 +26,22 @@ button {
 	border-radius: 20px;
 }
 
-#search-results {
+.carousel-wrapper {
+	position: relative;
 	display: flex;
-	flex-wrap: wrap;
+	align-items: center;
 	justify-content: center;
-	gap: 10px;
+	width: 90%;
+	margin: 0 auto;
+	margin-top: 20px;
+}
+
+.carousel {
+	display: flex;
+	overflow: hidden;
+	scroll-behavior: smooth;
+	gap: 20px;
+	padding: 10px 20px;
 }
 
 .track-result {
@@ -39,11 +50,38 @@ button {
 	padding: 10px;
 	text-align: center;
 	color: white;
-	width: 120px;
-	cursor: pointer;
+	width: 320px;
+	flex: 0 0 auto;
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .track-result:hover {
 	transform: translateY(-5px);
 	background: #1db954;
+}
+
+.scroll-btn {
+	background: rgba(0, 0, 0, 0.6);
+	color: white;
+	border: none;
+	border-radius: 50%;
+	width: 40px;
+	height: 40px;
+	font-size: 20px;
+	cursor: pointer;
+	transition: background 0.2s ease;
+	z-index: 10;
+}
+
+.scroll-btn:hover {
+	background: rgba(255, 255, 255, 0.3);
+}
+
+#scroll-left {
+	margin-right: 5px;
+}
+
+#scroll-right {
+	margin-left: 5px;
 }
