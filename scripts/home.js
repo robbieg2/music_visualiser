@@ -108,7 +108,8 @@ function displaySearchResults(tracks) {
 		const featuresBtn = div.querySelector(".features-btn");
 		if (featuresBtn) {
 			featuresBtn.addEventListener("click", () => showTrackFeatures(track));
-	};
+		}
+	});
 	
 	updateScrollButtons();
 }
