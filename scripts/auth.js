@@ -1,4 +1,4 @@
-const clientId = "de2b80fd8ec441fab7a41253c8a2ba35"; 
+const clientId = "17b8552e4a15425da81ca604833409fd"; 
 const redirectUri = "https://robbieg2.github.io/music_visualiser/home.html";
 
 const scopes = [
