@@ -99,12 +99,15 @@ function displaySearchResults(tracks) {
 			<iframe src="https://open.spotify.com/embed/track/${track.id}"
 					width="300" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media">
 			</iframe>
+			<br/><br/>
+			<button class="features-btn">Show audio features</button>
 		`;
 
 		resultsDiv.appendChild(div);
 		
 		const featuresBtn = div.querySelector(".features-btn");
-		featuresBtn.addEventListener("click", () => showTrackFeatures(track));
+		if (featuresBtn) {
+			featuresBtn.addEventListener("click", () => showTrackFeatures(track));
 	});
 	
 	updateScrollButtons();
@@ -188,7 +191,7 @@ function drawAudioFeaturesChart(track, features) {
 		.attr("class", "bar")
 		.attr("x", d => x(d.name))
 		.attr("y", d => y(d.value))
-		.attr("width", x.bandwith())
+		.attr("width", x.bandwidth())
 		.attr("height", d => height - y(d.value))
 		.attr("fill", "#1db954");
 		
@@ -196,7 +199,7 @@ function drawAudioFeaturesChart(track, features) {
 		.data(data)
 		.enter()
 		.append("text")
-		.attr("x", d => x(d.anme) + x.bandwith() / 2)
+		.attr("x", d => x(d.anme) + x.bandwidth() / 2)
 		.attr("y", d => y(d.value) - 5)
 		.attr("text-anchor", "middle")
 		.attr("fill", "#fff")
@@ -205,7 +208,7 @@ function drawAudioFeaturesChart(track, features) {
 }
 
 function scrollCarouselBy(offset) {
-	resultsDiv.scrollBy({ left: offset, behaviour: "smooth" });
+	resultsDiv.scrollBy({ left: offset, behavior: "smooth" });
 }
 
 function updateScrollButtons() {
@@ -213,7 +216,7 @@ function updateScrollButtons() {
 	const maxScrollLeft = resultsDiv.scrollWidth - resultsDiv.clientWidth;
 	
 	scrollLeftBtn.style.display = resultsDiv.scrollLeft <= 0 ? "none" : "block";
-	scrollRightBtn.style.display = resultsDiv.scrollRight >= maxScrollLeft - 1 ? "none" : "block";
+	scrollRightBtn.style.display = resultsDiv.clientWidth >= resultsDiv.scrollWidth - 1 ? "none" : "block";
 }
 
 async function init() {
@@ -241,7 +244,7 @@ async function init() {
 	searchInput.addEventListener("keydown", (e) => {
 		if (e.key === "Enter") {
 			const query = searchInput.value.trim();
-			if (query) searchTracks(toke, query);
+			if (query) searchTracks(token, query);
 		}
 	});
 
