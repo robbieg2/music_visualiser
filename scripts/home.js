@@ -36,7 +36,7 @@ async function getTrackFeaturesFromReccoBeats(spotifyTrackId) {
 
   const list = data.content;
   
-  if (!Array.isArray(list) || list.length === 0 || list[0]) {
+  if (!Array.isArray(list) || list.length === 0 || !list[0]) {
     throw new Error("No audio features returned for this track id.");
   }
 
