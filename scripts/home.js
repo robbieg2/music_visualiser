@@ -34,9 +34,9 @@ async function getTrackFeaturesFromReccoBeats(spotifyTrackId) {
 
   const data = await res.json();
 
-  // Most likely: { audio_features: [ ... ] }
-  const list = data.audio_features || data.data || (Array.isArray(data) ? data : null);
-  if (!list || !list.length || !list[0]) {
+  const list = data.content;
+  
+  if (!Array.isArray(list) || list.length === 0 || list[0]) {
     throw new Error("No audio features returned for this track id.");
   }
 
@@ -196,6 +196,9 @@ function drawAudioFeaturesChart(track, features) {
 		<p><em>${track.artists.map(a => a.name).join(", ")}</em></p>
 	`;
 	
+	// Remove old charts
+	d3.select("#visualisation").selectAll("svg").remove();
+	
 	const data = [
 		{ name: "Danceability", value: Number(features.danceability) },
 		{ name: "Energy", value: Number(features.energy) },
@@ -259,7 +262,7 @@ function drawAudioFeaturesChart(track, features) {
 		.data(data)
 		.enter()
 		.append("text")
-		.attr("x", d => x(d.anme) + x.bandwidth() / 2)
+		.attr("x", d => x(d.name) + x.bandwidth() / 2)
 		.attr("y", d => y(d.value) - 5)
 		.attr("text-anchor", "middle")
 		.attr("fill", "#fff")
