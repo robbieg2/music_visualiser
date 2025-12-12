@@ -16,11 +16,39 @@ const RECCOBEATS_BASE = "https://api.reccobeats.com/v1"
 // Cache audio features by Spotify track ID
 const audioFeatureCache = new Map();
 
-async function getTrackFeaturesFromReccoBeats(trackId) {
-  if (audioFeatureCache.has(trackId)) return audioFeatureCache.get(trackId);
+async function getTrackFeaturesFromReccoBeats(spotifyTrackId) {
+  if (audioFeatureCache.has(spotifyTrackId)) return audioFeatureCache.get(spotifyTrackId);
 
-  const url = `${RECCOBEATS_BASE}/track/${encodeURIComponent(trackId)}/audio-features`;
+  const url = `${RECCOBEATS_BASE}/audio-features?ids=${encodeURIComponent(spotifyTrackId)}`;
+  const res = await fetch(url);
 
+  if (res.status === 429) {
+    const retryAfter = res.headers.get("Retry-After");
+    throw new Error(`Rate limited (429). Retry after: ${retryAfter || "unknown"}s`);
+  }
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`ReccoBeats audio-features failed: ${res.status} ${text}`);
+  }
+
+  const data = await res.json();
+
+  // Most likely: { audio_features: [ ... ] }
+  const list = data.audio_features || data.data || (Array.isArray(data) ? data : null);
+  if (!list || !list.length || !list[0]) {
+    throw new Error("No audio features returned for this track id.");
+  }
+
+  const features = list[0];
+  audioFeatureCache.set(spotifyTrackId, features);
+  return features;
+}
+
+async function getTrackFeaturesFromReccoBeatsByReccoId(reccoTrackId) {
+  if (audioFeatureCache.has(reccoTrackId)) return audioFeatureCache.get(reccoTrackId);
+
+  const url = `${RECCOBEATS_BASE}/track/${encodeURIComponent(reccoTrackId)}/audio-features`;
   const res = await fetch(url);
 
   if (res.status === 429) {
@@ -34,7 +62,7 @@ async function getTrackFeaturesFromReccoBeats(trackId) {
   }
 
   const feat = await res.json();
-  audioFeatureCache.set(trackId, feat);
+  audioFeatureCache.set(reccoTrackId, feat);
   return feat;
 }
 
@@ -146,12 +174,11 @@ async function showTrackFeatures(track) {
 	const container = document.getElementById("visualisation");
 	container.innerHTML = `
 		<h2>Audio Features for: ${track.name}<h2>
-		<p><em>${track.artists.map(a => a.name).join(", ")}</em></p>
 		<p>Loading features...</p>
 	`;
 	
 	try {
-		const features = await getTrackFeaturesFromReccoBeats(track.id);
+		const features = await getTrackFeaturesFromReccoBeats(track.id);		
 		drawAudioFeaturesChart(track, features);
 	} catch (err) {
 		console.error("Error fetching audio features:", err);
