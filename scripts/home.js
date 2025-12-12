@@ -16,41 +16,26 @@ const RECCOBEATS_BASE = "https://api.reccobeats.com/v1"
 // Cache audio features by Spotify track ID
 const audioFeatureCache = new Map();
 
-async function fetchReccoBeatsAudioFeatures(trackIds) {
-	const url = `%{RECCOBEATS_BASE}/audio-fearures?ids=${encodeURIComponent(trackIds.join(","))}`;
-	const res = await fetch(url);
-	
-	if (res.status == 429) {
-		const retryAfter = res.headers.get("Retry-After");
-		throw new Error(`Rate limited (429). Retry-After: ${retryAfter || "unknown"}s`);
-	}
-	
-	if (!res.ok) {
-		const text = await res.text();
-		throw new Error(`ReccoBeats audio-features failed: ${res.status} ${text}`);
-	}
-	
-	return res.json();
-}
-
 async function getTrackFeaturesFromReccoBeats(trackId) {
-	// Check cache first
-	if (audioFeatureCache.has(trackId)) {
-		return audioFeatureCache.get(trackId);
-	}
-	
-	const data = await fetchReccoBeatsAudioFeatures([trackId]);
-	
-	const list =
-		data.audio_features || data.audioFeatures || data.data || (Array.isArray(data) ? data : null);
-		
-	if (!list || !list.length) {
-		throw new Error("ReccoBeats returned no audio features for this track");
-	}
-	
-	const feat = list[0];
-	audioFeatureCache.set(trackId, feat);
-	return feat;
+  if (audioFeatureCache.has(trackId)) return audioFeatureCache.get(trackId);
+
+  const url = `${RECCOBEATS_BASE}/track/${encodeURIComponent(trackId)}/audio-features`;
+
+  const res = await fetch(url);
+
+  if (res.status === 429) {
+    const retryAfter = res.headers.get("Retry-After");
+    throw new Error(`Rate limited (429). Retry after: ${retryAfter || "unknown"}s`);
+  }
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`ReccoBeats audio-features failed: ${res.status} ${text}`);
+  }
+
+  const feat = await res.json();
+  audioFeatureCache.set(trackId, feat);
+  return feat;
 }
 
 async function fetchSpotifyData(token) {
@@ -172,9 +157,7 @@ async function showTrackFeatures(track) {
 		console.error("Error fetching audio features:", err);
 		container.innerHTML = `
 			<h2>Audio Features for: ${track.name}<h2>
-			<p><em>${track.artists.map(a => a.name).join(", ")}</em></p>
 			<p>Could not load audio features. ${err.message}</p>
-			<p><em>Try again later</em<p>
 		`;
 	}
 }
