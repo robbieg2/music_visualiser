@@ -11,6 +11,48 @@ const logoutBtn = document.getElementById("logout-btn");
 const scrollLeftBtn = document.getElementById("scroll-left");
 const scrollRightBtn = document.getElementById("scroll-right");
 
+// ReccoBeats configuration
+const RECCOBEATS_BASE = "https://api.reccobeats.com/v1"
+// Cache audio features by Spotify track ID
+const audioFeatureCache = new Map();
+
+async function fetchReccoBeatsAudioFeatures(trackIds) {
+	const url = `%{RECCOBEATS_BASE}/audio-fearures?ids=${encodeURIComponent(trackIds.join(","))}`;
+	const res = await fetch(url);
+	
+	if (res.status == 429) {
+		const retryAfter = res.headers.get("Retry-After");
+		throw new Error(`Rate limited (429). Retry-After: ${retryAfter || "unknown"}s`);
+	}
+	
+	if (!res.ok) {
+		const text = await res.text();
+		throw new Error(`ReccoBeats audio-features failed: ${res.status} ${text}`);
+	}
+	
+	return res.json();
+}
+
+async function getTrackFeaturesFromReccoBeats(trackId) {
+	// Check cache first
+	if (audioFeatureCache.has(trackId)) {
+		return audioFeatureCache.get(trackId);
+	}
+	
+	const data = await fetchReccoBeatsAudioFeatures([trackId]);
+	
+	const list =
+		data.audio_features || data.audioFeatures || data.data || (Array.isArray(data) ? data : null);
+		
+	if (!list || !list.length) {
+		throw new Error("ReccoBeats returned no audio features for this track");
+	}
+	
+	const feat = list[0];
+	audioFeatureCache.set(trackId, feat);
+	return feat;
+}
+
 async function fetchSpotifyData(token) {
 	try {
 		// Profile
@@ -114,33 +156,26 @@ function displaySearchResults(tracks) {
 	updateScrollButtons();
 }
 
+// Initial chart using ReccoBeats features
 async function showTrackFeatures(track) {
-	const token = localStorage.getItem("access_token");
-	if (!token) {
-		window.location.href = "index.html"
-		return;
-	}
+	const container = document.getElementById("visualisation");
+	container.innerHTML = `
+		<h2>Audio Features for: ${track.name}<h2>
+		<p><em>${track.artists.map(a => a.name).join(", ")}</em></p>
+		<p>Loading features...</p>
+	`;
 	
 	try {
-		const res = await fetch(`https://api.spotify.com/v1/audio-features/${track.id}`, {
-			headers: { Authorization: `Bearer ${token}` },
-		});
-		
-		if (!res.ok) {
-			const msgContainer = document.getElementById("visualisation");
-			msgContainer.innerHTML = `
-				<h2>Audio Features for: ${track.name}<h2>
-				<p><em>${track.artists.map(a => a.name).join(", ")}</em></p>
-				<p>Audio features are not available for this track (Spotify returned ${res.status}).</p>
-			`;
-			const errText = await res.text();
-			console.error("Failed fetching audio features:", res.status, errText);
-			return;
-		}
-		const features = await res.json();
+		const features = await getTrackFeaturesFromReccoBeats(track.id);
 		drawAudioFeaturesChart(track, features);
 	} catch (err) {
 		console.error("Error fetching audio features:", err);
+		container.innerHTML = `
+			<h2>Audio Features for: ${track.name}<h2>
+			<p><em>${track.artists.map(a => a.name).join(", ")}</em></p>
+			<p>Could not load audio features. ${err.message}</p>
+			<p><em>Try again later</em<p>
+		`;
 	}
 }
 
@@ -150,6 +185,20 @@ function drawAudioFeaturesChart(track, features) {
 		<h2>Audio Features for: ${track.name}</h2>
 		<p><em>${track.artists.map(a => a.name).join(", ")}</em></p>
 	`;
+	
+	const data = [
+		{ name: "Danceability", value: Number(features.danceability) },
+		{ name: "Energy", value: Number(features.energy) },
+		{ name: "Valence", value: Number(features.valence) },
+		{ name: "Speechiness", value: Number(features.speechiness) },
+		{ name: "Acousticness", value: Number(features.acousticness) },
+		{ name: "Instrumental", value: Number(features.instrumentalness) },
+	].filter(d => Number.isFinite(d.value));
+	
+	if (!data.length) {
+		container.innerHTML += `<p>No usable feature values returned for this track</p>`;
+		return;
+	}
 	
 	const margin = { top: 30, right: 20, bottom: 60, left: 50 };
 	const width = 600 - margin.left - margin.right;
@@ -162,14 +211,6 @@ function drawAudioFeaturesChart(track, features) {
 		.append("g")
 		.attr("transform", `translate(${margin.left},${margin.top})`);
 		
-	const data = [
-		{ name: "Danceability", value: features.danceability },
-		{ name: "Energy", value: features.energy },
-		{ name: "Valence", value: features.valence },
-		{ name: "Speechiness", value: features.speechiness },
-		{ name: "Acousticness", value: features.acousticness },
-		{ name: "Instrumental", value: features.instrumentalness },
-	];
 	
 	const x = d3.scaleBand()
 		.domain(data.map(d => d.name))
@@ -214,6 +255,10 @@ function drawAudioFeaturesChart(track, features) {
 		.attr("fill", "#fff")
 		.attr("font-size", "11px")
 		.text(d => d.value.toFixed(2));
+		
+	if (features.tempo != null) {
+		container.innerHTML += `<p>Tempo: <strong>${Number(features.tempo).toFixed(1)} BPM</strong></p>`;
+	}
 }
 
 function scrollCarouselBy(offset) {
