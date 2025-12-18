@@ -118,7 +118,6 @@ function drawAudioFeaturesChart(track, features) {
 		.style("fill-opacity", 0.4)
 		.style("stroke", "#1db954")
 		.style("stroke-width", 2)
-	}
 		
 	if (features.tempo != null) {
 		container.innerHTML += `<p>Tempo: <strong>${Number(features.tempo).toFixed(1)} BPM</strong></p>`;
