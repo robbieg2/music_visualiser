@@ -43,7 +43,6 @@ function drawAudioFeaturesChart(track, features) {
 	const container = document.getElementById("visualisation");
 	container.innerHTML = `
 		<h2>Audio Features</h2>
-		<p><em>${track.name} - ${track.artists.join(", ")}</em></p>
 	`;
 	
 	// Remove old charts
@@ -145,6 +144,52 @@ function renderTrackHeader(track) {
 	`;
 }
 
+async function fetchReccoBeatsRecommendations(spotifyTrackId, size = 8) {
+	const url = new URL("https://api.reccobeats.com/v1/track/recommendation");
+	url.searchParams.append("seeds", spotifyTrackId);
+	url.searchParams.append("size", size);
+	
+	const res = await fetch(url);
+	if (!res.ok) {
+		const text = await res.text();
+		throw new Error(`Recommendation failed: ${res.status} ${text}`);
+	}
+	
+	const data = await res.json();
+	return data.content || [];
+	
+function renderRecommendations(tracks) {
+	const container = document.getElementById("recommendations");
+	container.innerHTML = "<h3>Recommended Tracks</h3>";
+	
+	const wrapper = document.createElement("div");
+	wrapper.style.display = "flex";
+	wrapper.style.gap = "20px";
+	wrapper.style.overflowX = "auto";
+	wrapper.style.padding = "10px";
+	
+	tracks.forEach(t => {
+		const card = document.createElement("div");
+		crad.style.width = "160px";
+		card.style.textAlign = "center";
+		
+		card.innerHTML = `
+			<iframe
+				src="https://open.spotify.com/embed/track/${t.spotifyId}"
+				width="160"
+				height="80"
+				frameborder="0"
+				allow="encrypted-media">
+			</iframe>
+			<p style="font-size:14px">${t.trackTtile}</p>
+		`;
+		
+		wrapper.appendChild(card);
+	});
+	
+	container.appendChild(wrapper);
+}
+
 async function init() {
 	backBtn.addEventListener("click", () => window.location.href = "home.html");
 	
@@ -177,9 +222,11 @@ async function init() {
 	try {
 		const features = await getTrackFeaturesFromReccoBeats(track.id);
 		drawAudioFeaturesChart(track, features);
+		
+		const recommendations = await fetchReccoBeatsRecommendations(track.id);
+		renderRecommendations(reccomendations);
 	} catch (err) {
 		console.error(err);
-		vis.innerHTML = `<p style="text-align:center;">Could not load audio features: ${err.message}</p>`;
 	}
 }
 
