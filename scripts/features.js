@@ -103,13 +103,13 @@ function drawAudioFeaturesChart(track, features) {
 			.style("fill", "#fff")
 			.style("font-size", "12px")
 			.style("text-anchor", "middle")
-			.text(d.axis);
+			.text(d.name);
 	});
 	
 	const radarLine = d3.lineRadial()
 		.radius(d => rScale(d.value))
 		.angle((d, i) => i * angleSlice)
-		.curve(d3.curveLinerClosed);
+		.curve(d3.curveLinearClosed);
 		
 	svg.append("path")
 		.datum(data)
@@ -117,7 +117,7 @@ function drawAudioFeaturesChart(track, features) {
 		.style("fill", "#1db954")
 		.style("fill-opacity", 0.4)
 		.style("stroke", "#1db954")
-		.style("stroke-width", 2)
+		.style("stroke-width", 2);
 		
 	if (features.tempo != null) {
 		container.innerHTML += `<p>Tempo: <strong>${Number(features.tempo).toFixed(1)} BPM</strong></p>`;
