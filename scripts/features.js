@@ -144,7 +144,7 @@ function renderTrackHeader(track) {
 	`;
 }
 
-async function fetchReccoBeatsRecommendations(spotifyTrackId, size = 8) {
+async function fetchReccoBeatsRecommendations(spotifyTrackId, size = 5) {
 	const url = new URL("https://api.reccobeats.com/v1/track/recommendation");
 	url.searchParams.append("seeds", spotifyTrackId);
 	url.searchParams.append("size", size);
