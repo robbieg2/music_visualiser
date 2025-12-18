@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TuneVis</title>
+
+    <!-- Libraries and stylesheets imports -->
+	<link rel="stylesheet" href="styles/style.css">
+	
+	<script src="libs/d3.v7.min.js"></script>
+	<script src="libs/popper.v2.min.js"></script>
+	<script src="libs/tippy.v6.min.js"></script>
+</head>
+<body>
+	<header style="text-align:center; margin-top:20px;">
+		<button id="back-btn" style="position:absolute; left:20px; top:20px;">Back</button>
+		<button id="logout-btn" style="position:absolute; right:20px; top:20px;">Logout</button>
+	</header>
+	
+	<section id="track-info" style="margin-top:70px; text-align:center;"></section>
+	<section id="visualisation" style="margin:40px;"></section>
+	
+	<footer>
+		<p>© 2025 TuneVis | Built using Spotify API & D3.js</p>
+	</footer>
+	
+	<script type="module" src="scripts/home.js"></script>
+</body>
+</html>
