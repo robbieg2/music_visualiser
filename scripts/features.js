@@ -55,7 +55,7 @@ function drawAudioFeaturesChart(track, features) {
 		{ name: "Speechiness", value: Number(features.speechiness) },
 		{ name: "Acousticness", value: Number(features.acousticness) },
 		{ name: "Instrumental", value: Number(features.instrumentalness) },
-	];
+	].filter(d => Number.isFinite(d.value));
 	
 	if (!data.length) {
 		container.innerHTML += `<p>No usable feature values returned for this track</p>`;
@@ -157,6 +157,13 @@ async function fetchReccoBeatsRecommendations(spotifyTrackId, size = 8) {
 	
 	const data = await res.json();
 	return data.content || [];
+}
+
+function extractSpotifyId(href) {
+	if (!href) return null;
+	const match = href.match(/open\.spotify\.com\/track\/([A-Za-z0-9]+)/);
+	return match ? match[1] : null;
+}
 	
 function renderRecommendations(tracks) {
 	const container = document.getElementById("recommendations");
@@ -168,20 +175,25 @@ function renderRecommendations(tracks) {
 	wrapper.style.overflowX = "auto";
 	wrapper.style.padding = "10px";
 	
-	tracks.forEach(t => {
+	tracks.forEach((t) => {
+		const spotifyId = t.spotifyId || extractSpotifyId(t.href);
+		if (!spotifyId) return;
+		
+		const title = t.trackTitle || t.title || "Recommended track";
+		
 		const card = document.createElement("div");
-		crad.style.width = "160px";
+		card.style.width = "180px";
 		card.style.textAlign = "center";
 		
 		card.innerHTML = `
 			<iframe
-				src="https://open.spotify.com/embed/track/${t.spotifyId}"
-				width="160"
+				src="https://open.spotify.com/embed/track/${spotifyId}"
+				width="180"
 				height="80"
 				frameborder="0"
 				allow="encrypted-media">
 			</iframe>
-			<p style="font-size:14px">${t.trackTtile}</p>
+			<p style="font-size:14px; margin-top:8px;">${title}</p>
 		`;
 		
 		wrapper.appendChild(card);
@@ -224,7 +236,7 @@ async function init() {
 		drawAudioFeaturesChart(track, features);
 		
 		const recommendations = await fetchReccoBeatsRecommendations(track.id);
-		renderRecommendations(reccomendations);
+		renderRecommendations(recommendations);
 	} catch (err) {
 		console.error(err);
 	}
