@@ -182,18 +182,17 @@ function renderRecommendations(tracks) {
 		const title = t.trackTitle || t.title || "Recommended track";
 		
 		const card = document.createElement("div");
-		card.style.width = "180px";
+		card.style.width = "220px";
 		card.style.textAlign = "center";
 		
 		card.innerHTML = `
 			<iframe
 				src="https://open.spotify.com/embed/track/${spotifyId}"
-				width="180"
-				height="80"
+				width="220"
+				height="120"
 				frameborder="0"
 				allow="encrypted-media">
 			</iframe>
-			<p style="font-size:14px; margin-top:8px;">${title}</p>
 		`;
 		
 		wrapper.appendChild(card);
