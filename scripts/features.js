@@ -82,7 +82,7 @@ function drawAudioFeaturesChart(track, features) {
 		
 	for (let level = 1; level <= levels; level++) {
 		svg.append("circle")
-			.attr("r", (radius / levels * level))
+			.attr("r", (radius / levels) * level)
 			.style("fill", "none")
 			.style("stroke", "#444");
 	}
