@@ -9,6 +9,29 @@ const trackInfo = document.getElementById("track-info");
 const logoutBtn = document.getElementById("logout-btn");
 const backBtn = document.getElementById("back-btn");
 
+function chunk(arr, size) {
+	const out = [];
+	for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+	return out;
+}
+
+function extractSpotifyIdFromHref(href) {
+	if (!href) return null;
+	const match = href.match(/open\.spotify\.com\/track\/([A-Za-z0-9]+)/);
+	return match ? match[1] : null;
+}
+
+async function spotifyFetch(token, url) {
+	const res = await fetch(url, {
+		headers: { Authorization: `Bearer ${token}` },
+	});
+	if (!res.ok) {
+		const text = await res.text();
+		throw new Error(`Spotify fetch failed: ${res.status} ${text}`);
+	}
+	return res.json();
+}
+
 async function getTrackFeaturesFromReccoBeats(spotifyTrackId) {
   if (audioFeatureCache.has(spotifyTrackId)) return audioFeatureCache.get(spotifyTrackId);
 
@@ -144,7 +167,7 @@ function renderTrackHeader(track) {
 	`;
 }
 
-async function fetchReccoBeatsRecommendations(spotifyTrackId, size = 5) {
+async function fetchReccoBeatsRecommendations(spotifyTrackId, size = 7) {
 	const url = new URL("https://api.reccobeats.com/v1/track/recommendation");
 	url.searchParams.append("seeds", spotifyTrackId);
 	url.searchParams.append("size", size);
@@ -159,14 +182,89 @@ async function fetchReccoBeatsRecommendations(spotifyTrackId, size = 5) {
 	return data.content || [];
 }
 
+async function getArtistsGenres(token, artistIds) {
+	const map = new Map();
+	const unique = [...new Set(artistsIds)]/filter(Boolean);
+	
+	for (const group of chunk(unique, 50)) {
+		const data = await spotifyFetch(token, `https://api.spotify.com/v1/artists?ids=${group.join(",")}`);
+		(data.artists || []).forEach(a => map.set(a.id, a.genres || []));
+	}
+	return map;
+}
+
+async function getSeedGenres(token, seedTrackId) {
+	const seedTrack = await spotifyFetch(token, `https://api.spotify.com/v1/tracks/${seedTrackId}`);
+	const seedArtistIds = (seedTrack.artists || []).map(a => a.id);
+	
+	const artistGenresMap = await getArtistsGenres(token, seedArtistIds);
+	
+	const seedGenres = new Set();
+	seedArtistIds.forEach(id => (artistGenresMap.get(id) || []).forEach(g => seedGenres.add(g)));
+	return seedGenres;
+}
+
+function genreOverlapScore(seedGenresSet, trackGenres) {
+	if (!seedGenresSet || seedGenresSet.size === 0) return 0;
+	if (!trackGenres || trackGenres.length === 0) return 0;
+	
+	let hits = 0;
+	trackGenres.forEach(g => {
+		if (seedGenresSet.has(g)) hits++;
+	});
+	
+	return hits / seedGenresSet.size;
+}
+
+async function filterRecommendationsByGenre(token, seedTrackId, recSpotifyIds, keep = 8) {
+	const seedGenres = await getSeedGenres(token, seedTrackId);
+	
+	// No genres, cannot filter reliably
+	if (seedGenres.size === 0) return recSpotifyIds.slice(0, keep);
+	
+	// Fetch rec tracks (batch)
+	const tracks = [];
+	for (const group of chunk(recSpotifyIds, 50)) {
+		const data = await spotifyFetch(token, `https://api.spotify.com/v1/tracks?ids=${group.join(",")}`);
+		tracks.push(...(data.tracks || []).filter(Boolean));
+	}
+	
+	// Fetch genres for all artists in recs
+	const allArtistIds = tracks.flatMap(t => (t.artists || []).map(a => a.id));
+	const artistGenresMap = await getArtistsGenres(token, allArtistIds);
+	
+	// Score each track
+	const scored = tracks.map(t => {
+		const genres = [];
+		(t.artists || []).forEach(a => genres,push(...(artistGenresMap.get(a.id) || [])));
+		const uniqueGenres = [... new Set(genres)];
+		
+		return {
+			id: t.id,
+			score: genreOverlapScore(seedGenres, uniqueGenres),
+			genres: uniqueGenres,
+		};
+	});
+	
+	const filtered = scored
+		.filter(x => x.score > 0)
+		.sort((a, b) => b.score - a.score);
+		
+	if (filtered.length === 0) return recSpotifyIds.slice(0, keep);
+	
+	return filtered.slice(0, keep).map(x => x.id);
+}
+	
 function extractSpotifyId(href) {
 	if (!href) return null;
 	const match = href.match(/open\.spotify\.com\/track\/([A-Za-z0-9]+)/);
 	return match ? match[1] : null;
 }
 	
-function renderRecommendations(tracks) {
+function renderRecommendations(spotifyIds) {
 	const container = document.getElementById("recommendations");
+	if (!container) return;
+	
 	container.innerHTML = "<h3>Recommended Tracks</h3>";
 	
 	const wrapper = document.createElement("div");
@@ -175,10 +273,7 @@ function renderRecommendations(tracks) {
 	wrapper.style.overflowX = "auto";
 	wrapper.style.padding = "10px";
 	
-	tracks.forEach((t) => {
-		const spotifyId = t.spotifyId || extractSpotifyId(t.href);
-		if (!spotifyId) return;
-		
+	spotifyIds.forEach((t) => {		
 		const title = t.trackTitle || t.title || "Recommended track";
 		
 		const card = document.createElement("div");
@@ -208,6 +303,13 @@ async function init() {
 		localStorage.removeItem("access_token");
 		window.location.href = "index.html";
 	});
+	
+	// Genre filtering token
+	const token = localStorage.getItem("access_token");
+	if (!token) {
+		window.location.href = "index.html";
+		return;
+	}
 	
 	const params = new URLSearchParams(window.location.search);
 	const trackParam = params.get("track");
