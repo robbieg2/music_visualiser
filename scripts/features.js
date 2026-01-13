@@ -267,7 +267,7 @@ function renderRecommendations(spotifyIds) {
 	wrapper.style.overflowX = "auto";
 	wrapper.style.padding = "10px";
 	
-	spotifyIds.forEach((spotifyId) => {		
+	spotifyIds.forEach((spotifyIds) => {		
 		const card = document.createElement("div");
 		card.style.width = "220px";
 		card.style.textAlign = "center";
