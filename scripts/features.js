@@ -184,7 +184,7 @@ async function fetchReccoBeatsRecommendations(spotifyTrackId, size = 7) {
 
 async function getArtistsGenres(token, artistIds) {
 	const map = new Map();
-	const unique = [...new Set(artistsIds)]/filter(Boolean);
+	const unique = [...new Set(artistIds)].filter(Boolean);
 	
 	for (const group of chunk(unique, 50)) {
 		const data = await spotifyFetch(token, `https://api.spotify.com/v1/artists?ids=${group.join(",")}`);
@@ -236,7 +236,7 @@ async function filterRecommendationsByGenre(token, seedTrackId, recSpotifyIds, k
 	// Score each track
 	const scored = tracks.map(t => {
 		const genres = [];
-		(t.artists || []).forEach(a => genres,push(...(artistGenresMap.get(a.id) || [])));
+		(t.artists || []).forEach(a => genres.push(...(artistGenresMap.get(a.id) || [])));
 		const uniqueGenres = [... new Set(genres)];
 		
 		return {
@@ -255,12 +255,6 @@ async function filterRecommendationsByGenre(token, seedTrackId, recSpotifyIds, k
 	return filtered.slice(0, keep).map(x => x.id);
 }
 	
-function extractSpotifyId(href) {
-	if (!href) return null;
-	const match = href.match(/open\.spotify\.com\/track\/([A-Za-z0-9]+)/);
-	return match ? match[1] : null;
-}
-	
 function renderRecommendations(spotifyIds) {
 	const container = document.getElementById("recommendations");
 	if (!container) return;
@@ -273,9 +267,7 @@ function renderRecommendations(spotifyIds) {
 	wrapper.style.overflowX = "auto";
 	wrapper.style.padding = "10px";
 	
-	spotifyIds.forEach((t) => {		
-		const title = t.trackTitle || t.title || "Recommended track";
-		
+	spotifyIds.forEach((spotifyId) => {		
 		const card = document.createElement("div");
 		card.style.width = "220px";
 		card.style.textAlign = "center";
@@ -336,9 +328,16 @@ async function init() {
 		const features = await getTrackFeaturesFromReccoBeats(track.id);
 		drawAudioFeaturesChart(track, features);
 		
-		const recommendations = await fetchReccoBeatsRecommendations(track.id);
-		renderRecommendations(recommendations);
-	} catch (err) {
+		const recommendations = await fetchReccoBeatsRecommendations(track.id, 20);
+		
+		const recSpotifyIds = recommendations
+			.map(r => r.spotifyId || extractSpotifyIdFromHref(r.href))
+			.filter(Boolean);
+			
+		const filtered = await filterRecommendationsByGenre(token, track.id, recSpotifyIds, 8);
+		
+		renderRecommendations(filtered);
+	}catch (err) {
 		console.error(err);
 	}
 }
