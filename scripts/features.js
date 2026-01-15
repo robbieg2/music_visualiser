@@ -564,13 +564,25 @@ async function init() {
     const vis = document.getElementById("visualisation");
     if (vis) vis.innerHTML = "<p style='text-align:center;'>Loading audio features</p>";
 
+	let seedFeatures = null;
     try {
         // Seed features + radar
-        const seedFeatures = await getTrackFeaturesFromReccoBeats(track.id);
+        seedFeatures = await getTrackFeaturesFromReccoBeats(track.id);
         drawAudioFeaturesChart(track, seedFeatures);
+	} catch (e) {
+		console.warn("Seed features missing:", e.message);
+		const vis = document.getElementById("visualisation");
+		if (vis) {
+			vis.innerHTML = `
+				<h2>Audio Features</h2>
+				<p>Sorry - no audio features were found for this track in ReccoBeats.</p>
+				<p>You can still view recommendations below.</p>
+			`;
+		}
+	}
 
         // Recs (bigger set for better filtering)
-        const recommendations = await fetchReccoBeatsRecommendations(track.id, 25);
+        const recommendations = await fetchReccoBeatsRecommendations(track.id, 40);
         const recSpotifyIds = recommendations
             .map((r) => r.spotifyId || extractSpotifyIdFromHref(r.href))
             .filter(Boolean);
