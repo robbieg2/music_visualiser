@@ -50,7 +50,7 @@ async function getTrackFeaturesFromReccoBeats(spotifyTrackId, spotifyToken = nul
     const data = await res.json();
     const list = data.content;
 
-    if (!Array.isArray(list) && list.length > 0 && list[0]) {
+    if (Array.isArray(list) && list.length > 0 && list[0]) {
 		const features = list[0];
 		audioFeatureCache.set(spotifyTrackId, features);
 		return features;
@@ -75,10 +75,6 @@ async function getTrackFeaturesFromReccoBeats(spotifyTrackId, spotifyToken = nul
 	}
 	
 	return null;
-	
-//    const features = list[0];
-//    audioFeatureCache.set(spotifyTrackId, features);
-//    return features;
 }
 
 async function getManyFeaturesFromReccoBeats(spotifyIds) {
