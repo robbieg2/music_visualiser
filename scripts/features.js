@@ -118,7 +118,7 @@ async function extractAudioFeaturesFromReccoBeats(audioUrl) {
 	});
 	
 	if (res.status === 429) {
-		const retryAfter = res.headers.get("Retry-After);
+		const retryAfter = res.headers.get("Retry-After");
 		throw new Error(`Rate limited (429). Retry after: ${retryAfter || "unknown"}s`);
 	}
 	
