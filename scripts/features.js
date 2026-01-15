@@ -109,7 +109,7 @@ async function getManyFeaturesFromReccoBeats(spotifyIds) {
 }
 
 async function extractAudioFeaturesFromReccoBeats(audioUrl) {
-	const endpoint = `${RECCOBEATS_BASE}/analysis/audio-features-extraction`;
+	const endpoint = `${RECCOBEATS_BASE}/analysis/audio-features`;
 	
 	const res = await fetch(endpoint, {
 		method: "POST",
@@ -616,7 +616,7 @@ async function init() {
 
     try {
         // Seed features + radar
-        const seedFeatures = await getTrackFeaturesFromReccoBeats(track.id);
+        const seedFeatures = await getTrackFeaturesFromReccoBeats(track.id, token);
 		
 		if (!seedFeatures) {
 			const vis = document.getElementById("visualisation");
