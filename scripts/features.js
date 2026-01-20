@@ -60,6 +60,7 @@ async function getTrackFeaturesFromReccoBeats(spotifyTrackId, spotifyToken = nul
 	if (spotifyToken) {
 		try {
 			const track = await spotifyFetch(spotifyToken, `https://api.spotify.com/v1/tracks/${spotifyTrackId}`);
+			console.log("Preview URL for fallback:", track.name, track.preview_url);
 			const previewUrl = track?.preview_url;
 			
 			if (previewUrl) {
