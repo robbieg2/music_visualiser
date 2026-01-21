@@ -76,8 +76,8 @@ async function getTrackFeaturesFromReccoBeats(spotifyTrackId, spotifyToken = nul
 		}
 	}
 	
-	return null;
-} */
+	return null; */
+}
 
 async function getManyFeaturesFromReccoBeats(spotifyIds) {
     const url = `${RECCOBEATS_BASE}/audio-features?ids=${encodeURIComponent(spotifyIds.join(","))}`;
@@ -717,6 +717,4 @@ async function init() {
 }
 
 init();
-
-
 	
