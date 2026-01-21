@@ -618,91 +618,102 @@ async function init() {
     if (vis) vis.innerHTML = "<p style='text-align:center;'>Loading audio features</p>";
 
     try {
-        // Seed features			
-		const seedFeatures = await getTrackFeaturesFromReccoBeats(track.id, token);
-		
-		if (!seedFeatures) {
-			const vis = document.getElementByID("visualisation");
-			if (vis) {
-				vis.innerHTML = `
-					<p style="text-align:center;">
-						Audio features are not available for this track.
-						<br/>Please try another song							
-					</p>
-				`;
-			}
-			
-			const recs = document.getElementById("recommendations");
-			if (recs) recs.innerHTML = "";
-			return;
-		}
-	
-		// Draw seed radar
-		drawAudioFeaturesChart(track, seedFeatures);
-		
-		const recommendations = await fetchReccoBeatsRecommendations(track.id, 40);
-		
-		if (!recommendations.length) {
-			const recs = document.getElementByID("recommendations");
-			if (recs) {
-				recs.innerHTML = `
-					<p style="text-align:center; opacity:0.85;">
-						No recommendations available for this track.
-					</p>
-				`;
-			}
-			return;
-		}
-		
-		const recSpotifyIds = recommendations
-			.map((r) => r.spotifyId || extractSpotifyIdFromHref(r.href))
-			.filter(Boolean);
-			
-		// Genre filter
-		const filteredIds = await filterRecommendationsByGenre(token, track.id, recSpotifyIds, 12);
+        // Seed features
+        const seedFeatures = await getTrackFeaturesFromReccoBeats(track.id, token);
 
-		// Render embeds (top 10)
-		renderRecommendations(filteredIds.slice(0, 10));
+        if (!seedFeatures) {
+            const v = document.getElementById("visualisation");
+            if (v) {
+                v.innerHTML = `
+                    <p style="text-align:center;">
+                        Audio features are not available for this track.
+                        <br/>Please try another song.
+                    </p>
+                `;
+            }
 
+            const recs = document.getElementById("recommendations");
+            if (recs) recs.innerHTML = "";
+            return;
+        }
 
-		const recFeaturesMap = await getManyFeaturesFromReccoBeats(filteredIds);
-		
-		// Enrich labels via Spotify meta
-		const meta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks?ids=${filteredIds.join(",")}`);
-		const metaMap = new Map((meta.tracks || []).filter(Boolean).map((t) => [t.id, t]));
+        // Draw seed radar
+        drawAudioFeaturesChart(track, seedFeatures);
 
-		// Build rows
-		const rows = filteredIds
-			.map((id) => {
-				const f = recFeaturesMap.get(id);
-				if (!f) return null;
+        // Recommendations
+        const recommendations = await fetchReccoBeatsRecommendations(track.id, 40);
 
-				const t = metaMap.get(id);
-				const trackObj = t
-					? {
-						  id: t.id,
-						  name: t.name,
-						  artists: (t.artists || []).map((a) => a.name),
-						  image: t.album?.images?.[0]?.url || "",
-					  }
-					: { id, name: "Recommended", artists: [], image: "" };
+        if (!recommendations.length) {
+            const recs = document.getElementById("recommendations");
+            if (recs) {
+                recs.innerHTML = `
+                    <p style="text-align:center; opacity:0.85;">
+                        No recommendations available for this track.
+                    </p>
+                `;
+            }
+            return;
+        }
 
-				return {
-					id,
-					features: f,
-					score: similarityScore(seedFeatures, f),
-					track: trackObj,
-				};
-			})
-			.filter(Boolean)
-			.sort((a, b) => b.score - a.score);
+        const recSpotifyIds = recommendations
+            .map((r) => r.spotifyId || extractSpotifyIdFromHref(r.href))
+            .filter(Boolean);
 
-		// Draw both visuals
-		drawSimilarityBarChart(rows.slice(0, 10));
-		drawSimilarityScatter(seedFeatures, rows.slice(0, 15));
-	} catch (err) {
-		console.error(err);
-	}
+        if (!recSpotifyIds.length) {
+            const recs = document.getElementById("recommendations");
+            if (recs) {
+                recs.innerHTML = `
+                    <p style="text-align:center; opacity:0.85;">
+                        Recommendations returned, but no Spotify IDs were found.
+                    </p>
+                `;
+            }
+            return;
+        }
+
+        // Genre filter
+        const filteredIds = await filterRecommendationsByGenre(token, track.id, recSpotifyIds, 12);
+
+        // Render embeds
+        renderRecommendations(filteredIds.slice(0, 10));
+
+        // Feature + metadata enrichment for visuals
+        const recFeaturesMap = await getManyFeaturesFromReccoBeats(filteredIds);
+
+        const meta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks?ids=${filteredIds.join(",")}`);
+        const metaMap = new Map((meta.tracks || []).filter(Boolean).map((t) => [t.id, t]));
+
+        const rows = filteredIds
+            .map((id) => {
+                const f = recFeaturesMap.get(id);
+                if (!f) return null;
+
+                const t = metaMap.get(id);
+                const trackObj = t
+                    ? {
+                          id: t.id,
+                          name: t.name,
+                          artists: (t.artists || []).map((a) => a.name),
+                          image: t.album?.images?.[0]?.url || "",
+                      }
+                    : { id, name: "Recommended", artists: [], image: "" };
+
+                return {
+                    id,
+                    features: f,
+                    score: similarityScore(seedFeatures, f),
+                    track: trackObj,
+                };
+            })
+            .filter(Boolean)
+            .sort((a, b) => b.score - a.score);
+
+        // Draw both visuals
+        drawSimilarityBarChart(rows.slice(0, 10));
+        drawSimilarityScatter(seedFeatures, rows.slice(0, 15));
+    } catch (err) {
+        console.error(err);
+    }
 }
 
 init();
