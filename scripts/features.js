@@ -640,7 +640,6 @@ async function init() {
 			// Draw seed radar
 			drawAudioFeaturesChart(track, seedFeatures);
 			
-			const recommendations = await fetchReccoBeatsRecommendations(track.id, 40);
 			if (!recommendations.length) {
 				const recs = document.getElementByID("recommendations");
 				if (recs) {
