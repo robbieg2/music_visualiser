@@ -250,6 +250,12 @@ async function fetchReccoBeatsRecommendations(spotifyTrackId, size = 20) {
     url.searchParams.append("size", size);
 
     const res = await fetch(url);
+	
+	if (res.status === 400) {
+		const text = await res.text();
+		return [];
+	}
+	
     if (!res.ok) {
         const text = await res.text();
         throw new Error(`Recommendation failed: ${res.status} ${text}`);
@@ -612,48 +618,48 @@ async function init() {
     if (vis) vis.innerHTML = "<p style='text-align:center;'>Loading audio features</p>";
 
     try {
-        // Fetch recommendations
-		const recommendations = await fetchReccoBeatsRecommendations(track.id, 40);
-		const recSpotifyIds = recommendations
-            .map((r) => r.spotifyId || extractSpotifyIdFromHref(r.href))
-            .filter(Boolean);
-			
-			// Seed features
-			const seedFeatures = await getTrackFeaturesFromReccoBeats(track.id, token);
-			
-			if (!seedFeatures) {
-				const vis = document.getElementByID("visualisation");
-				if (vis) {
-					vis.innerHTML = `
-						<p style="text-align:center;">
-							Audio features are not available for this track.
-							<br/>Please try another song							
-						</p>
-					`;
-				}
-				
-				const recs = document.getElementByID("recommendations");
-				if (recs) recs.innerHTML = "";
-				return;
-			}
+        // Seed features			
+		const seedFeatures = await getTrackFeaturesFromReccoBeats(track.id, token);
 		
-			// Draw seed radar
-			drawAudioFeaturesChart(track, seedFeatures);
-			
-			if (!recommendations.length) {
-				const recs = document.getElementByID("recommendations");
-				if (recs) {
-					recs.innerHTML = `
-						<p style="text-align:center; opacity:0.85;">
-							No recommendations available for this track.
-						</p>
-					`;
-				}
-				return;
+		if (!seedFeatures) {
+			const vis = document.getElementByID("visualisation");
+			if (vis) {
+				vis.innerHTML = `
+					<p style="text-align:center;">
+						Audio features are not available for this track.
+						<br/>Please try another song							
+					</p>
+				`;
 			}
-
+			
+			const recs = document.getElementById("recommendations");
+			if (recs) recs.innerHTML = "";
+			return;
+		}
+	
+		// Draw seed radar
+		drawAudioFeaturesChart(track, seedFeatures);
+		
+		const recommendations = await fetchReccoBeatsRecommendations(track.id, 40);
+		
+		if (!recommendations.length) {
+			const recs = document.getElementByID("recommendations");
+			if (recs) {
+				recs.innerHTML = `
+					<p style="text-align:center; opacity:0.85;">
+						No recommendations available for this track.
+					</p>
+				`;
+			}
+			return;
+		}
+		
+		const recSpotifyIds = recommendations
+			.map((r) => r.spotifyId || extractSpotifyIdFromHref(r.href))
+			.filter(Boolean);
+			
 		// Genre filter
-		const filteredIds = await filterRecommendationsByGenre(token, analysisTrack.id, recSpotifyIds, 12);
+		const filteredIds = await filterRecommendationsByGenre(token, track.id, recSpotifyIds, 12);
 
 		// Render embeds (top 10)
 		renderRecommendations(filteredIds.slice(0, 10));
