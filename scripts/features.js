@@ -380,7 +380,7 @@ function similarityScore(seed, rec) {
     if (wsum === 0) return 0;
     return 1 - d / wsum;
 }
-/*
+
 function drawSimilarityBarChart(rows) {
     const container = document.getElementById("sim-bar");
     if (!container) return;
@@ -445,7 +445,7 @@ function drawSimilarityBarChart(rows) {
         .attr("fill", "#fff")
         .attr("font-size", "12px")
         .text((d) => d.score.toFixed(2));
-} */
+}
 
 function drawSimilarityScatter(seedFeatures, rows) {
     const container = document.getElementById("sim-scatter");
@@ -611,68 +611,106 @@ async function init() {
     if (vis) vis.innerHTML = "<p style='text-align:center;'>Loading audio features</p>";
 
     try {
-        // Seed features + radar
-        const seedFeatures = await getTrackFeaturesFromReccoBeats(track.id, token);
-		
-		if (!seedFeatures) {
-			const vis = document.getElementById("visualisation");
-			if (vis) vis.innerHTML = `<p>No audio features available for this track.</p>`;
-			return;
-		}
-		
-        drawAudioFeaturesChart(track, seedFeatures);
-
-        // Recs (bigger set for better filtering)
-        const recommendations = await fetchReccoBeatsRecommendations(track.id, 40);
-        const recSpotifyIds = recommendations
+        // Fetch recommendations
+		const recommendations = await fetchReccoBeatsRecommendations(track.id, 40);
+		const recSpotifyIds = recommendations
             .map((r) => r.spotifyId || extractSpotifyIdFromHref(r.href))
             .filter(Boolean);
+			
+			// Seed features
+			let seedFeatures = await getTrackFeaturesFromReccoBeats(track.id, token);
+			let analysisTrack = track;
+			let usedFallback = false;
+			
+			if (!seedFeatures) {
+				// Batch fetch features for filtered recs
+				const recFeatureMap = await getManyFeaturesFromReccoBeats(recSpotifyIds);
+				
+				const fallbackId = recSpotifyIds.find(id => recFeatureMap.has(id));
+				
+				if (fallbackId) {
+					seedFeatures = recFeatureMap.get(fallbackId);
+					usedFallback = true;
+					
+					const meta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks/${fallbackId}`);
+					
+					analysisTrack = (
+					id: meta.id,
+					name: meta.name,
+					artists: (meta.artists || []).map(a => a.name),
+					image: meta.album?.images?.[0]?.url || ""
+				};
+				
+				if (vis) {
+					vis.innerHTML = `
+						<p style="text-align:center; color:#ccc;">
+							Audio features are not available for this track.<br>
+							Showing analysis for the closest available track instead:
+							<strong>${analysisTrack.name}</strong>
+						</p>
+					`;
+				}
+			} else {
+				if (vis) {
+					vis.innerHTML = `
+						<p style="text-align:center;">
+							❌ No audio features are available for this track or its recommendations.
+							<br>Please try another song.
+						</p>
+					`;
+				}
+				return;
+			}
+		}
 
-        // Genre filter
-        const filteredIds = await filterRecommendationsByGenre(token, track.id, recSpotifyIds, 12);
+		// Draw seed radar
+		drawAudioFeaturesChart(analysisTrack, seedFeatures);
 
-        // Render embeds (top 10)
-        renderRecommendations(filteredIds.slice(0, 10));
+		// Genre filter
+		const filteredIds = await filterRecommendationsByGenre(token, analysisTrack.id, recSpotifyIds, 12);
 
-        // Batch fetch features for filtered recs
-        const recFeaturesMap = await getManyFeaturesFromReccoBeats(filteredIds);
+		// Render embeds (top 10)
+		renderRecommendations(filteredIds.slice(0, 10));
 
-        // Enrich labels via Spotify meta
-        const meta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks?ids=${filteredIds.join(",")}`);
-        const metaMap = new Map((meta.tracks || []).filter(Boolean).map((t) => [t.id, t]));
 
-        // Build rows
-        const rows = filteredIds
-            .map((id) => {
-                const f = recFeaturesMap.get(id);
-                if (!f) return null;
+		const recFeaturesMap = await getManyFeaturesFromReccoBeats(filteredIds);
+		
+		// Enrich labels via Spotify meta
+		const meta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks?ids=${filteredIds.join(",")}`);
+		const metaMap = new Map((meta.tracks || []).filter(Boolean).map((t) => [t.id, t]));
 
-                const t = metaMap.get(id);
-                const trackObj = t
-                    ? {
-                          id: t.id,
-                          name: t.name,
-                          artists: (t.artists || []).map((a) => a.name),
-                          image: t.album?.images?.[0]?.url || "",
-                      }
-                    : { id, name: "Recommended", artists: [], image: "" };
+		// Build rows
+		const rows = filteredIds
+			.map((id) => {
+				const f = recFeaturesMap.get(id);
+				if (!f) return null;
 
-                return {
-                    id,
-                    features: f,
-                    score: similarityScore(seedFeatures, f),
-                    track: trackObj,
-                };
-            })
-            .filter(Boolean)
-            .sort((a, b) => b.score - a.score);
+				const t = metaMap.get(id);
+				const trackObj = t
+					? {
+						  id: t.id,
+						  name: t.name,
+						  artists: (t.artists || []).map((a) => a.name),
+						  image: t.album?.images?.[0]?.url || "",
+					  }
+					: { id, name: "Recommended", artists: [], image: "" };
 
-        // Draw both visuals
-//        drawSimilarityBarChart(rows.slice(0, 10));
-        drawSimilarityScatter(seedFeatures, rows.slice(0, 15));
-    } catch (err) {
-        console.error(err);
-    }
+				return {
+					id,
+					features: f,
+					score: similarityScore(seedFeatures, f),
+					track: trackObj,
+				};
+			})
+			.filter(Boolean)
+			.sort((a, b) => b.score - a.score);
+
+		// Draw both visuals
+		drawSimilarityBarChart(rows.slice(0, 10));
+		drawSimilarityScatter(seedFeatures, rows.slice(0, 15));
+	} catch (err) {
+		console.error(err);
+	}
 }
 
 init();
