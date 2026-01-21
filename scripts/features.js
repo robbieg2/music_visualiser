@@ -15,11 +15,12 @@ function chunk(arr, size) {
     return out;
 }
 
+/*
 function extractSpotifyIdFromHref(href) {
     if (!href) return null;
     const match = href.match(/open\.spotify\.com\/track\/([A-Za-z0-9]+)/);
     return match ? match[1] : null;
-}
+} */
 
 async function spotifyFetch(token, url) {
     const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
@@ -57,7 +58,7 @@ async function getTrackFeaturesFromReccoBeats(spotifyTrackId, spotifyToken = nul
     }
 
 	//Fallback: Try to extract features if none available
-	if (spotifyToken) {
+/*	if (spotifyToken) {
 		try {
 			const track = await spotifyFetch(spotifyToken, `https://api.spotify.com/v1/tracks/${spotifyTrackId}`);
 			console.log("Preview URL for fallback:", track.name, track.preview_url);
@@ -76,7 +77,7 @@ async function getTrackFeaturesFromReccoBeats(spotifyTrackId, spotifyToken = nul
 	}
 	
 	return null;
-}
+} */
 
 async function getManyFeaturesFromReccoBeats(spotifyIds) {
     const url = `${RECCOBEATS_BASE}/audio-features?ids=${encodeURIComponent(spotifyIds.join(","))}`;
@@ -103,7 +104,7 @@ async function getManyFeaturesFromReccoBeats(spotifyIds) {
 
     return map;
 }
-
+/*
 async function extractAudioFeaturesFromReccoBeats(audioUrl) {
 	const endpoint = `${RECCOBEATS_BASE}/analysis/audio-features`;
 	
@@ -130,7 +131,7 @@ async function extractAudioFeaturesFromReccoBeats(audioUrl) {
 	if (data?.danceability != null) return data;
 	
 	return null;
-}
+} */
 
 // Seed Radar chart
 function drawAudioFeaturesChart(track, features) {
@@ -618,53 +619,39 @@ async function init() {
             .filter(Boolean);
 			
 			// Seed features
-			let seedFeatures = await getTrackFeaturesFromReccoBeats(track.id, token);
-			let analysisTrack = track;
-			let usedFallback = false;
+			const seedFeatures = await getTrackFeaturesFromReccoBeats(track.id, token);
 			
 			if (!seedFeatures) {
-				// Batch fetch features for filtered recs
-				const recFeatureMap = await getManyFeaturesFromReccoBeats(recSpotifyIds);
-				
-				const fallbackId = recSpotifyIds.find(id => recFeatureMap.has(id));
-				
-				if (fallbackId) {
-					seedFeatures = recFeatureMap.get(fallbackId);
-					usedFallback = true;
-					
-					const meta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks/${fallbackId}`);
-					
-					analysisTrack = {
-					id: meta.id,
-					name: meta.name,
-					artists: (meta.artists || []).map(a => a.name),
-					image: meta.album?.images?.[0]?.url || ""
-				};
-				
-				if (vis) {
-					vis.innerHTML = `
-						<p style="text-align:center; color:#ccc;">
-							Audio features are not available for this track.<br>
-							Showing analysis for the closest available track instead:
-							<strong>${analysisTrack.name}</strong>
-						</p>
-					`;
-				}
-			} else {
+				const vis = document.getElementByID("visualisation");
 				if (vis) {
 					vis.innerHTML = `
 						<p style="text-align:center;">
-							❌ No audio features are available for this track or its recommendations.
-							<br>Please try another song.
+							Audio features are not available for this track.
+							<br/>Please try another song							
+						</p>
+					`;
+				}
+				
+				const recs = document.getElementByID("recommendations");
+				if (recs) recs.innerHTML = "";
+				return;
+			}
+		
+			// Draw seed radar
+			drawAudioFeaturesChart(track, seedFeatures);
+			
+			const recommendations = await fetchReccoBeatsRecommendations(track.id, 40);
+			if (!recommendations.length) {
+				const recs = document.getElementByID("recommendations");
+				if (recs) {
+					recs.innerHTML = `
+						<p style="text-align:center; opacity:0.85;">
+							No recommendations available for this track.
 						</p>
 					`;
 				}
 				return;
 			}
-		}
-
-		// Draw seed radar
-		drawAudioFeaturesChart(analysisTrack, seedFeatures);
 
 		// Genre filter
 		const filteredIds = await filterRecommendationsByGenre(token, analysisTrack.id, recSpotifyIds, 12);
