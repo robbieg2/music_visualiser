@@ -79,7 +79,6 @@ async function getTrackFeaturesFromReccoBeats(spotifyTrackId, spotifyToken = nul
 }
 
 async function getManyFeaturesFromReccoBeats(spotifyIds) {
-    // Batch call: ids=ID1,ID2,ID3...
     const url = `${RECCOBEATS_BASE}/audio-features?ids=${encodeURIComponent(spotifyIds.join(","))}`;
     const res = await fetch(url);
 
@@ -381,7 +380,7 @@ function similarityScore(seed, rec) {
     if (wsum === 0) return 0;
     return 1 - d / wsum;
 }
-
+/*
 function drawSimilarityBarChart(rows) {
     const container = document.getElementById("sim-bar");
     if (!container) return;
@@ -446,7 +445,7 @@ function drawSimilarityBarChart(rows) {
         .attr("fill", "#fff")
         .attr("font-size", "12px")
         .text((d) => d.score.toFixed(2));
-}
+} */
 
 function drawSimilarityScatter(seedFeatures, rows) {
     const container = document.getElementById("sim-scatter");
@@ -669,7 +668,7 @@ async function init() {
             .sort((a, b) => b.score - a.score);
 
         // Draw both visuals
-        drawSimilarityBarChart(rows.slice(0, 10));
+//        drawSimilarityBarChart(rows.slice(0, 10));
         drawSimilarityScatter(seedFeatures, rows.slice(0, 15));
     } catch (err) {
         console.error(err);
