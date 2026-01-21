@@ -634,7 +634,7 @@ async function init() {
 					
 					const meta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks/${fallbackId}`);
 					
-					analysisTrack = (
+					analysisTrack = {
 					id: meta.id,
 					name: meta.name,
 					artists: (meta.artists || []).map(a => a.name),
