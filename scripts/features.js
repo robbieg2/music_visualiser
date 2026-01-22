@@ -337,13 +337,6 @@ async function filterRecommendationsByGenre(token, seedTrackId, recSpotifyIds, k
 		for (const g of trackNorm) if (seedSet.has(g)) shared++;
 		
 		const score = jaccardSimilarity(seedNorm, trackNorm);
-
-		console.table(filtered.slice(0, 10).map(x => ({
-			id: x.id,
-			shared: x.shared,
-			score: x.score.toFixed(3),
-			genres: x.genres.slice(0, 6).join(", ")
-		})));
 		
         return {
             id: t.id,
@@ -364,6 +357,13 @@ async function filterRecommendationsByGenre(token, seedTrackId, recSpotifyIds, k
 		filtered = scored
 			.sort((a, b) => (b.shared - a.shared) || (b.score - a.score));
 	}
+	
+	console.table(filtered.slice(0, 10).map(x => ({
+		id: x.id,
+		shared: x.shared,
+		score: x.score.toFixed(3),
+		genres: x.genres.slice(0, 6).join(", ")
+	})));
 
     return filtered.slice(0, keep).map((x) => x.id);
 }
