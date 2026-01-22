@@ -779,7 +779,7 @@ async function init() {
                           name: t.name,
                           artists: (t.artists || []).map((a) => a.name),
                           image: t.album?.images?.[0]?.url || "",
-                    } : { id, name: "Recommended", artists: [], image: "" };              
+                    } : { id, name: "Recommended", artists: [], image: "" }             
                 };
             })
             .filter(Boolean)
