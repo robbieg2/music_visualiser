@@ -15,7 +15,6 @@ function chunk(arr, size) {
     return out;
 }
 
-
 function extractSpotifyIdFromHref(href) {
     if (!href) return null;
     const match = href.match(/open\.spotify\.com\/track\/([A-Za-z0-9]+)/);
@@ -283,25 +282,37 @@ async function getSeedGenres(token, seedTrackId) {
 
     const artistGenresMap = await getArtistsGenres(token, seedArtistIds);
 
-    const seedGenres = new Set();
-    seedArtistIds.forEach((id) => (artistGenresMap.get(id) || []).forEach((g) => seedGenres.add(g)));
-    return seedGenres;
+    const seedGenres = [];
+    seedArtistIds.forEach(id => seedGenres.push(...(artistGenresMap.get(id) || [])));
+    
+	const norm = normaliseGenres(seedGenres);
+	
+	const MAX_SEED_GENRES = 8;
+	return new Set(norm.slice(0, MAX_SEED_GENRES));
 }
 
-function genreOverlapScore(seedGenresSet, trackGenres) {
-    if (!seedGenresSet || seedGenresSet.size === 0) return 0;
-    if (!trackGenres || trackGenres.length === 0) return 0;
-
-    let hits = 0;
-    trackGenres.forEach((g) => {
-        if (seedGenresSet.has(g)) hits++;
-    });
-
-    return hits / seedGenresSet.size;
+function normaliseGenres(genres) {
+	return [...new Set((genres || [])
+		.map(g => String(g).toLowerCase().trim())
+		.filter(Boolean)
+	)];
 }
 
+function jaccardSimilarity(aList, bList) {
+	const a = new Set(normaliseGenres(aList));
+	const b = new Set(normaliseGenres(bList));
+	if (a.size === 0 || b.size === 0) return 0;
+	
+	let intersection = 0;
+	for (const g of a) if (b.has(g)) intersection++;
+
+	const union = a.size + b.size - intersection;
+	return union === 0 ? 0 : intersection / union;
+}
+	
 async function filterRecommendationsByGenre(token, seedTrackId, recSpotifyIds, keep = 10) {
     const seedGenres = await getSeedGenres(token, seedTrackId);
+	const seedGenres = [...seedGenresSet];
 
     if (seedGenres.size === 0) return recSpotifyIds.slice(0, keep);
 
@@ -315,19 +326,44 @@ async function filterRecommendationsByGenre(token, seedTrackId, recSpotifyIds, k
     const artistGenresMap = await getArtistsGenres(token, allArtistIds);
 
     const scored = tracks.map((t) => {
-        const genres = [];
-        (t.artists || []).forEach((a) => genres.push(...(artistGenresMap.get(a.id) || [])));
-        const uniqueGenres = [...new Set(genres)];
+        const trackGenres = [];
+        (t.artists || []).forEach((a) => trackGenres.push(...(artistGenresMap.get(a.id) || [])));
+        
+		const seedNorm = normaliseGenres(seedGenres);
+		const trackNorm = normaliseGenres(trackGenres);
+		
+		const seedSet = new Set(seedNorm);
+		let shared = 0;
+		for (const g of trackNorm) if (seedSet.has(g)) shared++;
+		
+		const score = jaccardSimilarity(seedNorm, trackNorm);
 
+		console.table(filtered.slice(0, 10).map(x => ({
+			id: x.id,
+			shared: x.shared,
+			score: x.score.toFixed(3),
+			genres: x.genres.slice(0, 6).join(", ")
+		})));
+		
         return {
             id: t.id,
-            score: genreOverlapScore(seedGenres, uniqueGenres),
-            genres: uniqueGenres,
+            score,
+			shared,
+            genres: trackNorm,
         };
     });
-
-    const filtered = scored.filter((x) => x.score > 0).sort((a, b) => b.score - a.score);
-    if (filtered.length === 0) return recSpotifyIds.slice(0, keep);
+	
+	const MIN_SHARED = 2;
+	const MIN_JACCARD = 0.12;
+	
+	let filtered = scored
+		.filter(x => x.shared >= MIN_SHARED || x.score >= MIN_JACCARD)
+		.sort((a, b) => (b.shared - a.shared) || (b.score - a.score));
+		
+	if (filtered.length < keep) {
+		filtered = scored
+			.sort((a, b) => (b.shared - a.shared) || (b.score - a.score));
+	}
 
     return filtered.slice(0, keep).map((x) => x.id);
 }
