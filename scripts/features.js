@@ -786,7 +786,7 @@ async function init() {
 		const seedMeta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks/${track.id}`);
 		const reranked = rerankByAudioPlusMeta(seedFeatures, seedMeta, rows);
 		
-		const top = reranked.slice(0, 10);
+		const top10 = reranked.slice(0, 10);
 		const top15 = reranked.slice(0, 15);
 		
 		renderRecommendations(top10.map(r => r.id));
