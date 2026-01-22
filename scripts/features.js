@@ -309,6 +309,47 @@ function jaccardSimilarity(aList, bList) {
 	const union = a.size + b.size - intersection;
 	return union === 0 ? 0 : intersection / union;
 }
+
+function getYearFromReleaseDate(dateStr) {
+    if (!dateStr) return null;
+    const y = Number(String(dateStr).slice(0, 4));
+    return Number.isFinite(y) ? y : null;
+}
+
+function clamp01(x) {
+    return Math.max(0, Math.min(1, x));
+}
+
+function popularitySimilarity(seedPop, recPop) {
+    if (!Number.isFinite(seedPop) || !Number.isFinite(recPop)) return 0.5;
+    return clamp01(1 - Math.abs(seedPop - recPop) / 100);
+}
+
+function yearSimilarity(seedYear, recYear) {
+    if (!Number.isFinite(seedYear) || !Number.isFinite(recYear)) return 0.5;
+    const diff = Math.min(Math.abs(seedYear - recYear), 20);
+    return clamp01(1 - diff / 20);
+}
+
+function rerankByAudioPlusMeta(seedFeatures, seedMeta, rows) {
+    const seedPop = Number(seedMeta?.popularity);
+    const seedYear = getYearFromReleaseDate(seedMeta?.album?.release_date);
+
+    return rows
+        .map(r => {
+            const recPop = Number(r.meta?.popularity);
+            const recYear = getYearFromReleaseDate(r.meta?.album?.release_date);
+
+            const audio = r.score; // your similarityScore(seedFeatures, recFeatures)
+            const pop = popularitySimilarity(seedPop, recPop);
+            const year = yearSimilarity(seedYear, recYear);
+
+            const finalScore = 0.75 * audio + 0.15 * pop + 0.10 * year;
+
+            return { ...r, finalScore, pop, year };
+        })
+        .sort((a, b) => b.finalScore - a.finalScore);
+}
 	
 async function filterRecommendationsByGenre(token, seedTrackId, recSpotifyIds, keep = 10) {
     const seedGenresSet = await getSeedGenres(token, seedTrackId);
@@ -739,10 +780,15 @@ async function init() {
                     features: f,
                     score: similarityScore(seedFeatures, f),
                     track: trackObj,
+					meta: t || null,
                 };
             })
             .filter(Boolean)
             .sort((a, b) => b.score - a.score);
+			
+		const seedMeta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks/${track.id}`);
+		const reranked = rerankByAudioPlusMeta(seedFeatures, seedMeta, rows);
+		const top = reranked.slice(0, 10);
 
         // Draw both visuals
         drawSimilarityBarChart(rows.slice(0, 10));
