@@ -355,7 +355,10 @@ async function filterRecommendationsByGenre(token, seedTrackId, recSpotifyIds, k
     const seedGenresSet = await getSeedGenres(token, seedTrackId);
 	const seedGenres = [...seedGenresSet];
 
-    if (seedGenres.size === 0) return recSpotifyIds.slice(0, keep);
+    if (seedGenresSet.size === 0) return recSpotifyIds.slice(0, keep);
+	
+	const seedNorm = normaliseGenres(seedGenres);
+	const seedSet = new Set(seedNorm);
 
     const tracks = [];
     for (const group of chunk(recSpotifyIds, 50)) {
@@ -370,10 +373,8 @@ async function filterRecommendationsByGenre(token, seedTrackId, recSpotifyIds, k
         const trackGenres = [];
         (t.artists || []).forEach((a) => trackGenres.push(...(artistGenresMap.get(a.id) || [])));
         
-		const seedNorm = normaliseGenres(seedGenres);
 		const trackNorm = normaliseGenres(trackGenres);
 		
-		const seedSet = new Set(seedNorm);
 		let shared = 0;
 		for (const g of trackNorm) if (seedSet.has(g)) shared++;
 		
@@ -395,8 +396,7 @@ async function filterRecommendationsByGenre(token, seedTrackId, recSpotifyIds, k
 		.sort((a, b) => (b.shared - a.shared) || (b.score - a.score));
 		
 	if (filtered.length < keep) {
-		filtered = scored
-			.sort((a, b) => (b.shared - a.shared) || (b.score - a.score));
+		filtered = scored.sort((a, b) => (b.shared - a.shared) || (b.score - a.score));
 	}
 	
 	console.table(filtered.slice(0, 10).map(x => ({
@@ -751,9 +751,6 @@ async function init() {
         // Genre filter
         const filteredIds = await filterRecommendationsByGenre(token, track.id, recSpotifyIds, 12);
 
-        // Render embeds
-        renderRecommendations(filteredIds.slice(0, 10));
-
         // Feature + metadata enrichment for visuals
         const recFeaturesMap = await getManyFeaturesFromReccoBeats(filteredIds);
 
@@ -788,7 +785,11 @@ async function init() {
 			
 		const seedMeta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks/${track.id}`);
 		const reranked = rerankByAudioPlusMeta(seedFeatures, seedMeta, rows);
+		
 		const top = reranked.slice(0, 10);
+		const top15 = reranked.slice(0, 15);
+		
+		renderRecommendations(top10.map(r => r.id));
 
         // Draw both visuals
         drawSimilarityBarChart(rows.slice(0, 10));
