@@ -719,7 +719,17 @@ async function init() {
 
         // Recommendations
         const recommendations = await fetchReccoBeatsRecommendations(track.id, 40);
-
+		const recSpotifyIds = recommendations
+			.map((r) => r.spotifyId || extractSpotifyIdFromHref(r.href))
+			.filter(Boolean);
+			
+		const poolIds = recSpotifyIds.slice(0, 30);
+		
+		// Feature + metadata enrichment for visuals
+        const recFeaturesMap = await getManyFeaturesFromReccoBeats(filteredIds);
+		const meta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks?ids=${filteredIds.join(",")}`);
+        const metaMap = new Map((meta.tracks || []).filter(Boolean).map((t) => [t.id, t]));	
+/*		
         if (!recommendations.length) {
             const recs = document.getElementById("recommendations");
             if (recs) {
@@ -732,9 +742,7 @@ async function init() {
             return;
         }
 
-        const recSpotifyIds = recommendations
-            .map((r) => r.spotifyId || extractSpotifyIdFromHref(r.href))
-            .filter(Boolean);
+        
 
         if (!recSpotifyIds.length) {
             const recs = document.getElementById("recommendations");
@@ -751,44 +759,45 @@ async function init() {
         // Genre filter
         const filteredIds = await filterRecommendationsByGenre(token, track.id, recSpotifyIds, 12);
 
-        // Feature + metadata enrichment for visuals
-        const recFeaturesMap = await getManyFeaturesFromReccoBeats(filteredIds);
+*/        
 
-        const meta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks?ids=${filteredIds.join(",")}`);
-        const metaMap = new Map((meta.tracks || []).filter(Boolean).map((t) => [t.id, t]));
+        
 
-        const rows = filteredIds
+        const rows = poolIds
             .map((id) => {
                 const f = recFeaturesMap.get(id);
                 if (!f) return null;
 
                 const t = metaMap.get(id);
-                const trackObj = t
-                    ? {
+				return {
+                    id,
+                    features: f,
+                    score: similarityScore(seedFeatures, f),
+					meta: t || null,
+					track: t ? {
                           id: t.id,
                           name: t.name,
                           artists: (t.artists || []).map((a) => a.name),
                           image: t.album?.images?.[0]?.url || "",
-                      }
-                    : { id, name: "Recommended", artists: [], image: "" };
-
-                return {
-                    id,
-                    features: f,
-                    score: similarityScore(seedFeatures, f),
-                    track: trackObj,
-					meta: t || null,
+                    } : { id, name: "Recommended", artists: [], image: "" };              
                 };
             })
             .filter(Boolean)
-            .sort((a, b) => b.score - a.score);
 			
+		console.log("Rows:", rows.length);
+		console.log("Missing meta:", rows.filter(r => !r.meta).length);
+		console.log("Missing features:", rows.filter(r => !r.features).length);
+		console.table(rows.slice(0, 10).map(r => ({
+			id: r.id,
+			audio: r.score?.toFixed?.(3),
+			pop: r.meta?.popularity ?? null,
+			year: r.meta?.album?.release_date ?? null
+		})));
+		
 		const seedMeta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks/${track.id}`);
 		const reranked = rerankByAudioPlusMeta(seedFeatures, seedMeta, rows);
 		
-		const top10 = reranked.slice(0, 10);
-		const top15 = reranked.slice(0, 15);
-		
+		const top10 = reranked.slice(0, 10);		
 		renderRecommendations(top10.map(r => r.id));
 
         // Draw both visuals
