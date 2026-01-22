@@ -817,8 +817,8 @@ async function init() {
 		renderRecommendations(top10.map(r => r.id));
 
         // Draw both visuals
-        drawSimilarityBarChart(top10));
-        drawSimilarityScatter(seedFeatures, top15));
+        drawSimilarityBarChart(top10);
+        drawSimilarityScatter(seedFeatures, top15);
     } catch (err) {
         console.error(err);
     }
