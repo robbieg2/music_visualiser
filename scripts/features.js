@@ -729,6 +729,8 @@ async function init() {
         const recFeaturesMap = await getManyFeaturesFromReccoBeats(poolIds);
 		const meta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks?ids=${poolIds.join(",")}`);
         const metaMap = new Map((meta.tracks || []).filter(Boolean).map((t) => [t.id, t]));	
+		
+		
 /*		
         if (!recommendations.length) {
             const recs = document.getElementById("recommendations");
@@ -795,14 +797,28 @@ async function init() {
 		})));
 		
 		const seedMeta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks/${track.id}`);
+		
+		console.log("BEFORE (top 10 by audio):", rows
+			.slice()
+			.sort((a, b) => b.score - a.score)
+			.slice(0, 10)
+			.map(r => ({ id: r.id, audio: r.score.toFixed(3), pop: r.meta?.popularity }))
+		);
+		
 		const reranked = rerankByAudioPlusMeta(seedFeatures, seedMeta, rows);
 		
-		const top10 = reranked.slice(0, 10);		
+		console.log("AFTER (top 10 by final):", reranked
+			.slice(0, 10)
+			.map(r => ({ id: r.id, audio: r.score.toFixed(3), pop: r.meta?.popularity, year: r.meta?.album?.release_date, final: r.finalScore.toFixed(3) }))
+		);
+		
+		const top10 = reranked.slice(0, 10);	
+		const top15 = reranked.slice(0, 15);		
 		renderRecommendations(top10.map(r => r.id));
 
         // Draw both visuals
-        drawSimilarityBarChart(rows.slice(0, 10));
-        drawSimilarityScatter(seedFeatures, rows.slice(0, 15));
+        drawSimilarityBarChart(top10));
+        drawSimilarityScatter(seedFeatures, top15));
     } catch (err) {
         console.error(err);
     }
