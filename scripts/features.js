@@ -311,7 +311,7 @@ function jaccardSimilarity(aList, bList) {
 }
 	
 async function filterRecommendationsByGenre(token, seedTrackId, recSpotifyIds, keep = 10) {
-    const seedGenres = await getSeedGenres(token, seedTrackId);
+    const seedGenresSet = await getSeedGenres(token, seedTrackId);
 	const seedGenres = [...seedGenresSet];
 
     if (seedGenres.size === 0) return recSpotifyIds.slice(0, keep);
