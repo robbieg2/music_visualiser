@@ -727,7 +727,7 @@ async function init() {
 		
 		// Feature + metadata enrichment for visuals
         const recFeaturesMap = await getManyFeaturesFromReccoBeats(poolIds);
-		const meta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks?ids=${filteredIds.join(",")}`);
+		const meta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks?ids=${poolIds.join(",")}`);
         const metaMap = new Map((meta.tracks || []).filter(Boolean).map((t) => [t.id, t]));	
 /*		
         if (!recommendations.length) {
