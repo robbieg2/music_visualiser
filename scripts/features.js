@@ -15,12 +15,12 @@ function chunk(arr, size) {
     return out;
 }
 
-/*
+
 function extractSpotifyIdFromHref(href) {
     if (!href) return null;
     const match = href.match(/open\.spotify\.com\/track\/([A-Za-z0-9]+)/);
     return match ? match[1] : null;
-} */
+}
 
 async function spotifyFetch(token, url) {
     const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
