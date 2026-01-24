@@ -63,7 +63,7 @@ function hideVisualSections() {
 	}
 }
 
-functions showVisualSections() {
+function showVisualSections() {
 	const noFeat = document.getElementById("no-features");
 	const recsCard = document.getElementById("recs-card");
 	
