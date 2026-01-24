@@ -44,13 +44,22 @@ function hideVisualSections() {
 	const vis = document.getElementById("visualisation");
 	const simBar = document.getElementById("sim-bar");
 	const simScatter = document.getElementById("sim-scatter");
-	const recsCard = document.getElementById("recs-card");
 	const noFeat = document.getElementById("no-features");
+	
+	const radarCard = document.getElementById("card-radar");
+	const barCard = document.getElementById("card-bar");
+	const scatterCard = document.getElementById("card-scatter");
+	const recsCard = document.getElementById("recs-card");
 	
 	if (vis) vis.innerHTML = "";
 	if (simBar) simBar.innerHTML = "";
 	if (simScatter) simScatter.innerHTML = "";
+	
 	if (recsCard) recsCard.style.display = "none";
+	if (scatterCard) scatterCard.style.display = "none";
+	if (barCard) barCard.style.display = "none";
+	
+	if (radarCard) radarCard.style.dispaly = "block";
 	
 	if (noFeat) {
 		noFeat.style.display = "block";
@@ -65,14 +74,21 @@ function hideVisualSections() {
 
 function showVisualSections() {
 	const noFeat = document.getElementById("no-features");
+	
+	const radarCard = document.getElementById("card-radar");
+	const barCard = document.getElementById("card-bar");
+	const scatterCard = document.getElementById("card-scatter");
 	const recsCard = document.getElementById("recs-card");
+	
+	if (recsCard) recsCard.style.display = "block";
+	if (scatterCard) scatterCard.style.display = "block";
+	if (barCard) barCard.style.display = "block";	
+	if (radarCard) radarCard.style.dispaly = "block";
 	
 	if (noFeat) {
 		noFeat.style.display = "none";
 		noFeat.innerHTML = "";
 	}
-	
-	if (recsCard) recsCard.style.display = "block";
 }
 
 // Recommendations
