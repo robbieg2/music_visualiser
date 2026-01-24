@@ -92,9 +92,9 @@ export function drawSimilarityBarChart(rows) {
     if (!container) return;
     container.innerHTML = "";
 
-    const width = 760;
+    const width = Math.min(560, container.clientWidth || 560);
     const height = 360;
-    const margin = { top: 20, right: 20, bottom: 40, left: 260 };
+    const margin = { top: 20, right: 20, bottom: 40, left: 220 };
     const innerW = width - margin.left - margin.right;
     const innerH = height - margin.top - margin.bottom;
 
@@ -160,7 +160,7 @@ export function drawSimilarityScatter(seedFeatures, rows) {
     const xSel = document.getElementById("x-feature");
     const ySel = document.getElementById("y-feature");
 
-    const width = 760;
+    const width = Math.min(560, container.clientWidth || 560);
     const height = 420;
     const margin = { top: 20, right: 20, bottom: 50, left: 60 };
 

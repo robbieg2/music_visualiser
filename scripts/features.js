@@ -21,19 +21,21 @@ function renderTrackHeader(track) {
     const artists = (track.artists || []).join(", ");
 
     trackInfo.innerHTML = `
-        ${track.image ? `<img src="${track.image}" width="160" height="160" style="border-radius:12px;">` : ""}
-        <h1 style="margin-top:15px;">${track.name}</h1>
-        <p style="opacity:0.8;">${artists}</p>
+		<div class="seed-header">
+			${track.image ? `<img class="seed-cover" src="${track.image}" alt="Album cover">` : ""}
+			
+			<div class="seed-meta">
+				<h1 class="seed-title">${track.name}</h1>
+				<p class="seed-artists">${artists}</p>
 
-        <div style="margin-top:20px; display:flex; justify-content:center;">
-            <iframe
-                src="https://open.spotify.com/embed/track/${track.id}"
-                width="360"
-                height="80"
-                frameborder="0"
-                allowtransparency="true"
-                allow="encrypted-media">
-            </iframe>
+				<iframe
+					class="seed-embed"
+					src="https://open.spotify.com/embed/track/${track.id}"
+					frameborder="0"
+					allowtransparency="true"
+					allow="encrypted-media">
+				</iframe>
+			</div>
         </div>
     `;
 }
