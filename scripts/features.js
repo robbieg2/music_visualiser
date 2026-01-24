@@ -40,23 +40,39 @@ function renderTrackHeader(track) {
     `;
 }
 
-function showNoFeaturesMessage(message) {
+function hideVisualSections() {
 	const vis = document.getElementById("visualisation");
 	const simBar = document.getElementById("sim-bar");
 	const simScatter = document.getElementById("sim-scatter");
+	const recsCard = document.getElementById("recs-card");
+	const noFeat = document.getElementById("no-features");
 	
-	if (vis) vis.innerHTML = `<p style="text-align:center;">${message}</p>`;
+	if (vis) vis.innerHTML = "";
 	if (simBar) simBar.innerHTML = "";
 	if (simScatter) simScatter.innerHTML = "";
+	if (recsCard) recsCard.style.display = "none";
 	
-	const recs = document.getElementById("recommendations");
-	if (recs) {
-		recs.innerHTML = `
-			<p style="text-align:center; opacity:0.85;">
-				Recommednations.
+	if (noFeat) {
+		noFeat.style.display = "block";
+		noFeat.innerHTML = `
+			<p style="text-align:center;">
+				No audio features available for this track.
+				<br/>Try another song.
 			</p>
-		`;
+		`;		
 	}
+}
+
+functions showVisualSections() {
+	const noFeat = document.getElementById("no-features");
+	const recsCard = document.getElementById("recs-card");
+	
+	if (noFeat) {
+		noFeat.style.display = "none";
+		noFeat.innerHTML = "";
+	}
+	
+	if (recsCard) recsCard.style.display = "block";
 }
 
 // Recommendations
@@ -135,11 +151,11 @@ async function init() {
         const seedFeatures = await getTrackFeaturesFromReccoBeats(track.id, token);
 
         if (!seedFeatures) {
-			showNoFeaturesMessage(
-				`Audio features are not available for this track.<br/>Please try another song.`
-			);
+			hideVisualSections();
 			return;
         }
+		
+		showVisualSections();
 
         // Draw seed radar
         drawAudioFeaturesChart(track, seedFeatures);
