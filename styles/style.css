@@ -110,3 +110,42 @@ button {
 .features-btn:hover {
 	background: #17a44d;
 }
+
+.grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 18px;
+	margin-top:20px;
+}
+
+.card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 16px;
+}
+
+.span-2 {
+    grid-column: 1 / -1;
+}
+
+.row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+.muted {
+    opacity: 0.85;
+    text-align: center;
+    padding: 12px;
+}
+
+.controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin: 8px 0 12px;
+    flex-wrap: wrap;
+}
+	

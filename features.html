@@ -18,44 +18,56 @@
 		<button id="logout-btn" style="position:absolute; right:20px; top:20px;">Logout</button>
 	</header>
 	
-	<section id="track-info" style="margin-top:70px; text-align:center;"></section>
-	<section id="visualisation" style="margin:40px;"></section>
-	<section id="rec-viz" style="margin-top: 40px;">
-		<h2 style="text-align:center;">Recommendation Visualisations</h2>
+	<div id="track-info" style="margin-top:70px; text-align:center;"></div>
+	
+	<div class="grid">
+		<section class="card">
+			<div id="visualisation"></div>
+			<div id="no-features" class="muted" style="display:none;"></div>
+		</section>
 		
-		<div id="sim-bar" style="display:flex; justify-content:center; margin-top:20px;"></div>
+		<section class="card">
+			<div id="recommendations"></div>
+		</section>
 		
-		<div style="margin-top:40px;">
-			<div style="display:flex; justify-content:center; gap:12px; align-items:center; flex-wrap:wrap;">
-				<label style="opacity:0.9;">X axis:</label>
-				<select id="x-feature">
-					<option value="energy">Energy</option>
-					<option value="daneability">Danceability</option>
-					<option value="valence">Valence</option>
-					<option value="acousticness">Acousticness</option>
-					<option value="speechiness">Speechiness</option>
-					<option value="instrumentalness">Instrumentalness</option>
-					<option value="tempo">Tempo</option>
-				</select>
+		<section class="card span-2">
+			<div class="row">
+				<div>
+					<h3>Similarity (Bar)</h3>
+					<div id="sim-bar"></div>
+				</div>
 				
-				<label style="opacity:0.9;">Y axis:</label>
-				<select id="y-feature">
-				<option value="valence">Valence</option>
-					<option value="energy">Energy</option>
-					<option value="danceability">Danceability</option>					
-					<option value="acousticness">Acousticness</option>
-					<option value="speechiness">Speechiness</option>
-					<option value="instrumentalness">Instrumentalness</option>
-					<option value="tempo">Tempo</option>
-				</select>
+				<div>
+					<h3>Similarity (Scatter)</h3>
+					<div class="contols">
+						<label>X:
+							<select id="x-feature">
+								<option value="energy">Energy</option>
+								<option value="danceability">Danceability</option>
+								<option value="valence">Valence</option>
+								<option value="acousticness">Acousticness</option>
+								<option value="speechiness">Speechiness</option>
+								<option value="instrumentalness">Instrumentalness</option>
+								<option value="tempo">Tempo</option>
+							</select>
+						</label>
+						<label>Y:
+							<select id="y-feature">
+								<option value="valence">Valence</option>
+								<option value="energy">Energy</option>
+								<option value="danceability">Danceability</option>					
+								<option value="acousticness">Acousticness</option>
+								<option value="speechiness">Speechiness</option>
+								<option value="instrumentalness">Instrumentalness</option>
+								<option value="tempo">Tempo</option>
+							</select>
+						</label>
+					</div>
+					<div id="sim-scatter"></div>
+				</div>
 			</div>
-			
-			<div id="sim-scatter" style="display:flex; justify-content:center; margin-top:20px;"></div>
-			<p style="text-align:center; opacity:0.8; margin-top:10px;">
-				Tip: Click a bar/dot to open that track's audio features.
-			</p>
-		</div>
-	</section>
+		</section>
+	</div>									
 		
 	<section id="recommendations"></section>
 	

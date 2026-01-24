@@ -38,6 +38,25 @@ function renderTrackHeader(track) {
     `;
 }
 
+function showNoFeaturesMessage(message) {
+	const vis = document.getElementById("visualisation");
+	const simBar = document.getElementById("sim-bar");
+	const simScatter = document.getElementById("sim-scatter");
+	
+	if (vis) vis.innerHTML = `<p style="text-align:center;">${message}</p>`;
+	if (simBar) simBar.innerHTML = "";
+	if (simScatter) simScatter.innerHTML = "";
+	
+	const recs = document.getElementById("recommendations");
+	if (recs) {
+		recs.innerHTML = `
+			<p style="text-align:center; opacity:0.85;">
+				Recommednations.
+			</p>
+		`;
+	}
+}
+
 // Recommendations
 function renderRecommendations(spotifyIds) {
     const container = document.getElementById("recommendations");
@@ -114,19 +133,10 @@ async function init() {
         const seedFeatures = await getTrackFeaturesFromReccoBeats(track.id, token);
 
         if (!seedFeatures) {
-            const v = document.getElementById("visualisation");
-            if (v) {
-                v.innerHTML = `
-                    <p style="text-align:center;">
-                        Audio features are not available for this track.
-                        <br/>Please try another song.
-                    </p>
-                `;
-            }
-
-            const recs = document.getElementById("recommendations");
-            if (recs) recs.innerHTML = "";
-            return;
+			showNoFeaturesMessage(
+				`Audio features are not available for this track.<br/>Please try another song.`
+			);
+			return;
         }
 
         // Draw seed radar
