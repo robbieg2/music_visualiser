@@ -39,7 +39,7 @@ export function drawMultiRadarChart(series) {
     const height = 460;
     const radius = Math.min(width, height) / 2 - 70;
     const levels = 5;
-    const angleSlice = (Math.PI * 2) / data.length;
+    const angleSlice = (Math.PI * 2) / axes.length;
 
     const svg = d3.select("#visualisation")
         .append("svg")
