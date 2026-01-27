@@ -57,7 +57,7 @@ export function drawMultiRadarChart(series) {
             .style("stroke", "#444");
     }
 
-    data.forEach((d, i) => {
+    axes.forEach((d, i) => {
         const angle = angleSlice * i - Math.PI / 2;
         const x = rScale(1.05) * Math.cos(angle);
         const y = rScale(1.05) * Math.sin(angle);
