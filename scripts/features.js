@@ -61,7 +61,7 @@ function hideVisualSections() {
 	
 	if (radarCard) {
 		radarCard.style.dispaly = "block";
-		radarCard.cardList.add("centered-message");
+		radarCard.classList.add("centered-message");
 	}
 	
 	if (noFeat) {
@@ -85,8 +85,11 @@ function showVisualSections() {
 	
 	if (recsCard) recsCard.style.display = "block";
 	if (scatterCard) scatterCard.style.display = "block";
-	if (barCard) barCard.style.display = "block";	
-	if (radarCard) radarCard.style.dispaly = "block";
+	if (barCard) barCard.style.display = "block";
+	
+	if (radarCard) {
+		radarCard.style.dispaly = "block";
+		radarCard.classList.remove("centered-message");
 	
 	if (noFeat) {
 		noFeat.style.display = "none";
