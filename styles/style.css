@@ -209,7 +209,7 @@ button {
     }
 }
 
-.card.centered.message {
+.card.centered-message {
 	grid-column: 1 / -1;
 	display: flex !important;
 	align-items: center;

@@ -60,7 +60,7 @@ function hideVisualSections() {
 	if (barCard) barCard.style.display = "none";
 	
 	if (radarCard) {
-		radarCard.style.dispaly = "block";
+		radarCard.style.display = "block";
 		radarCard.classList.add("centered-message");
 	}
 	

@@ -12,7 +12,7 @@ export function drawAudioFeaturesChart(track, features) {
         { name: "Valence", value: Number(features.valence) },
         { name: "Speechiness", value: Number(features.speechiness) },
         { name: "Acousticness", value: Number(features.acousticness) },
-        { name: "Instrumental", value: Number(features.instrumentalness) },
+        { name: "Instrumentalness", value: Number(features.instrumentalness) },
     ].filter((d) => Number.isFinite(d.value));
 
     if (!data.length) {
