@@ -210,10 +210,13 @@ button {
 }
 
 .card.centered.message {
-	display: flex;
+	grid-column: 1 / -1;
+	display: flex !important;
 	align-items: center;
 	justify-content: center;
 	min-height: 420px;
 	text-align: center;
+	max-width: 520px;
+	margin: 0 auto;
 }
 	
