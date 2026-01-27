@@ -138,7 +138,7 @@ export function drawMultiRadarChart(series) {
 		
 	normalized.forEach((s, idx) => {
 		const color = s.isSeed ? palette[0] : palette[(idx % (palette.length - 1)) + 1];
-		const key = ccsSafeId(s.id);
+		const key = cssSafeId(s.id);
 		
 		const item = legend.append("button")
 			.attr("type", "button")
