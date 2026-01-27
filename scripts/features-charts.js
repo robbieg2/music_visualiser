@@ -19,7 +19,7 @@ export function drawMultiRadarChart(series) {
 			.replace(/[^a-zA-Z0-9_-]/g, "_");
 	}
 	
-	function setServiceVisible(svgRoot, seriesId, visible) {
+	function setSeriesVisible(svgRoot, seriesId, visible) {
 		const key = cssSafeId(seriesId);
 		svgRoot.selectAll(`.series-${key}`)
 			.style("display", visible ? null : "none");
