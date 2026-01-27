@@ -7,12 +7,12 @@ export function drawMultiRadarChart(series) {
     d3.select("#visualisation").selectAll("svg").remove();
 
     const axes = [
-        { key: "Danceability", label: "Danceability" },
-        { key: "Energy", label: "Energy" },
-        { key: "Valence", label: "Valence" },
-        { key: "Speechiness", label: "Speechiness" },
-        { key: "Acousticness", label: "Acousticness" },
-        { key: "Instrumentalness", label: "Instrumental" },
+        { key: "danceability", label: "Danceability" },
+        { key: "energy", label: "Energy" },
+        { key: "valence", label: "Valence" },
+        { key: "speechiness", label: "Speechiness" },
+        { key: "acousticness", label: "Acousticness" },
+        { key: "instrumentalness", label: "Instrumental" },
     ];
 
 	const normalized = series
@@ -20,7 +20,7 @@ export function drawMultiRadarChart(series) {
 			const points = axes.map(a => ({
 				axis: a.label,
 				key: a.key,
-				value: Number(s.fearures?.[a.key])
+				value: Number(s.features?.[a.key])
 			})).map(p => ({
 				...p,
 				value: Number.isFinite(p.value) ? Math.max(0, Math.min(1, p.value)) : 0
@@ -35,9 +35,11 @@ export function drawMultiRadarChart(series) {
         return;
     }
 
-    const width = 460;
-    const height = 460;
-    const radius = Math.min(width, height) / 2 - 70;
+	console.log("Radar series sample:", normalized[0]);
+	
+    const width = 420;
+    const height = 420;
+    const radius = Math.min(width, height) / 2 - 50;
     const levels = 5;
     const angleSlice = (Math.PI * 2) / axes.length;
 
@@ -75,7 +77,7 @@ export function drawMultiRadarChart(series) {
             .style("fill", "#fff")
             .style("font-size", "12px")
             .style("text-anchor", "middle")
-            .text(d.name);
+            .text(d.label);
     });
 
     const radarLine = d3.lineRadial()
