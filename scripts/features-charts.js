@@ -13,6 +13,17 @@ export function drawMultiRadarChart(series) {
         { key: "acousticness", label: "Acousticness" },
         { key: "instrumentalness", label: "Instrumental" },
     ];
+	
+	function cssSafeId(id) {
+		return String(id || "")
+			.replace(/[^a-zA-Z0-9_-]/g, "_");
+	}
+	
+	function setServiceVisible(svgRoot, seriesId, visible) {
+		const key = cssSafeId(seriesId);
+		svgRoot.selectAll(`.series-${key}`)
+			.style("display", visible ? null : "none");
+	}
 
 	const normalized = series
 		.map(s => {
@@ -84,23 +95,22 @@ export function drawMultiRadarChart(series) {
         .angle((d, i) => i * angleSlice)
         .curve(d3.curveLinearClosed);
 		
+	const root = d3.select("#visualisation");	
 	const palette = ["#ffffff", "#1db954", "#3ea6ff", "#ff7a00", "#b26bff", "#ff4d6d"];
-	
-	const seedStrokeWidth = 3.5;
-	const recStrokeWidth = 1.6;
-	
+		
 	normalized.forEach((s, idx) => {
-		const stroke = s.isSeed ? "#ffffff" : palette[(idx % (palette.length - 1)) + 1];
+		const stroke = s.isSeed ? palette[0] : palette[(idx % (palette.length - 1)) + 1];
+		const key = cssSafeId(s.id);
 
 		svg.append("path")
 			.datum(s.points)
 			.attr("d", radarLine)
+			.attr("class", `radar-series series-${key}`)
 			.style("fill", stroke)
 			.style("fill-opacity", s.isSeed ? 0.08 : 0.03)
 			.style("stroke", stroke)
-			.style("stroke-width", s.isSeed ? seedStrokeWidth : recStrokeWidth)
-			.style("stroke-width", s.isSeed ? 1 : 0.7)
-			.style("opacity", 0.95);
+			.style("stroke-width", s.isSeed ? 3.5 : 1.6)
+			.style("opacity", s.isSeed ? 1 : 0.7);
 	});
 	
 	const seed = normalized.find(s => s.isSeed);
@@ -116,25 +126,37 @@ export function drawMultiRadarChart(series) {
 			.attr("fill", "#fff");
 	}
 	
-	const legend = d3.select("#visualisation")
-		.append("div")
+	const legend = root.append("div")
         .style("display", "flex")
         .style("gap", "12px")
         .style("flex-wrap", "wrap")
         .style("justify-content", "center")
         .style("margin-top", "10px");
 		
-	
+	const visibility = new Map();
+	normalized.forEach(s => visibility.set(cssSafeId(s.id), true));
 		
 	normalized.forEach((s, idx) => {
 		const color = s.isSeed ? palette[0] : palette[(idx % (palette.length - 1)) + 1];
+		const key = ccsSafeId(s.id);
 		
-		const item = legend.append("div")
+		const item = legend.append("button")
+			.attr("type, "button")
             .style("display", "flex")
             .style("align-items", "center")
             .style("gap", "8px")
             .style("font-size", "12px")
             .style("opacity", "0.9");
+			.style("background", "transparent")
+			.style("border", "1px solid rgba(255,255,255,0.14)")
+			.style("border-radius", "999px")
+			.style("padding", "6px 10px")
+			.style("cursor", "pointer");
+			
+		if (s.isSeed) {
+			item.style("cursor", "default");
+			item.on("click", null);
+		}
 
         item.append("span")
             .style("display", "inline-block")
@@ -145,6 +167,17 @@ export function drawMultiRadarChart(series) {
 
         item.append("span")
             .text(s.label.length > 34 ? s.label.slice(0, 34) + "…" : s.label);
+			
+		item.on("click", () => {
+			const isVisible = visibility.get(key);
+			const next = !isVisible;
+			
+			visibility.set(key, next);
+			setSeriesVisible(svg, s.id, next);
+			
+			item.style("opacity", next ? "0.95" : "0.35");
+			item.style("text-decoration", next ? "none" : "line-through");
+		});
     });
 }
 
