@@ -141,7 +141,7 @@ export function drawMultiRadarChart(series) {
 		const key = ccsSafeId(s.id);
 		
 		const item = legend.append("button")
-			.attr("type, "button")
+			.attr("type", "button")
             .style("display", "flex")
             .style("align-items", "center")
             .style("gap", "8px")
