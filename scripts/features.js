@@ -59,15 +59,18 @@ function hideVisualSections() {
 	if (scatterCard) scatterCard.style.display = "none";
 	if (barCard) barCard.style.display = "none";
 	
-	if (radarCard) radarCard.style.dispaly = "block";
+	if (radarCard) {
+		radarCard.style.dispaly = "block";
+		radarCard.cardList.add("centered-message");
+	}
 	
 	if (noFeat) {
 		noFeat.style.display = "block";
 		noFeat.innerHTML = `
-			<p style="text-align:center;">
-				No audio features available for this track.
-				<br/>Try another song.
-			</p>
+			<div>
+				<h3>No audio features available for this track</h3>
+				<p style="opacity:0.85;">Try another song</p>
+			</div>
 		`;		
 	}
 }

@@ -209,4 +209,11 @@ button {
     }
 }
 
+.card.centered.message {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 420px;
+	text-align: center;
+}
 	
