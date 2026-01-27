@@ -146,7 +146,7 @@ export function drawMultiRadarChart(series) {
             .style("align-items", "center")
             .style("gap", "8px")
             .style("font-size", "12px")
-            .style("opacity", "0.9");
+            .style("opacity", "0.9")
 			.style("background", "transparent")
 			.style("border", "1px solid rgba(255,255,255,0.14)")
 			.style("border-radius", "999px")
