@@ -90,6 +90,7 @@ function showVisualSections() {
 	if (radarCard) {
 		radarCard.style.dispaly = "block";
 		radarCard.classList.remove("centered-message");
+	}
 	
 	if (noFeat) {
 		noFeat.style.display = "none";
