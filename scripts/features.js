@@ -180,7 +180,7 @@ async function init() {
 		
 		showVisualSections();
 
-        // Draw seed radar
+        // Draw radar chart
         const radarSeries = [
 			{
 				label: `Seed: ${track.name}`,
@@ -196,8 +196,6 @@ async function init() {
 			}))
 		];
 		
-		drawMultiRadarChart(radarSeries);
-
         // Recommendations
         const recommendations = await fetchReccoBeatsRecommendations(track.id, 40);
         const recSpotifyIds = recommendations.map((r) => r.spotifyId || extractSpotifyIdFromHref(r.href)).filter(Boolean);
@@ -242,6 +240,7 @@ async function init() {
         renderRecommendations(top10.map((r) => r.id));
 
         // Draw both visuals
+		drawMultiRadarChart(radarSeries);
         drawSimilarityBarChart(top10);
         drawSimilarityScatter(seedFeatures, top15);
     } catch (err) {
