@@ -2,8 +2,7 @@
 
 export function drawMultiRadarChart(series) {
     const container = document.getElementById("visualisation");
-	
-    container.innerHTML = `<h2>Audio Features</h2>`;
+
     d3.select("#visualisation").selectAll("svg").remove();
 
     const axes = [
@@ -87,19 +86,35 @@ export function drawMultiRadarChart(series) {
 		
 	const palette = ["#ffffff", "#1db954", "#3ea6ff", "#ff7a00", "#b26bff", "#ff4d6d"];
 	
+	const seedStrokeWidth = 3.5;
+	const recStrokeWidth = 1.6;
+	
 	normalized.forEach((s, idx) => {
-		const stroke = s.isSeed ? palette[0] : palette[(idx % (palette.length - 1)) + 1];
-		const fill = s.isSeed ? palette[0] : stroke;
+		const stroke = s.isSeed ? "#ffffff" : palette[(idx % (palette.length - 1)) + 1];
 
 		svg.append("path")
 			.datum(s.points)
 			.attr("d", radarLine)
-			.style("fill", fill)
-			.style("fill-opacity", s.isSeed ? 0.10 : 0.12)
+			.style("fill", stroke)
+			.style("fill-opacity", s.isSeed ? 0.08 : 0.03)
 			.style("stroke", stroke)
-			.style("stroke-width", s.isSeed ? 3 : 2)
+			.style("stroke-width", s.isSeed ? seedStrokeWidth : recStrokeWidth)
+			.style("stroke-width", s.isSeed ? 1 : 0.7)
 			.style("opacity", 0.95);
 	});
+	
+	const seed = normalized.find(s => s.isSeed);
+	if (seed) {
+		svg.selectAll(".seed-dot")
+			.data(seed.points)
+			.enter()
+			.append("circle")
+			.attr("class", "seed-dot")
+			.attr("cx", (d, i) => rScale(d.value) * Math.cos(i * angleSlice - Math.PI / 2))
+			.attr("cy", (d, i) => rScale(d.value) * Math.sin(i * angleSlice - Math.PI / 2))
+			.attr("r", 3.5)
+			.attr("fill", "#fff");
+	}
 	
 	const legend = d3.select("#visualisation")
 		.append("div")
@@ -108,6 +123,8 @@ export function drawMultiRadarChart(series) {
         .style("flex-wrap", "wrap")
         .style("justify-content", "center")
         .style("margin-top", "10px");
+		
+	
 		
 	normalized.forEach((s, idx) => {
 		const color = s.isSeed ? palette[0] : palette[(idx % (palette.length - 1)) + 1];
