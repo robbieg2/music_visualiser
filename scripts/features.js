@@ -181,7 +181,22 @@ async function init() {
 		showVisualSections();
 
         // Draw seed radar
-        drawAudioFeaturesChart(track, seedFeatures);
+        const radarSeries = [
+			{
+				label: `Seed: ${track.name}`,
+				id: track.id,
+				features: seedFeatures,
+				isSeed: true
+			},
+			...top10.slice(0, 4).map(r => ({
+				label: r.track.name,
+				id: r.id,
+				features: r.features,
+				isSeed: false
+			}))
+		];
+		
+		drawMultiRadarChart(radarSeries);
 
         // Recommendations
         const recommendations = await fetchReccoBeatsRecommendations(track.id, 40);

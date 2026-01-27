@@ -1,33 +1,47 @@
 // features-charts.js
 
-export function drawAudioFeaturesChart(track, features) {
+export function drawMultiRadarChart(series) {
     const container = document.getElementById("visualisation");
+	
     container.innerHTML = `<h2>Audio Features</h2>`;
-
     d3.select("#visualisation").selectAll("svg").remove();
 
-    const data = [
-        { name: "Danceability", value: Number(features.danceability) },
-        { name: "Energy", value: Number(features.energy) },
-        { name: "Valence", value: Number(features.valence) },
-        { name: "Speechiness", value: Number(features.speechiness) },
-        { name: "Acousticness", value: Number(features.acousticness) },
-        { name: "Instrumentalness", value: Number(features.instrumentalness) },
-    ].filter((d) => Number.isFinite(d.value));
+    const axes = [
+        { key: "Danceability", label: "Danceability" },
+        { key: "Energy", label: "Energy" },
+        { key: "Valence", label: "Valence" },
+        { key: "Speechiness", label: "Speechiness" },
+        { key: "Acousticness", label: "Acousticness" },
+        { key: "Instrumentalness", label: "Instrumental" },
+    ];
 
-    if (!data.length) {
+	const normalized = series
+		.map(s => {
+			const points = axes.map(a => ({
+				axis: a.label,
+				key: a.key,
+				value: Number(s.fearures?.[a.key])
+			})).map(p => ({
+				...p,
+				value: Number.isFinite(p.value) ? Math.max(0, Math.min(1, p.value)) : 0
+			}));
+			
+			return { ...s, points };
+		})
+		.filter(s => s.points.length === axes.length);
+	
+    if (!normalized.length) {
         container.innerHTML += `<p>No usable feature values returned for this track</p>`;
         return;
     }
 
-    const width = 420;
-    const height = 420;
-    const radius = Math.min(width, height) / 2 - 50;
+    const width = 460;
+    const height = 460;
+    const radius = Math.min(width, height) / 2 - 70;
     const levels = 5;
     const angleSlice = (Math.PI * 2) / data.length;
 
-    const svg = d3
-        .select("#visualisation")
+    const svg = d3.select("#visualisation")
         .append("svg")
         .attr("width", width)
         .attr("height", height)
@@ -37,8 +51,7 @@ export function drawAudioFeaturesChart(track, features) {
     const rScale = d3.scaleLinear().domain([0, 1]).range([0, radius]);
 
     for (let level = 1; level <= levels; level++) {
-        svg
-            .append("circle")
+        svg.append("circle")
             .attr("r", (radius / levels) * level)
             .style("fill", "none")
             .style("stroke", "#444");
@@ -49,16 +62,14 @@ export function drawAudioFeaturesChart(track, features) {
         const x = rScale(1.05) * Math.cos(angle);
         const y = rScale(1.05) * Math.sin(angle);
 
-        svg
-            .append("line")
+        svg.append("line")
             .attr("x1", 0)
             .attr("y1", 0)
-            .attr("x2", x)
-            .attr("y2", y)
+            .attr("x2", rScale(1) * Math.cos(angle))
+            .attr("y2", rScale(1) * Math.sin(angle))
             .style("stroke", "#555");
 
-        svg
-            .append("text")
+        svg.append("text")
             .attr("x", x)
             .attr("y", y)
             .style("fill", "#fff")
@@ -67,24 +78,55 @@ export function drawAudioFeaturesChart(track, features) {
             .text(d.name);
     });
 
-    const radarLine = d3
-        .lineRadial()
+    const radarLine = d3.lineRadial()
         .radius((d) => rScale(d.value))
         .angle((d, i) => i * angleSlice)
         .curve(d3.curveLinearClosed);
+		
+	const palette = ["#ffffff", "#1db954", "#3ea6ff", "#ff7a00", "#b26bff", "#ff4d6d"];
+	
+	normalized.forEach((s, idx) => {
+		const stroke = s.isSeed ? palette[0] : palette[(idx % (palette.length - 1)) + 1];
+		const fill = s.isSeed ? palette[0] : stroke;
 
-    svg
-        .append("path")
-        .datum(data)
-        .attr("d", radarLine)
-        .style("fill", "#1db954")
-        .style("fill-opacity", 0.4)
-        .style("stroke", "#1db954")
-        .style("stroke-width", 2);
+		svg.append("path")
+			.datum(s.points)
+			.attr("d", radarLine)
+			.style("fill", fill)
+			.style("fill-opacity", s.isSeed ? 0.10 : 0.12)
+			.style("stroke", stroke)
+			.style("stroke-width", s.isSeed ? 3 : 2)
+			.style("opacity", 0.95);
+	});
+	
+	const legend = d3.select("#visualisation")
+		.append("div")
+        .style("display", "flex")
+        .style("gap", "12px")
+        .style("flex-wrap", "wrap")
+        .style("justify-content", "center")
+        .style("margin-top", "10px");
+		
+	normalized.forEach((s, idx) => {
+		const color = s.isSeed ? palette[0] : palette[(idx % (palette.length - 1)) + 1];
+		
+		const item = legend.append("div")
+            .style("display", "flex")
+            .style("align-items", "center")
+            .style("gap", "8px")
+            .style("font-size", "12px")
+            .style("opacity", "0.9");
 
-    if (features.tempo != null) {
-        container.innerHTML += `<p>Tempo: <strong>${Number(features.tempo).toFixed(1)} BPM</strong></p>`;
-    }
+        item.append("span")
+            .style("display", "inline-block")
+            .style("width", "10px")
+            .style("height", "10px")
+            .style("border-radius", "50%")
+            .style("background", color);
+
+        item.append("span")
+            .text(s.label.length > 34 ? s.label.slice(0, 34) + "…" : s.label);
+    });
 }
 
 export function drawSimilarityBarChart(rows) {
