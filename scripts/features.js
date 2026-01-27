@@ -10,7 +10,7 @@ import {
     spotifyFetch,
 } from "./features-data.js";
 
-import { drawAudioFeaturesChart, drawSimilarityBarChart, drawSimilarityScatter } from "./features-charts.js";
+import { drawMultiRadarChart, drawSimilarityBarChart, drawSimilarityScatter } from "./features-charts.js";
 
 const trackInfo = document.getElementById("track-info");
 const logoutBtn = document.getElementById("logout-btn");
