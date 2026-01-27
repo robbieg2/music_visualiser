@@ -180,21 +180,7 @@ async function init() {
 		
 		showVisualSections();
 
-        // Draw radar chart
-        const radarSeries = [
-			{
-				label: `Seed: ${track.name}`,
-				id: track.id,
-				features: seedFeatures,
-				isSeed: true
-			},
-			...top10.slice(0, 4).map(r => ({
-				label: r.track.name,
-				id: r.id,
-				features: r.features,
-				isSeed: false
-			}))
-		];
+
 		
         // Recommendations
         const recommendations = await fetchReccoBeatsRecommendations(track.id, 40);
@@ -236,7 +222,23 @@ async function init() {
 
         const top10 = reranked.slice(0, 10);
         const top15 = reranked.slice(0, 15);
-
+		
+        // Draw radar chart
+        const radarSeries = [
+			{
+				label: `Seed: ${track.name}`,
+				id: track.id,
+				features: seedFeatures,
+				isSeed: true
+			},
+			...top10.slice(0, 4).map(r => ({
+				label: r.track.name,
+				id: r.id,
+				features: r.features,
+				isSeed: false
+			}))
+		];
+		
         renderRecommendations(top10.map((r) => r.id));
 
         // Draw both visuals
