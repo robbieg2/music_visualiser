@@ -152,8 +152,8 @@ export function drawMultiRadarChart(series) {
 		// Show chosen non-seed series
 		svg.selectAll(`.series-${key}`).style("display", null);
 		
-		svg.selectAll(."seed-series").raise();
-		svg.selectAll("seed-dot").raise();
+		svg.selectAll(".seed-series").raise();
+		svg.selectAll(".seed-dot").raise();
 	}
 
 	normalized.forEach((s, idx) => {
