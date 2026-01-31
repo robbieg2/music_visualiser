@@ -223,6 +223,14 @@ async function init() {
 			const albumTracks = await getAlbumTrackIds(token, albumId);
 			candidateIds.push(...albumTracks.slice(0, SAME_ALBUM_CAP));
 		}
+		
+		const recCap = 28;
+		const artistCap = 8;
+		const albumCap = 4;
+		
+		const recPart = uniq(recSpotifyIds).slice(0, recCap);
+		const artistPart = primaryArtistId ? uniq(await getArtistTopTrackIds(token, primaryArtistId, market)).slice(0, artistCap) : [];
+		const albumPart = albumId ? uniq(await getAlbumTrackIds(token, albumId)).slice(0, albumCap) : [];
 
 		// Clean + limit pool
 		candidateIds = uniq(candidateIds).filter(id => id && id !== track.id);
