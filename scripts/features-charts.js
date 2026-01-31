@@ -125,7 +125,8 @@ export function drawMultiRadarChart(series) {
 			.attr("fill", "#fff");
 	}
 	
-	const legend = root.append("div")
+	const legend = d3.select("#visualisation")
+    .append("div")
     .style("display", "flex")
     .style("gap", "12px")
     .style("flex-wrap", "wrap")
@@ -136,13 +137,19 @@ export function drawMultiRadarChart(series) {
 		soloKey: null, // null = show all
 	};
 
-	function showOnly(key) {
-		svg.selectAll(".radar-series").style("display", "none");
-		svg.selectAll(`.series-${key}`).style("display", null);
+	function showAllExceptSeedRule() {
+		svg.selectAll(".radar-series").style("display", null);
 	}
 
-	function showAll() {
-		svg.selectAll(".radar-series").style("display", null);
+	function showOnlyNonSeed(key) {
+		// Always show seed
+		svg.selectAll(".seed-series").style("display", null);
+
+		// Hide all non-seed series
+		svg.selectAll(".radar-series:not(.seed-series)").style("display", "none");
+
+		// Show chosen non-seed series
+		svg.selectAll(`.series-${key}`).style("display", null);
 	}
 
 	normalized.forEach((s, idx) => {
@@ -157,46 +164,60 @@ export function drawMultiRadarChart(series) {
 			.style("font-size", "12px")
 			.style("opacity", "0.95")
 			.style("background", "transparent")
-			.style("border", "1px solid rgba(255,255,255,0.14)")
+			.style("border", s.isSeed ? "1px solid rgba(255,255,255,0.45)" : "1px solid rgba(255,255,255,0.14)")
 			.style("border-radius", "999px")
 			.style("padding", "6px 10px")
-			.style("cursor", "pointer");
+			.style("cursor", s.isSeed ? "default" : "pointer");
 
 		item.append("span")
 			.style("display", "inline-block")
-			.style("width", "10px")
-			.style("height", "10px")
+			.style("width", s.isSeed ? "12px" : "10px")
+			.style("height", s.isSeed ? "12px" : "10px")
 			.style("border-radius", "50%")
-			.style("background", color);
+			.style("background", color)
+			.style("box-shadow", s.isSeed ? "0 0 0 2px rgba(255,255,255,0.25)" : "none");
 
 		item.append("span")
+			.style("font-weight", s.isSeed ? "600" : "400")
 			.text(s.label.length > 34 ? s.label.slice(0, 34) + "…" : s.label);
 
+		// Seed legend item is informational only (not clickable)
+		if (s.isSeed) return;
+
 		item.on("click", () => {
-			// Toggle solo mode
 			if (state.soloKey === key) {
 				// turn solo OFF → show all
 				state.soloKey = null;
-				showAll();
+				showAllExceptSeedRule();
 
 				legend.selectAll("button")
 					.style("opacity", "0.95")
 					.style("text-decoration", "none");
 			} else {
-				// turn solo ON → show only this
+				// turn solo ON → show seed + selected
 				state.soloKey = key;
-				showOnly(key);
+				showOnlyNonSeed(key);
 
 				legend.selectAll("button")
 					.style("opacity", "0.35")
 					.style("text-decoration", "line-through");
 
+				// keep seed legend prominent
+				legend.selectAll("button")
+					.filter(function () {
+						return this.textContent && this.textContent.startsWith("Seed");
+					})
+					.style("opacity", "1")
+					.style("text-decoration", "none");
+
+				// keep selected item prominent
 				item
 					.style("opacity", "1")
 					.style("text-decoration", "none");
 			}
 		});
 	});
+
 }
 
 export function drawSimilarityBarChart(rows) {
