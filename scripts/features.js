@@ -184,67 +184,100 @@ async function init() {
 		
         // Recommendations
         const recommendations = await fetchReccoBeatsRecommendations(track.id, 40);
-        const recSpotifyIds = recommendations.map((r) => r.spotifyId || extractSpotifyIdFromHref(r.href)).filter(Boolean);
+		// --- OPTION A: Candidate pool from Spotify (artist + album), then rank by ReccoBeats audio similarity ---
 
-        const poolIds = recSpotifyIds.slice(0, 30);
+		// Seed meta (we use it for market + artist/album ids + year/popularity rerank)
+		const seedMeta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks/${track.id}`);
+		const market = await getSeedMarket(seedMeta);
 
-        // Feature + metadata enrichment for visuals
-        const recFeaturesMap = await getManyFeaturesFromReccoBeats(poolIds);
-        const meta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks?ids=${poolIds.join(",")}`);
-        const metaMap = new Map((meta.tracks || []).filter(Boolean).map((t) => [t.id, t]));
+		const primaryArtistId = seedMeta?.artists?.[0]?.id || null;
+		const albumId = seedMeta?.album?.id || null;
 
-        const rows = poolIds
-            .map((id) => {
-                const f = recFeaturesMap.get(id);
-                if (!f) return null;
+		// Build candidate ID pool
+		let candidateIds = [];
 
-                const t = metaMap.get(id);
-                return {
-                    id,
-                    features: f,
-                    score: similarityScore(seedFeatures, f),
-                    meta: t || null,
-                    track: t
-                        ? {
-                              id: t.id,
-                              name: t.name,
-                              artists: (t.artists || []).map((a) => a.name),
-                              image: t.album?.images?.[0]?.url || "",
-                          }
-                        : { id, name: "Recommended", artists: [], image: "" },
-                };
-            })
-            .filter(Boolean);
+		// 1) Same artist top tracks
+		if (primaryArtistId) {
+			const topArtist = await getArtistTopTrackIds(token, primaryArtistId, market);
+			candidateIds.push(...topArtist);
+		}
 
-        const seedMeta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks/${track.id}`);
+		// 2) Same album tracks
+		if (albumId) {
+			const albumTracks = await getAlbumTrackIds(token, albumId);
+			candidateIds.push(...albumTracks);
+		}
 
-        const reranked = rerankByAudioPlusMeta(seedFeatures, seedMeta, rows);
+		// Clean + limit pool
+		candidateIds = uniq(candidateIds).filter(id => id !== track.id);
+		candidateIds = candidateIds.slice(0, 50); // keep it reasonable
 
-        const top10 = reranked.slice(0, 10);
-        const top15 = reranked.slice(0, 15);
-		
-        // Draw radar chart
-        const radarSeries = [
+		// If pool is tiny, optional fallback to ReccoBeats candidates (keeps UX from "empty")
+		if (candidateIds.length < 10) {
+			const recommendations = await fetchReccoBeatsRecommendations(track.id, 40);
+			const recSpotifyIds = recommendations
+				.map(r => r.spotifyId || extractSpotifyIdFromHref(r.href))
+				.filter(Boolean);
+
+			candidateIds = uniq([...candidateIds, ...recSpotifyIds]).slice(0, 50);
+		}
+
+		// Pull audio features (batch) + Spotify meta (batch)
+		const recFeaturesMap = await getManyFeaturesFromReccoBeats(candidateIds);
+		const meta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks?ids=${candidateIds.join(",")}`);
+		const metaMap = new Map((meta.tracks || []).filter(Boolean).map(t => [t.id, t]));
+
+		// Build rows (only those with features)
+		const rows = candidateIds
+			.map(id => {
+				const f = recFeaturesMap.get(id);
+				if (!f) return null;
+
+				const t = metaMap.get(id);
+				return {
+					id,
+					features: f,
+					score: similarityScore(seedFeatures, f),
+					meta: t || null,
+					track: t
+						? {
+							id: t.id,
+							name: t.name,
+							artists: (t.artists || []).map(a => a.name),
+							image: t.album?.images?.[0]?.url || "",
+						}
+						: { id, name: "Recommended", artists: [], image: "" },
+				};
+			})
+			.filter(Boolean);
+
+		// Rerank using your existing audio+meta scoring
+		const reranked = rerankByAudioPlusMeta(seedFeatures, seedMeta, rows);
+
+		const top10 = reranked.slice(0, 10);
+		const top15 = reranked.slice(0, 15);
+
+		// Radar series: seed + up to 4 of the best matches
+		const radarSeries = [
 			{
 				label: `Seed: ${track.name}`,
 				id: track.id,
 				features: seedFeatures,
-				isSeed: true
+				isSeed: true,
 			},
 			...top10.slice(0, 4).map(r => ({
 				label: r.track.name,
 				id: r.id,
 				features: r.features,
-				isSeed: false
-			}))
+				isSeed: false,
+			})),
 		];
-		
-        renderRecommendations(top10.map((r) => r.id));
 
-        // Draw both visuals
+		// Render
+		renderRecommendations(top10.map(r => r.id));
 		drawMultiRadarChart(radarSeries);
-        drawSimilarityBarChart(top10);
-        drawSimilarityScatter(seedFeatures, top15);
+		drawSimilarityBarChart(top10);
+		drawSimilarityScatter(seedFeatures, top15);
     } catch (err) {
         console.error(err);
     }
