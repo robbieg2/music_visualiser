@@ -2,7 +2,6 @@
 
 export function drawMultiRadarChart(series) {
     const container = document.getElementById("visualisation");
-	<h3>Similarity (Radar)</h3>
     d3.select("#visualisation").selectAll("svg").remove();
 
     const axes = [
