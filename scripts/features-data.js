@@ -115,22 +115,22 @@ export function yearSimilarity(seedYear, recYear) {
     return clamp01(1 - diff / 20);
 }
 
-async function getSeedMarket(seedMeta) {
+export async function getSeedMarket(seedMeta) {
     // Spotify requires a market param for top-tracks
     return (seedMeta?.available_markets && seedMeta.available_markets[0]) ? seedMeta.available_markets[0] : "GB";
 }
 
-async function getArtistTopTrackIds(token, artistId, market) {
+export async function getArtistTopTrackIds(token, artistId, market) {
     const data = await spotifyFetch(token, `https://api.spotify.com/v1/artists/${artistId}/top-tracks?market=${market}`);
     return (data.tracks || []).map(t => t.id).filter(Boolean);
 }
 
-async function getAlbumTrackIds(token, albumId) {
+export async function getAlbumTrackIds(token, albumId) {
     const data = await spotifyFetch(token, `https://api.spotify.com/v1/albums/${albumId}/tracks?limit=50`);
     return (data.items || []).map(t => t.id).filter(Boolean);
 }
 
-function uniq(arr) {
+export function uniq(arr) {
     return [...new Set(arr.filter(Boolean))];
 }
 

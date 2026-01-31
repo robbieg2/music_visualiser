@@ -8,6 +8,15 @@ import {
     rerankByAudioPlusMeta,
     similarityScore,
     spotifyFetch,
+	uniq,
+	getSeedMarket,
+	getArtistTopTrackIds,
+	getAlbumTrackIds,
+	getYearFromReleaseDate,
+	clamp01,
+	popularitySimilarity,
+	yearSimilarity,
+	
 } from "./features-data.js";
 
 import { drawMultiRadarChart, drawSimilarityBarChart, drawSimilarityScatter } from "./features-charts.js";
