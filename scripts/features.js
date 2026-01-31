@@ -203,7 +203,7 @@ async function init() {
 		let candidateIds = [];
 
 		// 0) Main pool: ReccoBeats (gives variety + audio similarity)
-		const recommendations = await fetchReccoBeatsRecommendations(track.id, 60);
+		const recommendations = await fetchReccoBeatsRecommendations(track.id, 40);
 		const recSpotifyIds = recommendations
 			.map(r => r.spotifyId || extractSpotifyIdFromHref(r.href))
 			.filter(Boolean);
@@ -226,7 +226,7 @@ async function init() {
 
 		// Clean + limit pool
 		candidateIds = uniq(candidateIds).filter(id => id && id !== track.id);
-		candidateIds = candidateIds.slice(0, 60);
+		candidateIds = candidateIds.slice(0, 40);
 
 
 		// Pull audio features (batch) + Spotify meta (batch)
