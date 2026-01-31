@@ -190,7 +190,6 @@ async function init() {
 		showVisualSections();
 
         // Recommendations
-        const recommendations = await fetchReccoBeatsRecommendations(track.id, 40);
 		// --- OPTION A: Candidate pool from Spotify (artist + album), then rank by ReccoBeats audio similarity ---
 
 		// Seed meta (we use it for market + artist/album ids + year/popularity rerank)
