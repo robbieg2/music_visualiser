@@ -189,8 +189,6 @@ async function init() {
 		
 		showVisualSections();
 
-
-		
         // Recommendations
         const recommendations = await fetchReccoBeatsRecommendations(track.id, 40);
 		// --- OPTION A: Candidate pool from Spotify (artist + album), then rank by ReccoBeats audio similarity ---
@@ -205,31 +203,32 @@ async function init() {
 		// Build candidate ID pool
 		let candidateIds = [];
 
-		// 1) Same artist top tracks
+		// 0) Main pool: ReccoBeats (gives variety + audio similarity)
+		const recommendations = await fetchReccoBeatsRecommendations(track.id, 60);
+		const recSpotifyIds = recommendations
+			.map(r => r.spotifyId || extractSpotifyIdFromHref(r.href))
+			.filter(Boolean);
+
+		candidateIds.push(...recSpotifyIds);
+
+		// 1) Sprinkle: same artist top tracks (cap it so it can't dominate)
+		const SAME_ARTIST_CAP = 4;
 		if (primaryArtistId) {
 			const topArtist = await getArtistTopTrackIds(token, primaryArtistId, market);
-			candidateIds.push(...topArtist);
+			candidateIds.push(...topArtist.slice(0, SAME_ARTIST_CAP));
 		}
 
-		// 2) Same album tracks
+		// 2) Sprinkle: same album tracks (smaller cap, or remove if you want)
+		const SAME_ALBUM_CAP = 2;
 		if (albumId) {
 			const albumTracks = await getAlbumTrackIds(token, albumId);
-			candidateIds.push(...albumTracks);
+			candidateIds.push(...albumTracks.slice(0, SAME_ALBUM_CAP));
 		}
 
 		// Clean + limit pool
-		candidateIds = uniq(candidateIds).filter(id => id !== track.id);
-		candidateIds = candidateIds.slice(0, 50); // keep it reasonable
+		candidateIds = uniq(candidateIds).filter(id => id && id !== track.id);
+		candidateIds = candidateIds.slice(0, 60);
 
-		// If pool is tiny, optional fallback to ReccoBeats candidates (keeps UX from "empty")
-		if (candidateIds.length < 10) {
-			const recommendations = await fetchReccoBeatsRecommendations(track.id, 40);
-			const recSpotifyIds = recommendations
-				.map(r => r.spotifyId || extractSpotifyIdFromHref(r.href))
-				.filter(Boolean);
-
-			candidateIds = uniq([...candidateIds, ...recSpotifyIds]).slice(0, 50);
-		}
 
 		// Pull audio features (batch) + Spotify meta (batch)
 		const recFeaturesMap = await getManyFeaturesFromReccoBeats(candidateIds);
