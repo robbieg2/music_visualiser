@@ -104,7 +104,7 @@ export function drawMultiRadarChart(series) {
 		svg.append("path")
 			.datum(s.points)
 			.attr("d", radarLine)
-			.attr("class", `radar-series series-${key}`)
+			.attr("class", `radar-series series-${key} ${s.isSeed ? "seed-series" : ""}`)
 			.style("fill", stroke)
 			.style("fill-opacity", s.isSeed ? 0.08 : 0.03)
 			.style("stroke", stroke)
@@ -143,13 +143,17 @@ export function drawMultiRadarChart(series) {
 
 	function showSolo(key) {
 		// Always show seed
-		svg.selectAll(".seed-series").style("display", null);
+		svg.selectAll(".radar-series:not(.seed-series").style("display", "none");
 
 		// Hide all non-seed series
-		svg.selectAll(".radar-series:not(.seed-series)").style("display", "none");
+		svg.selectAll(".seed-series").style("display", null);
+		svg.selectAll(".seed-dot").style("display", null);
 
 		// Show chosen non-seed series
 		svg.selectAll(`.series-${key}`).style("display", null);
+		
+		svg.selectAll(."seed-series").raise();
+		svg.selectAll("seed-dot").raise();
 	}
 
 	normalized.forEach((s, idx) => {
