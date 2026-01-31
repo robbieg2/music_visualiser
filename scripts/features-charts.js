@@ -2,7 +2,7 @@
 
 export function drawMultiRadarChart(series) {
     const container = document.getElementById("visualisation");
-
+	<h3>Similarity (Radar)</h3>
     d3.select("#visualisation").selectAll("svg").remove();
 
     const axes = [
@@ -127,58 +127,77 @@ export function drawMultiRadarChart(series) {
 	}
 	
 	const legend = root.append("div")
-        .style("display", "flex")
-        .style("gap", "12px")
-        .style("flex-wrap", "wrap")
-        .style("justify-content", "center")
-        .style("margin-top", "10px");
-		
-	const visibility = new Map();
-	normalized.forEach(s => visibility.set(cssSafeId(s.id), true));
-		
+    .style("display", "flex")
+    .style("gap", "12px")
+    .style("flex-wrap", "wrap")
+    .style("justify-content", "center")
+    .style("margin-top", "10px");
+
+	const state = {
+		soloKey: null, // null = show all
+	};
+
+	function showOnly(key) {
+		svg.selectAll(".radar-series").style("display", "none");
+		svg.selectAll(`.series-${key}`).style("display", null);
+	}
+
+	function showAll() {
+		svg.selectAll(".radar-series").style("display", null);
+	}
+
 	normalized.forEach((s, idx) => {
 		const color = s.isSeed ? palette[0] : palette[(idx % (palette.length - 1)) + 1];
 		const key = cssSafeId(s.id);
-		
+
 		const item = legend.append("button")
 			.attr("type", "button")
-            .style("display", "flex")
-            .style("align-items", "center")
-            .style("gap", "8px")
-            .style("font-size", "12px")
-            .style("opacity", "0.9")
+			.style("display", "flex")
+			.style("align-items", "center")
+			.style("gap", "8px")
+			.style("font-size", "12px")
+			.style("opacity", "0.95")
 			.style("background", "transparent")
 			.style("border", "1px solid rgba(255,255,255,0.14)")
 			.style("border-radius", "999px")
 			.style("padding", "6px 10px")
 			.style("cursor", "pointer");
-			
-		if (s.isSeed) {
-			item.style("cursor", "default");
-			item.on("click", null);
-		}
 
-        item.append("span")
-            .style("display", "inline-block")
-            .style("width", "10px")
-            .style("height", "10px")
-            .style("border-radius", "50%")
-            .style("background", color);
+		item.append("span")
+			.style("display", "inline-block")
+			.style("width", "10px")
+			.style("height", "10px")
+			.style("border-radius", "50%")
+			.style("background", color);
 
-        item.append("span")
-            .text(s.label.length > 34 ? s.label.slice(0, 34) + "…" : s.label);
-			
+		item.append("span")
+			.text(s.label.length > 34 ? s.label.slice(0, 34) + "…" : s.label);
+
 		item.on("click", () => {
-			const isVisible = visibility.get(key);
-			const next = !isVisible;
-			
-			visibility.set(key, next);
-			setSeriesVisible(svg, s.id, next);
-			
-			item.style("opacity", next ? "0.95" : "0.35");
-			item.style("text-decoration", next ? "none" : "line-through");
+			// Toggle solo mode
+			if (state.soloKey === key) {
+				// turn solo OFF → show all
+				state.soloKey = null;
+				showAll();
+
+				legend.selectAll("button")
+					.style("opacity", "0.95")
+					.style("text-decoration", "none");
+			} else {
+				// turn solo ON → show only this
+				state.soloKey = key;
+				showOnly(key);
+
+				legend.selectAll("button")
+					.style("opacity", "0.35")
+					.style("text-decoration", "line-through");
+
+				item
+					.style("opacity", "1")
+					.style("text-decoration", "none");
+			}
 		});
-    });
+	});
 }
 
 export function drawSimilarityBarChart(rows) {
