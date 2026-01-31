@@ -156,6 +156,17 @@ export function drawMultiRadarChart(series) {
 		const color = s.isSeed ? palette[0] : palette[(idx % (palette.length - 1)) + 1];
 		const key = cssSafeId(s.id);
 
+		svg.append("path")
+			.datum(s.points)
+			.attr("d", radarLine)
+			.attr("class", `radar-series series-${key} ${s.isSeed ? "seed-series" : ""}`)
+			.style("fill", fill)
+			.style("fill-opacity", s.isSeed ? 0.18 : 0.10)
+			.style("stroke", stroke)
+			.style("stroke-width", s.isSeed ? 4 : 2)
+			.style("opacity", s.isSeed ? 1 : 0.85);
+
+
 		const item = legend.append("button")
 			.attr("type", "button")
 			.style("display", "flex")
