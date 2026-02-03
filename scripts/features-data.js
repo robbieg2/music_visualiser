@@ -1,6 +1,7 @@
 // features-data.js
 
 export const RECCOBEATS_BASE = "https://api.reccobeats.com/v1";
+export const LASTFM_BASE = "https://ws.audioscrobbler.com/2.0/";
 
 // Cache audio features by Spotify track ID
 const audioFeatureCache = new Map();
@@ -71,6 +72,74 @@ export async function getManyFeaturesFromReccoBeats(spotifyIds) {
     });
 
     return map;
+}
+
+// 1) Get similar tracks from Last.fm
+export async function lastfmGetSimilarTracks({ apiKey, artist, track, limit = 30 }) {
+    const url = new URL(LASTFM_BASE);
+    url.searchParams.set("method", "track.getSimilar");
+    url.searchParams.set("api_key", apiKey);
+    url.searchParams.set("artist", artist);
+    url.searchParams.set("track", track);
+    url.searchParams.set("limit", String(limit));
+    url.searchParams.set("format", "json");
+    url.searchParams.set("autocorrect", "1");
+
+    const res = await fetch(url.toString());
+    const data = await res.json();
+
+    // Last.fm uses { error, message } for failures
+    if (!res.ok || data?.error) {
+        throw new Error(`Last.fm getSimilar failed: ${data?.message || res.status}`);
+    }
+
+    const items = data?.similartracks?.track || [];
+    // Normalize to { name, artist }
+    return items
+        .map((t) => ({
+            name: t?.name || "",
+            artist: t?.artist?.name || t?.artist || "",
+        }))
+        .filter((t) => t.name && t.artist);
+}
+
+// 2) Escape user strings for Spotify search queries
+function spotifySearchEscape(s) {
+    return String(s || "")
+        .replace(/"/g, '\\"')
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+// 3) Resolve a (track, artist) pair to a Spotify track ID
+export async function spotifyResolveTrackId(token, { name, artist, market = "GB" }) {
+    const q = `track:"${spotifySearchEscape(name)}" artist:"${spotifySearchEscape(artist)}"`;
+    const url = `https://api.spotify.com/v1/search?type=track&limit=1&market=${encodeURIComponent(market)}&q=${encodeURIComponent(q)}`;
+
+    const data = await spotifyFetch(token, url);
+    const item = data?.tracks?.items?.[0];
+    return item?.id || null;
+}
+
+// 4) Resolve many pairs with throttling + de-dupe
+export async function spotifyResolveManyTrackIds(token, pairs, { market = "GB", concurrency = 5 } = {}) {
+    const out = [];
+    let i = 0;
+
+    async function worker() {
+        while (i < pairs.length) {
+            const idx = i;
+            i += 1;
+
+            const id = await spotifyResolveTrackId(token, { ...pairs[idx], market });
+            if (id) out.push(id);
+        }
+    }
+
+    const workers = Array.from({ length: Math.max(1, concurrency) }, () => worker());
+    await Promise.all(workers);
+
+    return uniq(out);
 }
 
 export async function fetchReccoBeatsRecommendations(spotifyTrackId, size = 20) {

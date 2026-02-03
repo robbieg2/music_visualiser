@@ -18,7 +18,8 @@ import {
 	buildPlaylistQueries,
 	getPlaylistTrackIds,
 	searchPlaylistIds,
-	
+	lastfmGetSimilarTracks,
+	spotifyResolveManyTrackIds,
 	buildCandidatePool,
 	yearSimilarity,
 	
@@ -199,8 +200,38 @@ async function init() {
 
 		// Seed meta (we use it for market + artist/album ids + year/popularity rerank)
 		const seedMeta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks/${track.id}`);
+		const seedArtistName = seedMeta?.artists?.[0]?.name || track.artists?.[0] || "";
+		const seedTrackName = seedMeta?.name || track.name || "";
 		const market = await getSeedMarket(seedMeta);
 		
+		const LASTFM_API_KEY = "2e23f6b1b4b3345ab5e33a788a072303";
+		
+		// 1) Similar tracks from Last.fm (names + artists)
+		const similarPairs = await lastfmGetSimilarTracks({
+			apiKey: LASTFM_API_KEY,
+			artist: seedArtistName,
+			track: seedTrackName,
+			limit: 30,
+		});
+
+		// 2) Map those to Spotify IDs (via Spotify search)
+		let candidateIds = await spotifyResolveManyTrackIds(token, similarPairs, { market, concurrency: 5 });
+
+		// Optional: fallback to ReccoBeats if mapping returns too few
+		if (candidateIds.length < 12) {
+			const recommendations = await fetchReccoBeatsRecommendations(track.id, 40);
+			const recSpotifyIds = recommendations
+				.map((r) => r.spotifyId || extractSpotifyIdFromHref(r.href))
+				.filter(Boolean);
+
+			candidateIds = [...new Set([...candidateIds, ...recSpotifyIds])].slice(0, 40);
+		}
+		
+		console.log("Seed for Last.fm:", seedArtistName, "-", seedTrackName);
+		console.log("Last.fm similar pairs:", similarPairs.slice(0, 5));
+		console.log("Resolved Spotify IDs:", candidateIds.length, candidateIds.slice(0, 5));
+
+/*		
 		// Build candidate pool using playlist harvesting + recco + small sprinkles
 		const candidateIds = await buildCandidatePool({
 			token,
@@ -216,7 +247,7 @@ async function init() {
 			sameAlbumCap: 2,
 		});		
 		
-/*
+
 		const primaryArtistId = seedMeta?.artists?.[0]?.id || null;
 		const albumId = seedMeta?.album?.id || null;
 
