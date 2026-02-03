@@ -207,7 +207,7 @@ async function init() {
 			trackId: track.id,
 			seedMeta,
 			market,
-			maxCandidates: 140,        // bigger pool = better ranking
+			maxCandidates: 40,        // bigger pool = better ranking
 			reccoSize: 40,
 			playlistQueryLimit: 4,
 			playlistsPerQuery: 3,
