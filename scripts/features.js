@@ -8,21 +8,8 @@ import {
     rerankByAudioPlusMeta,
     similarityScore,
     spotifyFetch,
-	uniq,
-	getSeedMarket,
-	getArtistTopTrackIds,
-	getAlbumTrackIds,
-	getYearFromReleaseDate,
-	clamp01,
-	popularitySimilarity,
-	buildPlaylistQueries,
-	getPlaylistTrackIds,
-	searchPlaylistIds,
-	lastfmGetSimilarTracks,
-	spotifyResolveManyTrackIds,
-	buildCandidatePool,
-	yearSimilarity,
-	
+    spotifyResolveManyTrackIds,
+    lastfmGetSimilarTracks,
 } from "./features-data.js";
 
 import { drawMultiRadarChart, drawSimilarityBarChart, drawSimilarityScatter } from "./features-charts.js";
@@ -31,92 +18,100 @@ const trackInfo = document.getElementById("track-info");
 const logoutBtn = document.getElementById("logout-btn");
 const backBtn = document.getElementById("back-btn");
 
-// Track header
+// --- UI helpers ---
+
 function renderTrackHeader(track) {
     const artists = (track.artists || []).join(", ");
 
     trackInfo.innerHTML = `
-		<div class="seed-header">
-			${track.image ? `<img class="seed-cover" src="${track.image}" alt="Album cover">` : ""}
-			
-			<div class="seed-meta">
-				<h1 class="seed-title">${track.name}</h1>
-				<p class="seed-artists">${artists}</p>
+        <div class="seed-header">
+            ${track.image ? `<img class="seed-cover" src="${track.image}" alt="Album cover">` : ""}
 
-				<iframe
-					class="seed-embed"
-					src="https://open.spotify.com/embed/track/${track.id}"
-					frameborder="0"
-					allowtransparency="true"
-					allow="encrypted-media">
-				</iframe>
-			</div>
+            <div class="seed-meta">
+                <h1 class="seed-title">${track.name}</h1>
+                <p class="seed-artists">${artists}</p>
+
+                <iframe
+                    class="seed-embed"
+                    src="https://open.spotify.com/embed/track/${track.id}"
+                    frameborder="0"
+                    allowtransparency="true"
+                    allow="encrypted-media">
+                </iframe>
+            </div>
         </div>
     `;
 }
 
 function hideVisualSections() {
-	const vis = document.getElementById("visualisation");
-	const simBar = document.getElementById("sim-bar");
-	const simScatter = document.getElementById("sim-scatter");
-	const noFeat = document.getElementById("no-features");
-	
-	const radarCard = document.getElementById("card-radar");
-	const barCard = document.getElementById("card-bar");
-	const scatterCard = document.getElementById("card-scatter");
-	const recsCard = document.getElementById("recs-card");
-	
-	if (vis) vis.innerHTML = "";
-	if (simBar) simBar.innerHTML = "";
-	if (simScatter) simScatter.innerHTML = "";
-	
-	if (recsCard) recsCard.style.display = "none";
-	if (scatterCard) scatterCard.style.display = "none";
-	if (barCard) barCard.style.display = "none";
-	
-	if (radarCard) {
-		radarCard.style.display = "block";
-		radarCard.classList.add("centered-message");
-	}
-	
-	if (noFeat) {
-		noFeat.style.display = "block";
-		noFeat.innerHTML = `
-			<div>
-				<h3>No audio features available for this track</h3>
-				<p style="opacity:0.85;">Try another song</p>
-			</div>
-		`;		
-	}
+    const vis = document.getElementById("visualisation");
+    const simBar = document.getElementById("sim-bar");
+    const simScatter = document.getElementById("sim-scatter");
+    const noFeat = document.getElementById("no-features");
+
+    const radarCard = document.getElementById("card-radar");
+    const barCard = document.getElementById("card-bar");
+    const scatterCard = document.getElementById("card-scatter");
+    const recsCard = document.getElementById("recs-card");
+
+    if (vis) vis.innerHTML = "";
+    if (simBar) simBar.innerHTML = "";
+    if (simScatter) simScatter.innerHTML = "";
+
+    if (recsCard) recsCard.style.display = "none";
+    if (scatterCard) scatterCard.style.display = "none";
+    if (barCard) barCard.style.display = "none";
+
+    if (radarCard) {
+        radarCard.style.display = "block";
+        radarCard.classList.add("centered-message");
+    }
+
+    if (noFeat) {
+        noFeat.style.display = "block";
+        noFeat.innerHTML = `
+            <div>
+                <h3>No audio features available for this track</h3>
+                <p style="opacity:0.85;">Try another song</p>
+            </div>
+        `;
+    }
 }
 
 function showVisualSections() {
-	const noFeat = document.getElementById("no-features");
-	
-	const radarCard = document.getElementById("card-radar");
-	const barCard = document.getElementById("card-bar");
-	const scatterCard = document.getElementById("card-scatter");
-	const recsCard = document.getElementById("recs-card");
-	
-	if (recsCard) recsCard.style.display = "block";
-	if (scatterCard) scatterCard.style.display = "block";
-	if (barCard) barCard.style.display = "block";
-	
-	if (radarCard) {
-		radarCard.style.dispaly = "block";
-		radarCard.classList.remove("centered-message");
-	}
-	
-	if (noFeat) {
-		noFeat.style.display = "none";
-		noFeat.innerHTML = "";
-	}
+    const noFeat = document.getElementById("no-features");
+
+    const radarCard = document.getElementById("card-radar");
+    const barCard = document.getElementById("card-bar");
+    const scatterCard = document.getElementById("card-scatter");
+    const recsCard = document.getElementById("recs-card");
+
+    if (recsCard) recsCard.style.display = "block";
+    if (scatterCard) scatterCard.style.display = "block";
+    if (barCard) barCard.style.display = "block";
+
+    if (radarCard) {
+        radarCard.style.display = "block"; // ✅ fixed typo (was "dispaly")
+        radarCard.classList.remove("centered-message");
+    }
+
+    if (noFeat) {
+        noFeat.style.display = "none";
+        noFeat.innerHTML = "";
+    }
 }
 
-// Recommendations
 function renderRecommendations(spotifyIds) {
     const container = document.getElementById("recommendations");
     if (!container) return;
+
+    if (!spotifyIds || spotifyIds.length === 0) {
+        container.innerHTML = `
+            <h3>Recommended Tracks</h3>
+            <p class="muted">No recommendations available.</p>
+        `;
+        return;
+    }
 
     container.innerHTML = "<h3>Recommended Tracks</h3>";
 
@@ -145,6 +140,34 @@ function renderRecommendations(spotifyIds) {
     });
 
     container.appendChild(wrapper);
+}
+
+// --- data helpers ---
+
+function getSeedMarketFromSeedMeta(seedMeta) {
+    // Spotify “top tracks” uses market; for searches it also helps consistency.
+    // If not present, default to GB.
+    return (seedMeta?.available_markets && seedMeta.available_markets[0]) ? seedMeta.available_markets[0] : "GB";
+}
+
+// This wrapper makes your init robust even if your features-data.js signature changes slightly.
+async function getLastfmSimilarPairsSafe({ apiKey, artist, track, limit }) {
+    // Try the newer signature style first
+    try {
+        return await lastfmGetSimilarTracks({
+            apiKey,
+            artist,
+            track,
+            limit,
+        });
+    } catch (e) {
+        // Try the older signature style (if you still had that variant)
+        return await lastfmGetSimilarTracks({
+            LASTFM_KEY: apiKey,
+            seedArtist: artist,
+            seedTrack: track,
+        });
+    }
 }
 
 async function init() {
@@ -185,180 +208,123 @@ async function init() {
     if (vis) vis.innerHTML = "<p style='text-align:center;'>Loading audio features</p>";
 
     try {
-        // Seed features
-        const seedFeatures = await getTrackFeaturesFromReccoBeats(track.id, token);
+        // 1) Seed features (required for this page)
+        const seedFeatures = await getTrackFeaturesFromReccoBeats(track.id);
 
         if (!seedFeatures) {
-			hideVisualSections();
-			return;
+            hideVisualSections();
+            return;
         }
-		
-		showVisualSections();
 
-        // Recommendations
-		// --- OPTION A: Candidate pool from Spotify (artist + album), then rank by ReccoBeats audio similarity ---
+        showVisualSections();
 
-		// Seed meta (we use it for market + artist/album ids + year/popularity rerank)
-		const seedMeta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks/${track.id}`);
-		const seedArtistName = seedMeta?.artists?.[0]?.name || track.artists?.[0] || "";
-		const seedTrackName = seedMeta?.name || track.name || "";
-		const market = await getSeedMarket(seedMeta);
-		
-		const LASTFM_API_KEY = "2e23f6b1b4b3345ab5e33a788a072303";
-		
-		// 1) Similar tracks from Last.fm (names + artists)
-		const similarPairs = await lastfmGetSimilarTracks({
-			apiKey: LASTFM_API_KEY,
-			artist: seedArtistName,
-			track: seedTrackName,
-			limit: 30,
-		});
+        // 2) Seed meta
+        const seedMeta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks/${track.id}`);
+        const market = getSeedMarketFromSeedMeta(seedMeta);
 
-		// 2) Map those to Spotify IDs (via Spotify search)
-		let candidateIds = await spotifyResolveManyTrackIds(token, similarPairs, { market, concurrency: 5 });
+        const seedArtistName = seedMeta?.artists?.[0]?.name || track.artists?.[0] || "";
+        const seedTrackName = seedMeta?.name || track.name || "";
 
-		// Optional: fallback to ReccoBeats if mapping returns too few
-		if (candidateIds.length < 12) {
-			const recommendations = await fetchReccoBeatsRecommendations(track.id, 40);
-			const recSpotifyIds = recommendations
-				.map((r) => r.spotifyId || extractSpotifyIdFromHref(r.href))
-				.filter(Boolean);
+        // 3) Last.fm similar tracks (pairs)
+        const LASTFM_API_KEY = "2e23f6b1b4b3345ab5e33a788a072303";
 
-			candidateIds = [...new Set([...candidateIds, ...recSpotifyIds])].slice(0, 40);
-		}
-		
-		console.log("Seed for Last.fm:", seedArtistName, "-", seedTrackName);
-		console.log("Last.fm similar pairs:", similarPairs.slice(0, 5));
-		console.log("Resolved Spotify IDs:", candidateIds.length, candidateIds.slice(0, 5));
+        const similarPairs = await getLastfmSimilarPairsSafe({
+            apiKey: LASTFM_API_KEY,
+            artist: seedArtistName,
+            track: seedTrackName,
+            limit: 30,
+        });
 
-/*		
-		// Build candidate pool using playlist harvesting + recco + small sprinkles
-		const candidateIds = await buildCandidatePool({
-			token,
-			trackId: track.id,
-			seedMeta,
-			market,
-			maxCandidates: 40,        // bigger pool = better ranking
-			reccoSize: 40,
-			playlistQueryLimit: 4,
-			playlistsPerQuery: 3,
-			tracksPerPlaylist: 40,
-			sameArtistCap: 3,          // keep these LOW so it doesn't dominate
-			sameAlbumCap: 2,
-		});		
-		
+        // 4) Resolve to Spotify IDs
+        let candidateIds = await spotifyResolveManyTrackIds(token, similarPairs, { market, concurrency: 5 });
 
-		const primaryArtistId = seedMeta?.artists?.[0]?.id || null;
-		const albumId = seedMeta?.album?.id || null;
+        // 5) Fallback: ReccoBeats to keep UX alive
+        if (candidateIds.length < 12) {
+            const recommendations = await fetchReccoBeatsRecommendations(track.id, 40);
+            const recSpotifyIds = recommendations
+                .map((r) => r.spotifyId || extractSpotifyIdFromHref(r.href))
+                .filter(Boolean);
 
-		// Build candidate ID pool
-		let candidateIds = [];
+            candidateIds = [...new Set([...candidateIds, ...recSpotifyIds])].slice(0, 40);
+        } else {
+            candidateIds = [...new Set(candidateIds)].slice(0, 40);
+        }
 
-		// 0) Main pool: ReccoBeats (gives variety + audio similarity)
-		const recommendations = await fetchReccoBeatsRecommendations(track.id, 40);
-		const recSpotifyIds = recommendations
-			.map(r => r.spotifyId || extractSpotifyIdFromHref(r.href))
-			.filter(Boolean);
+        // Guard: no candidates
+        if (candidateIds.length === 0) {
+            renderRecommendations([]);
+            drawMultiRadarChart([{ label: `Seed: ${track.name}`, id: track.id, features: seedFeatures, isSeed: true }]);
+            drawSimilarityBarChart([]);
+            drawSimilarityScatter(seedFeatures, []);
+            return;
+        }
 
-		candidateIds.push(...recSpotifyIds);
+        // 6) Pull features + meta for candidates
+        const recFeaturesMap = await getManyFeaturesFromReccoBeats(candidateIds);
 
-		// 1) Sprinkle: same artist top tracks (cap it so it can't dominate)
-		const SAME_ARTIST_CAP = 4;
-		if (primaryArtistId) {
-			const topArtist = await getArtistTopTrackIds(token, primaryArtistId, market);
-			candidateIds.push(...topArtist.slice(0, SAME_ARTIST_CAP));
-		}
+        const meta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks?ids=${candidateIds.join(",")}`);
+        const metaMap = new Map((meta.tracks || []).filter(Boolean).map((t) => [t.id, t]));
 
-		// 2) Sprinkle: same album tracks (smaller cap, or remove if you want)
-		const SAME_ALBUM_CAP = 2;
-		if (albumId) {
-			const albumTracks = await getAlbumTrackIds(token, albumId);
-			candidateIds.push(...albumTracks.slice(0, SAME_ALBUM_CAP));
-		}
-		
-		const recCap = 28;
-		const artistCap = 8;
-		const albumCap = 4;
-		
-		const recPart = uniq(recSpotifyIds).slice(0, recCap);
-		const artistPart = primaryArtistId ? uniq(await getArtistTopTrackIds(token, primaryArtistId, market)).slice(0, artistCap) : [];
-		const albumPart = albumId ? uniq(await getAlbumTrackIds(token, albumId)).slice(0, albumCap) : [];
+        const rows = candidateIds
+            .map((id) => {
+                const f = recFeaturesMap.get(id);
+                if (!f) return null;
 
-		// Clean + limit pool
-		candidateIds = uniq(candidateIds).filter(id => id && id !== track.id);
-		candidateIds = candidateIds.slice(0, 40);
+                const t = metaMap.get(id);
+                return {
+                    id,
+                    features: f,
+                    score: similarityScore(seedFeatures, f),
+                    meta: t || null,
+                    track: t
+                        ? {
+                              id: t.id,
+                              name: t.name,
+                              artists: (t.artists || []).map((a) => a.name),
+                              image: t.album?.images?.[0]?.url || "",
+                          }
+                        : { id, name: "Recommended", artists: [], image: "" },
+                };
+            })
+            .filter(Boolean);
 
-*/
-		// Pull audio features (batch) + Spotify meta (batch)
-		const recFeaturesMap = await getManyFeaturesFromReccoBeats(candidateIds);
-		const meta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks?ids=${candidateIds.join(",")}`);
-		const metaMap = new Map((meta.tracks || []).filter(Boolean).map(t => [t.id, t]));
+        // Guard: none have features
+        if (rows.length === 0) {
+            renderRecommendations([]);
+            drawMultiRadarChart([{ label: `Seed: ${track.name}`, id: track.id, features: seedFeatures, isSeed: true }]);
+            drawSimilarityBarChart([]);
+            drawSimilarityScatter(seedFeatures, []);
+            return;
+        }
 
-		// Build rows (only those with features)
-		const rows = candidateIds
-			.map(id => {
-				const f = recFeaturesMap.get(id);
-				if (!f) return null;
+        // 7) Rank
+        const reranked = rerankByAudioPlusMeta(seedFeatures, seedMeta, rows);
 
-				const t = metaMap.get(id);
-				return {
-					id,
-					features: f,
-					score: similarityScore(seedFeatures, f),
-					meta: t || null,
-					track: t
-						? {
-							id: t.id,
-							name: t.name,
-							artists: (t.artists || []).map(a => a.name),
-							image: t.album?.images?.[0]?.url || "",
-						}
-						: { id, name: "Recommended", artists: [], image: "" },
-				};
-			})
-			.filter(Boolean);
+        const top10 = reranked.slice(0, 10);
+        const top15 = reranked.slice(0, 15);
 
-		// Rerank using your existing audio+meta scoring
-		const reranked = rerankByAudioPlusMeta(seedFeatures, seedMeta, rows);
+        // 8) Radar series: seed + up to 4 best matches
+        const radarSeries = [
+            { label: `Seed: ${track.name}`, id: track.id, features: seedFeatures, isSeed: true },
+            ...top10.slice(0, 4).map((r) => ({
+                label: r.track?.name || "Track",
+                id: r.id,
+                features: r.features,
+                isSeed: false,
+            })),
+        ];
 
-		console.table(reranked.slice(0, 12).map(r => ({
-			name: r.track?.name,
-			artists: (r.track?.artists || []).join(", "),
-			audio: r.score?.toFixed?.(3),
-			pop: r.meta?.popularity ?? null,
-			year: r.meta?.album?.release_date ?? null,
-			final: r.finalScore?.toFixed?.(3),
-		})));
-
-		const top10 = reranked.slice(0, 10);
-		const top15 = reranked.slice(0, 15);
-
-		// Radar series: seed + up to 4 of the best matches
-		const radarSeries = [
-			{
-				label: `Seed: ${track.name}`,
-				id: track.id,
-				features: seedFeatures,
-				isSeed: true,
-			},
-			...top10.slice(0, 4).map(r => ({
-				label: r.track.name,
-				id: r.id,
-				features: r.features,
-				isSeed: false,
-			})),
-		];
-
-		// Render
-		renderRecommendations(top10.map(r => r.id));
-		drawMultiRadarChart(radarSeries);
-		drawSimilarityBarChart(top10);
-		drawSimilarityScatter(seedFeatures, top15);
+        // 9) Render UI
+        renderRecommendations(top10.map((r) => r.id));
+        drawMultiRadarChart(radarSeries);
+        drawSimilarityBarChart(top10);
+        drawSimilarityScatter(seedFeatures, top15);
     } catch (err) {
         console.error(err);
     }
 }
 
 init();
+
 
 	
