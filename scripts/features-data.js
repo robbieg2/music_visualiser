@@ -128,7 +128,7 @@ export async function fetchReccoBeatsRecommendations(spotifyTrackId, size = 20) 
 // 1) Get similar tracks from Last.fm
 export async function lastfmGetSimilarTracks({ apiKey, artist, track, limit = 30 }) {
     if (!apiKey) throw new Error("Last.fm key missing");
-    if (!seedArtist || !seedTrack) return [];
+    if (!artist || !track) return [];
 
     const url = new URL(LASTFM_BASE);
     url.searchParams.set("method", "track.getSimilar");
@@ -204,7 +204,7 @@ export async function spotifyResolveManyTrackIds(token, pairs, { market = "GB", 
 }
 
 /* ---------------------------- Spotify pool helpers ------------------------- */
-/*
+
 export function getSeedMarket(seedMeta) {
     // Spotify requires a market param for top-tracks
     return seedMeta?.available_markets?.[0] || "GB";
@@ -259,7 +259,7 @@ export function buildPlaylistQueries(seedMeta) {
     ];
 
     return uniq(queries.map((q) => String(q || "").trim()).filter(Boolean));
-} */
+} 
 
 /**
  * Build a broader candidate pool from:
@@ -298,7 +298,7 @@ export async function buildCandidatePool({
     if (lastfmKey) {
         const seedArtist = seedMeta?.artists?.[0]?.name || "";
         const seedTrack = seedMeta?.name || "";
-        const pairs = await lastfmGetSimilarTracks({ lastfmKey, seedArtist, seedTrack, limit: lastfmLimit });
+        const pairs = await lastfmGetSimilarTracks({ apiKey, artist, track, limit: lastfmLimit });
         const ids = await spotifyResolveManyTrackIds(token, pairs, { market, concurrency: 5 });
         candidateIds.push(...ids);
     }
