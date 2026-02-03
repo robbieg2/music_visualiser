@@ -143,6 +143,16 @@ function renderRecommendations(spotifyIds) {
 }
 
 // --- data helpers ---
+function normalizeSpotifyIds(list) {
+	return (list || [])
+		.map(x => {
+		if (typeof x === "string") return x;
+		if (x && typeof x === "object") return x.id || x.spotifyId || null;
+		return null;
+	})
+	.filter(id => typeof id === "string" && id.length > 0);
+}
+
 
 function getSeedMarketFromSeedMeta(seedMeta) {
     // Spotify “top tracks” uses market; for searches it also helps consistency.
@@ -256,6 +266,8 @@ async function init() {
 		
         // 4) Resolve to Spotify IDs
         let candidateIds = await spotifyResolveManyTrackIds(token, similarPairs, { market, concurrency: 5 });
+		
+		candidateIds = normalizeSpotifyIds(candidateIds);
 		
 		console.log("Resolved IDs:", candidateIds.length);
 /*
