@@ -313,6 +313,9 @@ async function init() {
                 isSeed: false,
             })),
         ];
+		
+		console.log("Last.fm pairs:", similarPairs.length, similarPairs.slice(0, 5));
+
 
         // 9) Render UI
         renderRecommendations(top10.map((r) => r.id));

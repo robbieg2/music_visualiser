@@ -185,26 +185,29 @@ export async function spotifyResolveManyTrackIds(token, pairs, { market = "GB", 
 
     async function worker() {
         while (i < list.length) {
-            const idx = i;
-            i += 1;
-
+            const idx = i++;
+			const p = list[idx];
             try {
-                const id = await spotifyResolveTrackId(token, { ...list[idx], market });
-                if (id) out.push(id);
+                const id = await spotifyResolveTrackId(token, { name: p.name, artist: p.artist, market });
+                if (id) out.push({ id, match: Number(p.match ?? 0) });
             } catch {
                 // ignore single lookup failures
             }
         }
     }
 
-    const workers = Array.from({ length: Math.max(1, concurrency) }, () => worker());
-    await Promise.all(workers);
+    await Promise.all(Array.from({ length: Math.max(1, concurrency) }, worker));
 
-    return uniq(out);
+	const best = new Map();
+	for (const x of out) {
+		const prev = best.get(x.id);
+		if (!prev || x.match > prev.match) best.set(x.id, x);
+	}
+    return [...best.values()];
 }
 
 /* ---------------------------- Spotify pool helpers ------------------------- */
-
+/*
 export function getSeedMarket(seedMeta) {
     // Spotify requires a market param for top-tracks
     return seedMeta?.available_markets?.[0] || "GB";
@@ -259,7 +262,7 @@ export function buildPlaylistQueries(seedMeta) {
     ];
 
     return uniq(queries.map((q) => String(q || "").trim()).filter(Boolean));
-} 
+} */
 
 /**
  * Build a broader candidate pool from:
