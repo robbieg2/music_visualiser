@@ -128,19 +128,24 @@ export async function fetchReccoBeatsRecommendations(spotifyTrackId, size = 20) 
 // 1) Get similar tracks from Last.fm
 export async function lastfmGetSimilarTracks({ apiKey, artist, track, limit = 30 }) {
     if (!apiKey) throw new Error("Last.fm key missing");
-    if (!artist || !track) return [];
+	
+	const a = String(artist || "").trim();
+	const t = String(track || "").trim();
+    if (!a || !t) return [];
 
     const url = new URL(LASTFM_BASE);
     url.searchParams.set("method", "track.getSimilar");
     url.searchParams.set("api_key", apiKey);
-    url.searchParams.set("artist", artist);
-    url.searchParams.set("track", track);
+    url.searchParams.set("artist", a);
+    url.searchParams.set("track", t);
     url.searchParams.set("autocorrect", "1");
     url.searchParams.set("limit", String(limit));
     url.searchParams.set("format", "json");
 
     const res = await fetch(url.toString());
     const data = await res.json();
+	
+	console.log("[Last.fm] getSimilar request:", { artist: a, track: t, status: res.status, data });
 
     // Last.fm uses { error, message } for failures
     if (!res.ok || data?.error) {

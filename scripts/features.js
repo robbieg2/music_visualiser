@@ -234,10 +234,31 @@ async function init() {
             track: seedTrackName,
             limit: 30,
         });
+		
+		console.log("Last.fm pairs:", similarPairs.length, similarPairs.slice(0, 5));
+		
+		// Stop here if Last.fm gives nothing (so you *know* it's the issue)
+		if (!similarPairs.length) {
+		    const recs = document.getElementById("recommendations");
+		    if (recs) {
+			recs.innerHTML = `
+				<h3>Recommended Tracks</h3>
+				<p style="opacity:0.85; text-align:center;">
+					Last.fm couldn't find similar tracks for this seed.
+					<br/>Try another song (or a more popular track).
+			  </p>
+			`;
+		}
 
+		drawMultiRadarChart([{ label:`Seed: ${track.name}`, id: track.id, features: seedFeatures, isSeed:true }]);
+		return;
+		}
+		
         // 4) Resolve to Spotify IDs
         let candidateIds = await spotifyResolveManyTrackIds(token, similarPairs, { market, concurrency: 5 });
-
+		
+		console.log("Resolved IDs:", candidateIds.length);
+/*
         // 5) Fallback: ReccoBeats to keep UX alive
         if (candidateIds.length < 12) {
             const recommendations = await fetchReccoBeatsRecommendations(track.id, 40);
@@ -302,7 +323,7 @@ async function init() {
 
         const top10 = reranked.slice(0, 10);
         const top15 = reranked.slice(0, 15);
-
+*/
         // 8) Radar series: seed + up to 4 best matches
         const radarSeries = [
             { label: `Seed: ${track.name}`, id: track.id, features: seedFeatures, isSeed: true },
@@ -313,9 +334,6 @@ async function init() {
                 isSeed: false,
             })),
         ];
-		
-		console.log("Last.fm pairs:", similarPairs.length, similarPairs.slice(0, 5));
-
 
         // 9) Render UI
         renderRecommendations(top10.map((r) => r.id));
