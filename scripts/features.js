@@ -270,7 +270,7 @@ async function init() {
         } else {
             candidateIds = [...new Set(candidateIds)].slice(0, 40);
         }
-
+*/
         // Guard: no candidates
         if (candidateIds.length === 0) {
             renderRecommendations([]);
@@ -323,7 +323,7 @@ async function init() {
 
         const top10 = reranked.slice(0, 10);
         const top15 = reranked.slice(0, 15);
-*/
+
         // 8) Radar series: seed + up to 4 best matches
         const radarSeries = [
             { label: `Seed: ${track.name}`, id: track.id, features: seedFeatures, isSeed: true },
