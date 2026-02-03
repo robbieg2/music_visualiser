@@ -134,6 +134,119 @@ export function uniq(arr) {
     return [...new Set(arr.filter(Boolean))];
 }
 
+// --- Playlist harvesting helpers (Spotify search + playlist tracks) ---
+
+export async function searchPlaylistIds(token, query, limit = 5) {
+    const q = encodeURIComponent(query);
+    const data = await spotifyFetch(
+        token,
+        `https://api.spotify.com/v1/search?q=${q}&type=playlist&limit=${limit}`
+    );
+
+    return (data.playlists?.items || [])
+        .map((p) => p?.id)
+        .filter(Boolean);
+}
+
+export async function getPlaylistTrackIds(token, playlistId, limit = 50) {
+    // limit max is 100; keep it modest to reduce calls
+    const data = await spotifyFetch(
+        token,
+        `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=${limit}`
+    );
+
+    // Some items can be null / local tracks / removed tracks
+    return (data.items || [])
+        .map((x) => x?.track?.id)
+        .filter(Boolean);
+}
+
+export function buildPlaylistQueries(seedMeta) {
+    const artistName = seedMeta?.artists?.[0]?.name || "";
+    const trackName = seedMeta?.name || "";
+
+    // These tend to work well without relying on any deprecated endpoints
+    const queries = [
+        artistName,
+        `${artistName} radio`,
+        `${artistName} mix`,
+        `${trackName} mix`,
+        `${artistName} indie`,
+    ];
+
+    // Deduplicate / remove empties
+    return uniq(queries.map((q) => String(q || "").trim()).filter(Boolean));
+}
+
+/**
+ * Build a broader candidate pool from:
+ *  - ReccoBeats recommendations (variety)
+ *  - Same artist top tracks (small sprinkle)
+ *  - Same album tracks (small sprinkle)
+ *  - Playlist harvesting (crowd signal)
+ *
+ * Returns a deduped array of Spotify track IDs.
+ */
+export async function buildCandidatePool({
+    token,
+    trackId,
+    seedMeta,
+    market,
+    maxCandidates = 120,
+    reccoSize = 40,
+    playlistQueryLimit = 4,     // how many playlist queries to run
+    playlistsPerQuery = 3,      // how many playlists per query
+    tracksPerPlaylist = 40,     // how many tracks from each playlist
+    sameArtistCap = 4,
+    sameAlbumCap = 2,
+}) {
+    let candidateIds = [];
+
+    // 0) Main pool: ReccoBeats (variety)
+    const recommendations = await fetchReccoBeatsRecommendations(trackId, reccoSize);
+    const recSpotifyIds = recommendations
+        .map((r) => r.spotifyId || extractSpotifyIdFromHref(r.href))
+        .filter(Boolean);
+
+    candidateIds.push(...recSpotifyIds);
+
+    // 1) Sprinkle: same artist top tracks (cap)
+    const primaryArtistId = seedMeta?.artists?.[0]?.id || null;
+    if (primaryArtistId) {
+        const topArtist = await getArtistTopTrackIds(token, primaryArtistId, market);
+        candidateIds.push(...topArtist.slice(0, sameArtistCap));
+    }
+
+    // 2) Sprinkle: same album tracks (cap)
+    const albumId = seedMeta?.album?.id || null;
+    if (albumId) {
+        const albumTracks = await getAlbumTrackIds(token, albumId);
+        candidateIds.push(...albumTracks.slice(0, sameAlbumCap));
+    }
+
+    // 3) Playlist harvesting (crowd/scene signal)
+    const queries = buildPlaylistQueries(seedMeta).slice(0, playlistQueryLimit);
+
+    for (const q of queries) {
+        const pids = await searchPlaylistIds(token, q, playlistsPerQuery);
+        for (const pid of pids) {
+            const ids = await getPlaylistTrackIds(token, pid, tracksPerPlaylist);
+            candidateIds.push(...ids);
+
+            // If we’ve got plenty, stop early to avoid too many API calls
+            if (candidateIds.length >= maxCandidates * 2) break;
+        }
+        if (candidateIds.length >= maxCandidates * 2) break;
+    }
+
+    // Clean
+    candidateIds = uniq(candidateIds)
+        .filter((id) => id && id !== trackId);
+
+    // Keep reasonable size
+    return candidateIds.slice(0, maxCandidates);
+}
+
 export function rerankByAudioPlusMeta(seedFeatures, seedMeta, rows) {
     const seedPop = Number(seedMeta?.popularity);
     const seedYear = getYearFromReleaseDate(seedMeta?.album?.release_date);

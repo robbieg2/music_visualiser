@@ -15,6 +15,11 @@ import {
 	getYearFromReleaseDate,
 	clamp01,
 	popularitySimilarity,
+	buildPlaylistQueries,
+	getPlaylistTrackIds,
+	searchPlaylistIds,
+	
+	buildCandidatePool,
 	yearSimilarity,
 	
 } from "./features-data.js";
@@ -195,7 +200,23 @@ async function init() {
 		// Seed meta (we use it for market + artist/album ids + year/popularity rerank)
 		const seedMeta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks/${track.id}`);
 		const market = await getSeedMarket(seedMeta);
-
+		
+		// Build candidate pool using playlist harvesting + recco + small sprinkles
+		const candidateIds = await buildCandidatePool({
+			token,
+			trackId: track.id,
+			seedMeta,
+			market,
+			maxCandidates: 140,        // bigger pool = better ranking
+			reccoSize: 40,
+			playlistQueryLimit: 4,
+			playlistsPerQuery: 3,
+			tracksPerPlaylist: 40,
+			sameArtistCap: 3,          // keep these LOW so it doesn't dominate
+			sameAlbumCap: 2,
+		});		
+		
+/*
 		const primaryArtistId = seedMeta?.artists?.[0]?.id || null;
 		const albumId = seedMeta?.album?.id || null;
 
@@ -236,7 +257,7 @@ async function init() {
 		candidateIds = uniq(candidateIds).filter(id => id && id !== track.id);
 		candidateIds = candidateIds.slice(0, 40);
 
-
+*/
 		// Pull audio features (batch) + Spotify meta (batch)
 		const recFeaturesMap = await getManyFeaturesFromReccoBeats(candidateIds);
 		const meta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks?ids=${candidateIds.join(",")}`);
@@ -268,6 +289,15 @@ async function init() {
 
 		// Rerank using your existing audio+meta scoring
 		const reranked = rerankByAudioPlusMeta(seedFeatures, seedMeta, rows);
+
+		console.table(reranked.slice(0, 12).map(r => ({
+			name: r.track?.name,
+			artists: (r.track?.artists || []).join(", "),
+			audio: r.score?.toFixed?.(3),
+			pop: r.meta?.popularity ?? null,
+			year: r.meta?.album?.release_date ?? null,
+			final: r.finalScore?.toFixed?.(3),
+		})));
 
 		const top10 = reranked.slice(0, 10);
 		const top15 = reranked.slice(0, 15);
