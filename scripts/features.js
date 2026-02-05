@@ -264,7 +264,7 @@ async function init() {
 				limit: 8,
 			});
 			
-			const toptrackPairs = [];
+			const topTrackPairs = [];
 			for (const a of similarArtists) {
 				const tops = await lastfmGetArtistTopTracks({
 					apiKey: LASTFM_API_KEY,
