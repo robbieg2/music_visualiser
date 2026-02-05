@@ -103,7 +103,7 @@ function showVisualSections() {
     }
 }
 
-function renderRecommendations(spotifyIds) {
+function renderRecommendations(spotifyIds, { subtitle = "" } = {}) {
     const container = document.getElementById("recommendations");
     if (!container) return;
 
