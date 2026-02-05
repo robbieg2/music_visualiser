@@ -435,7 +435,7 @@ export function yearSimilarity(seedYear, recYear) {
 }
 
 export function similarityScore(seed, rec) {
-    const keys = ["danceability", "energy", "valence", "speechiness", "acousticness", "instrumentalness", "tempo"];
+    const keys = ["danceability", "energy", "valence", "speechiness", "acousticness", "instrumentalness"];
     const weights = {
         danceability: 1,
         energy: 1,
@@ -443,7 +443,6 @@ export function similarityScore(seed, rec) {
         speechiness: 0.7,
         acousticness: 0.7,
         instrumentalness: 0.7,
-		tempo: 1,
     };
 
     let d = 0;
