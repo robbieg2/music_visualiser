@@ -157,7 +157,7 @@ function renderRecommendations(spotifyIds, { subtitle = "" } = {}) {
 	
 	const scrollByAmount = () => Math.max(260, Math.floor(carousel.clientWidth * 0.85));
 	
-	if (lefttBtn) {
+	if (leftBtn) {
 		leftBtn.addEventListener("click", () => {
 			carousel.scrollBy({ left: -scrollByAmount(), behaviour: "smooth" });
 		});
