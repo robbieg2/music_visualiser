@@ -219,4 +219,21 @@ button {
 	max-width: 520px;
 	margin: 0 auto;
 }
+
+#recommendations .carousel-wrapper {
+    width: 100%;
+    margin: 10px;
+}
+
+#recommendations .carousel {
+    display: flex;
+    overflow: hidden;
+    padding: 10px 10px;
+}
+
+#recommendations .rec-card {
+	flex: 0 0 auto;
+	width: 220px;
+}
+	
 	

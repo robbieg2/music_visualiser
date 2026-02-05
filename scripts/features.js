@@ -120,33 +120,53 @@ function renderRecommendations(spotifyIds, { subtitle = "" } = {}) {
 			<h3 style="margin:0;">Recommended Tracks</h3>
 			${subtitle ? `<span class="muted" style="font-size:12px;">${subtitle}</span>` : ""}
 		</div>
+		
+		<div class="carousel-wrapper">
+			<button class="scroll-btn" id="recs-scroll-left" aria-label="Scroll left"><</button>
+			<div class="carousel" id="recs-carousel"></div>
+			<button class="scroll-btn" id="recs-scroll-right" aria-label="Scroll right">></button>
+		</div>
 	`;
-
+	
+	const carousel = document.getElementById("recs-carousel");
+	if (!carousel) return;
+/*
     const wrapper = document.createElement("div");
     wrapper.style.display = "flex";
     wrapper.style.gap = "20px";
     wrapper.style.overflowX = "auto";
     wrapper.style.padding = "10px";
-
+*/
     spotifyIds.forEach((id) => {
         const card = document.createElement("div");
-        card.style.width = "220px";
-        card.style.textAlign = "center";
-
-        card.innerHTML = `
-            <iframe
-                src="https://open.spotify.com/embed/track/${id}"
-                width="220"
-                height="120"
-                frameborder="0"
-                allow="encrypted-media">
-            </iframe>
-        `;
-
-        wrapper.appendChild(card);
-    });
-
-    container.appendChild(wrapper);
+		card.className = "rec-card";
+		card.innerHTML = `
+			<iframe
+				src="https://open.spotify.com/embed/track/${id}"
+				width="220"
+				height="120"
+				frameborder="0"
+				allow="encrypted-media">
+			</iframe>
+		`;
+		carousel.appendChild(card);
+	});
+        
+	const leftBtn = document.getElementById("recs-scroll-left");
+	const rightBtn = document.getElementById("recs-scroll-right");
+	
+	const scrollByAmount = () => Math.max(260, Math.floor(carousel.clientWidth * 0.85));
+	
+	if (lefttBtn) {
+		leftBtn.addEventListener("click", () => {
+			carousel.scrollBy({ left: -scrollByAmount(), behaviour: "smooth" });
+		});
+	}
+	if (rightBtn) {
+		rightBtn.addEventListener("click", () => {
+			carousel.scrollBy({ left: scrollByAmount(), behaviour: "smooth" });
+		});
+	}
 }
 
 // --- data helpers ---
