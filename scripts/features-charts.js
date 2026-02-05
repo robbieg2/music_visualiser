@@ -1,5 +1,8 @@
 // features-charts.js
 
+const visEl = document.getElementById("visualisation");
+if (visEl) visEl.innerHTML = "";
+
 export function drawMultiRadarChart(series) {
     const container = document.getElementById("visualisation");
     d3.select("#visualisation").selectAll("svg").remove();
@@ -10,7 +13,7 @@ export function drawMultiRadarChart(series) {
         { key: "valence", label: "Valence" },
         { key: "speechiness", label: "Speechiness" },
         { key: "acousticness", label: "Acousticness" },
-        { key: "tempo", label: "Tempo" },
+        { key: "instrumentalness", label: "Instrumental" },
     ];
 	
 	function cssSafeId(id) {
