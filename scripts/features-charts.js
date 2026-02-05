@@ -10,7 +10,7 @@ export function drawMultiRadarChart(series) {
         { key: "valence", label: "Valence" },
         { key: "speechiness", label: "Speechiness" },
         { key: "acousticness", label: "Acousticness" },
-        { key: "instrumentalness", label: "Instrumental" },
+        { key: "tempo", label: "Tempo" },
     ];
 	
 	function cssSafeId(id) {

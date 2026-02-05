@@ -93,7 +93,7 @@ function showVisualSections() {
     if (barCard) barCard.style.display = "block";
 
     if (radarCard) {
-        radarCard.style.display = "block"; // ✅ fixed typo (was "dispaly")
+        radarCard.style.display = "block";
         radarCard.classList.remove("centered-message");
     }
 
@@ -115,7 +115,12 @@ function renderRecommendations(spotifyIds) {
         return;
     }
 
-    container.innerHTML = "<h3>Recommended Tracks</h3>";
+    container.innerHTML = `
+		<div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px;">
+			<h3 style="margin:0;">Recommended Tracks</h3>
+			${subtitle ? `<span class="muted" style="font-size:12px;">${subtitle}</spna>` : ""}
+		</div>
+	`;
 
     const wrapper = document.createElement("div");
     wrapper.style.display = "flex";
@@ -250,6 +255,8 @@ async function init() {
 
 		const seedTrackNameClean = cleanTrackName(seedTrackName);
 		
+		let recMode = "similar tracks";
+		
         let similarPairs = await lastfmGetSimilarTracks({
             apiKey: LASTFM_API_KEY,
             artist: seedArtistName,
@@ -258,6 +265,8 @@ async function init() {
         });
 		
 		if (!similarPairs.length) {
+			recMode = "similar artists";
+			
 			const similarArtists = await lastfmGetSimilarArtists({
 				apiKey: LASTFM_API_KEY,
 				artist: seedArtistName,
@@ -380,7 +389,12 @@ async function init() {
         ];
 
         // 9) Render UI
-        renderRecommendations(top10.map((r) => r.id));
+        renderRecommendations(top10.map(r => r.id), {
+			subtitle: recMode === "similar tracks"
+				? "Based on similar songs"
+				: "Based on similar artists",
+		});
+		
         drawMultiRadarChart(radarSeries);
         drawSimilarityBarChart(top10);
         drawSimilarityScatter(seedFeatures, top15);
