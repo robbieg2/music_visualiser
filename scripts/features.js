@@ -248,7 +248,7 @@ async function init() {
         // 3) Last.fm similar tracks (pairs)
         const LASTFM_API_KEY = "2e23f6b1b4b3345ab5e33a788a072303";
 
-		const seedTrackNameClean = cleantrackName(seedTrackName);
+		const seedTrackNameClean = cleanTrackName(seedTrackName);
 		
         let similarPairs = await lastfmGetSimilarTracks({
             apiKey: LASTFM_API_KEY,
