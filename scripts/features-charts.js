@@ -1,8 +1,5 @@
 // features-charts.js
 
-const visEl = document.getElementById("visualisation");
-if (visEl) visEl.innerHTML = "";
-
 export function drawMultiRadarChart(series) {
     const container = document.getElementById("visualisation");
     d3.select("#visualisation").selectAll("svg").remove();
