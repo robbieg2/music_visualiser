@@ -144,7 +144,7 @@ function renderRecommendations(spotifyIds, { subtitle = "" } = {}) {
 			<iframe
 				src="https://open.spotify.com/embed/track/${id}"
 				width="100%"
-				height="135"
+				height="153"
 				frameborder="0"
 				allow="encrypted-media">
 			</iframe>

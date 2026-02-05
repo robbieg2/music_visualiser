@@ -311,7 +311,7 @@ export function drawSimilarityScatter(seedFeatures, rows) {
 	
 	function mooveTooltip(event) {
 		if (!tooltip) return;
-		const pad = 14;
+		const pad = 12;
 		tooltip.style.left = `${event.clientX + pad}px`;
 		tooltip.style.top = `${event.clientY + pad}px`;
 	}
@@ -404,7 +404,7 @@ export function drawSimilarityScatter(seedFeatures, rows) {
             .attr("fill", "#1db954")
             .style("opacity", 0.75)
             .style("cursor", "pointer")
-			.on("mouseeneter", (event, d) => {
+			.on("mouseenter", (event, d) => {
 				const name = d?.track?.name || "Unknown Track";
 				const artists = (d?.track?.artists || []).join(", ") || "Unknown Artist";
 				
@@ -420,9 +420,8 @@ export function drawSimilarityScatter(seedFeatures, rows) {
 					.attr("stroke", "#fff")
 					.attr("stroke-width", 1.5);
 			})
-			.on("mousemove", (event) => {
-				moveTooltip(event);
-			})
+			.on("mousemove", (event) => moveTooltip(event));
+
 			.on("mouseleave", (event) => {
 				hideTooltip();
 				d3.select(event.currentTarget)
