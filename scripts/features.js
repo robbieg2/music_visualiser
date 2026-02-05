@@ -118,7 +118,7 @@ function renderRecommendations(spotifyIds) {
     container.innerHTML = `
 		<div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px;">
 			<h3 style="margin:0;">Recommended Tracks</h3>
-			${subtitle ? `<span class="muted" style="font-size:12px;">${subtitle}</spna>` : ""}
+			${subtitle ? `<span class="muted" style="font-size:12px;">${subtitle}</span>` : ""}
 		</div>
 	`;
 
