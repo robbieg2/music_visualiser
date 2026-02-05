@@ -228,12 +228,17 @@ button {
 #recommendations .carousel {
     display: flex;
     overflow: hidden;
-    padding: 10px 10px;
+    padding: 10px 20px;
 }
 
 #recommendations .rec-card {
 	flex: 0 0 auto;
-	width: 220px;
+	width: 320px;
+}
+
+#recommendations .rec-card iframe {
+	width: 100%;
+	border-radius: 12px;
 }
 	
 	

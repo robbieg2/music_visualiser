@@ -7,10 +7,11 @@ export function drawMultiRadarChart(series) {
     const axes = [
         { key: "danceability", label: "Danceability" },
         { key: "energy", label: "Energy" },
+		{ key: "instrumentalness", label: "Instrumental" },
         { key: "valence", label: "Valence" },
         { key: "speechiness", label: "Speechiness" },
         { key: "acousticness", label: "Acousticness" },
-        { key: "instrumentalness", label: "Instrumental" },
+        
     ];
 	
 	function cssSafeId(id) {
