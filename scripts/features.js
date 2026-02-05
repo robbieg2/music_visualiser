@@ -230,7 +230,7 @@ async function init() {
     renderTrackHeader(track);
 
     const vis = document.getElementById("visualisation");
-    if (vis) vis.innerHTML = "<p style='text-align:center;'>Loading audio features</p>";
+//    if (vis) vis.innerHTML = "<p style='text-align:center;'>Loading audio features</p>";
 
     try {
         // 1) Seed features (required for this page)
