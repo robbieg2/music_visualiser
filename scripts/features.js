@@ -10,6 +10,8 @@ import {
     spotifyFetch,
     spotifyResolveManyTrackIds,
     lastfmGetSimilarTracks,
+	lastfmGetSimilarArtists,
+	lastfmGetArtistTopTracks,
 } from "./features-data.js";
 
 import { drawMultiRadarChart, drawSimilarityBarChart, drawSimilarityScatter } from "./features-charts.js";
@@ -160,6 +162,14 @@ function getSeedMarketFromSeedMeta(seedMeta) {
     return (seedMeta?.available_markets && seedMeta.available_markets[0]) ? seedMeta.available_markets[0] : "GB";
 }
 
+function cleanTrackName(name) {
+	return String(name || "")
+		.replace(/\s*\(.*?\)\s*/g, " ")
+		.replace(/\s*-\s*(remaster(ed)?|live|mono|radio edit|edit|version|mix).*$/i, "")
+		.replace(/\s+/g, " ")
+		.trim();
+}
+
 // This wrapper makes your init robust even if your features-data.js signature changes slightly.
 async function getLastfmSimilarPairsSafe({ apiKey, artist, track, limit }) {
     // Try the newer signature style first
@@ -238,12 +248,34 @@ async function init() {
         // 3) Last.fm similar tracks (pairs)
         const LASTFM_API_KEY = "2e23f6b1b4b3345ab5e33a788a072303";
 
-        const similarPairs = await getLastfmSimilarPairsSafe({
+		const seedTrackNameClean = cleantrackName(seedTrackName);
+		
+        let similarPairs = await lastfmGetSimilarTracks({
             apiKey: LASTFM_API_KEY,
             artist: seedArtistName,
             track: seedTrackName,
             limit: 30,
         });
+		
+		if (!similarPairs.length) {
+			const similarArtists = await lastfmGetSimilarArtists({
+				apiKey: LASTFM_API_KEY,
+				artist: seedArtistName,
+				limit: 8,
+			});
+			
+			const toptrackPairs = [];
+			for (const a of similarArtists) {
+				const tops = await lastfmGetArtistTopTracks({
+					apiKey: LASTFM_API_KEY,
+					artist: a.name,
+					limit: 4,
+				});
+				topTrackPairs.push(...tops);
+			}
+			
+			similarPairs = topTrackPairs;
+		}
 		
 		console.log("Last.fm pairs:", similarPairs.length, similarPairs.slice(0, 5));
 		

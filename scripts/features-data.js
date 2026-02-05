@@ -165,6 +165,72 @@ export async function lastfmGetSimilarTracks({ apiKey, artist, track, limit = 30
         .filter((t) => t.name && t.artist);
 }
 
+// 1) FALLBACK: Get similar artists tracks from Last.fm
+export async function lastfmGetSimilarArtists({ apiKey, artist, limit = 10 }) {
+    if (!apiKey) throw new Error("Last.fm key missing");
+	if (!artist) return [];
+
+    const url = new URL(LASTFM_BASE);
+    url.searchParams.set("method", "artist.getSimilar");
+    url.searchParams.set("api_key", apiKey);
+    url.searchParams.set("artist", artist);
+    url.searchParams.set("autocorrect", "1");
+    url.searchParams.set("limit", String(limit));
+    url.searchParams.set("format", "json");
+
+    const res = await fetch(url.toString());
+    const data = await res.json();
+
+    // Last.fm uses { error, message } for failures
+    if (!res.ok || data?.error) {
+        throw new Error(`Last.fm artist.getSimilar failed: ${data?.message || res.status}`);
+    }
+
+    // Can be array OR object OR missing
+    const raw = data?.similarartists?.artist;
+    const items = Array.isArray(raw) ? raw : raw ? [raw] : [];
+
+    return items
+        .map(a => ({
+            name: (a?.name || "").trim(),
+            match: Number(a?.match ?? 0),
+        }))
+        .filter(a => a.name);
+}
+
+// 1) FALLBACK: Get artists top tracks from Last.fm
+export async function lastfmGetArtistTopTracks({ apiKey, artist, limit = 10 }) {
+    if (!apiKey) throw new Error("Last.fm key missing");
+	if (!artist) return [];
+
+    const url = new URL(LASTFM_BASE);
+    url.searchParams.set("method", "artist.getTopTracks");
+    url.searchParams.set("api_key", apiKey);
+    url.searchParams.set("artist", artist);
+    url.searchParams.set("autocorrect", "1");
+    url.searchParams.set("limit", String(limit));
+    url.searchParams.set("format", "json");
+
+    const res = await fetch(url.toString());
+    const data = await res.json();
+
+    // Last.fm uses { error, message } for failures
+    if (!res.ok || data?.error) {
+        throw new Error(`Last.fm artist.getTopTracks failed: ${data?.message || res.status}`);
+    }
+
+    // Can be array OR object OR missing
+    const raw = data?.toptracks?.track;
+    const items = Array.isArray(raw) ? raw : raw ? [raw] : [];
+
+    return items
+        .map(t => ({
+            name: (t?.name || "").trim(),
+            artist: (t?.artist?.name || t?.artist || "").trim(),
+        }))
+        .filter(t => t.name && t.artist);
+}
+
 // 2) Resolve a (track, artist) pair to a Spotify track ID
 export async function spotifyResolveTrackId(token, { name, artist, market = "GB" }) {
     if (!name || !artist) return null;
