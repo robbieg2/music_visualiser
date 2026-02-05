@@ -6,12 +6,11 @@ export function drawMultiRadarChart(series) {
 
     const axes = [
         { key: "danceability", label: "Danceability" },
-        { key: "energy", label: "Energy" },
-		{ key: "instrumentalness", label: "Instrumental" },
+        { key: "energy", label: "Energy" },		
         { key: "valence", label: "Valence" },
         { key: "speechiness", label: "Speechiness" },
         { key: "acousticness", label: "Acousticness" },
-        
+		{ key: "instrumentalness", label: "Instrumental" },
     ];
 	
 	function cssSafeId(id) {
@@ -301,6 +300,26 @@ export function drawSimilarityScatter(seedFeatures, rows) {
     const width = Math.min(560, container.clientWidth || 560);
     const height = 420;
     const margin = { top: 20, right: 20, bottom: 50, left: 60 };
+	
+	const tooltip = document.getElementById("chart-tooltip");
+	
+	function showTooltip(html) {
+		if (!tooltip) return;
+		tooltip.innerHTML = html;
+		tooltip.style.display = "block";
+	}
+	
+	function mooveTooltip(event) {
+		if (!tooltip) return;
+		const pad = 14;
+		tooltip.style.left = `${event.clientX + pad}px`;
+		tooltip.style.top = `${event.clientY + pad}px`;
+	}
+	
+	function hideTooltip() {
+		if (!tooltip) return;
+		tooltip.style.display = "none";
+	}
 
     function getVal(f, key) {
         const v = Number(f?.[key]);
@@ -385,6 +404,31 @@ export function drawSimilarityScatter(seedFeatures, rows) {
             .attr("fill", "#1db954")
             .style("opacity", 0.75)
             .style("cursor", "pointer")
+			.on("mouseeneter", (event, d) => {
+				const name = d?.track?.name || "Unknown Track";
+				const artists = (d?.track?.artists || []).join(", ") || "Unknown Artist";
+				
+				showTooltip(`
+					<div class="tt-title">${name}</div>
+					<div class="tt-sub">${artists}</div>
+				`);
+				
+				moveTooltip(event);
+				
+				d3.select(event.currentTarget)
+					.style("opacity", 1)
+					.attr("stroke", "#fff")
+					.attr("stroke-width", 1.5);
+			})
+			.on("mousemove", (event) => {
+				moveTooltip(event);
+			})
+			.on("mouseleave", (event) => {
+				hideTooltip();
+				d3.select(event.currentTarget)
+					.style("opacity", 0.75)
+					.attr("stroke", "none");
+			})		
             .on("click", (event, d) => {
                 const trackParam = encodeURIComponent(JSON.stringify(d.track));
                 window.location.href = `features.html?track=${trackParam}`;
