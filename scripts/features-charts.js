@@ -420,7 +420,7 @@ export function drawSimilarityScatter(seedFeatures, rows) {
 					.attr("stroke", "#fff")
 					.attr("stroke-width", 1.5);
 			})
-			.on("mousemove", (event) => moveTooltip(event));
+			.on("mousemove", (event) => moveTooltip(event))
 
 			.on("mouseleave", (event) => {
 				hideTooltip();
