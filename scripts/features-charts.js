@@ -309,7 +309,7 @@ export function drawSimilarityScatter(seedFeatures, rows) {
 		tooltip.style.display = "block";
 	}
 	
-	function mooveTooltip(event) {
+	function moveTooltip(event) {
 		if (!tooltip) return;
 		const pad = 12;
 		tooltip.style.left = `${event.clientX + pad}px`;
