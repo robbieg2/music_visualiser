@@ -22,6 +22,16 @@ const backBtn = document.getElementById("back-btn");
 
 // --- UI helpers ---
 
+function setLoading(on, sub = "") {
+	const overlay = document.getElementById("page-loading");
+	const subEl = document.getElementById("loading-sub");
+	if (!overlay) return;
+	
+	if (subEl && sub) subEl.textContent = sub;
+	
+	overlay.style.display = on ? "flex" : "none";
+}
+	
 function renderTrackHeader(track) {
     const artists = (track.artists || []).join(", ");
 
@@ -91,8 +101,12 @@ function showVisualSections() {
     if (barCard) barCard.style.display = "block";
     if (radarCard) radarCard.style.display = "block";
 	
+	if (noFeat) {
+		noFeat.style.display = "none";
+		noFeat.innerHTML = "";
+	}
+	
 	if (msgCard) msgCard.style.display = "none";
-    if (noFeat) noFeat.innerHTML = "";
 }
 
 function renderRecommendations(spotifyIds, { subtitle = "" } = {}) {
@@ -236,11 +250,15 @@ async function init() {
     const simRadar = document.getElementById("sim-radar");
 
     try {
+		
+		setLoading(true, "Fetching audio features...");
+		
         // 1) Seed features (required for this page)
         const seedFeatures = await getTrackFeaturesFromReccoBeats(track.id);
 
         if (!seedFeatures) {
             hideVisualSections();
+			setLoading(false);
             return;
         }
 
