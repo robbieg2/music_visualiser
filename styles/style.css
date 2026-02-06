@@ -219,7 +219,6 @@ button {
 
 .card.centered-message {
 	grid-column: 1 / -1;
-	display: flex !important;
 	align-items: center;
 	justify-content: center;
 	min-height: 420px;
