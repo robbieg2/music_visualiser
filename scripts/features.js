@@ -59,9 +59,9 @@ function hideVisualSections() {
     const simRadar = document.getElementById("sim-radar");
     const simBar = document.getElementById("sim-bar");
     const simScatter = document.getElementById("sim-scatter");
-    const noFeat = document.getElementById("no-features");
 	const msgCard = document.getElementById("card-message");
-
+    const noFeat = document.getElementById("no-features");
+	
     const radarCard = document.getElementById("card-radar");
     const barCard = document.getElementById("card-bar");
     const scatterCard = document.getElementById("card-scatter");
@@ -93,20 +93,22 @@ function showVisualSections() {
     const barCard = document.getElementById("card-bar");
     const scatterCard = document.getElementById("card-scatter");
     const recsCard = document.getElementById("recs-card");
-	const noFeat = document.getElementById("no-features");
 	const msgCard = document.getElementById("card-message");
+	const noFeat = document.getElementById("no-features");
 	
     if (recsCard) recsCard.style.display = "block";
     if (scatterCard) scatterCard.style.display = "block";
     if (barCard) barCard.style.display = "block";
-    if (radarCard) radarCard.style.display = "block";
+    if (radarCard) {
+		radarCard.style.display = "block";
+		radarCard.classList.remove("centered-message");
+	}
 	
+	if (msgCard) msgCard.style.display = "none";
 	if (noFeat) {
 		noFeat.style.display = "none";
 		noFeat.innerHTML = "";
 	}
-	
-	if (msgCard) msgCard.style.display = "none";
 }
 
 function renderRecommendations(spotifyIds, { subtitle = "" } = {}) {
@@ -249,8 +251,7 @@ async function init() {
 
     const simRadar = document.getElementById("sim-radar");
 
-    try {
-		
+    try {	
 		setLoading(true, "Fetching audio features...");
 		
         // 1) Seed features (required for this page)
@@ -258,7 +259,6 @@ async function init() {
 
         if (!seedFeatures) {
             hideVisualSections();
-			setLoading(false);
             return;
         }
 
@@ -421,7 +421,9 @@ async function init() {
         drawSimilarityScatter(seedFeatures, top15);
     } catch (err) {
         console.error(err);
-    }
+    } finally {
+		setLoading(false);
+	}
 }
 
 init();
