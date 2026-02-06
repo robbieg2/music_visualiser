@@ -92,7 +92,7 @@ function showVisualSections() {
     if (radarCard) radarCard.style.display = "block";
 	
 	if (msgCard) msgCard.style.display = "none";
-    if (noFeat) noFeat.innerHTML = "none";
+    if (noFeat) noFeat.innerHTML = "";
 }
 
 function renderRecommendations(spotifyIds, { subtitle = "" } = {}) {
@@ -122,13 +122,7 @@ function renderRecommendations(spotifyIds, { subtitle = "" } = {}) {
 	
 	const carousel = document.getElementById("recs-carousel");
 	if (!carousel) return;
-/*
-    const wrapper = document.createElement("div");
-    wrapper.style.display = "flex";
-    wrapper.style.gap = "20px";
-    wrapper.style.overflowX = "auto";
-    wrapper.style.padding = "10px";
-*/
+
     spotifyIds.forEach((id) => {
         const card = document.createElement("div");
 		card.className = "rec-card";
@@ -187,9 +181,8 @@ function cleanTrackName(name) {
 		.trim();
 }
 
-// This wrapper makes your init robust even if your features-data.js signature changes slightly.
+
 async function getLastfmSimilarPairsSafe({ apiKey, artist, track, limit }) {
-    // Try the newer signature style first
     try {
         return await lastfmGetSimilarTracks({
             apiKey,
@@ -198,7 +191,6 @@ async function getLastfmSimilarPairsSafe({ apiKey, artist, track, limit }) {
             limit,
         });
     } catch (e) {
-        // Try the older signature style (if you still had that variant)
         return await lastfmGetSimilarTracks({
             LASTFM_KEY: apiKey,
             seedArtist: artist,
@@ -241,8 +233,7 @@ async function init() {
 
     renderTrackHeader(track);
 
-    const vis = document.getElementById("sim-radar");
-//    if (vis) vis.innerHTML = "<p style='text-align:center;'>Loading audio features</p>";
+    const sim-radar = document.getElementById("sim-radar");
 
     try {
         // 1) Seed features (required for this page)
