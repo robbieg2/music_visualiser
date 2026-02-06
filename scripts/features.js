@@ -63,11 +63,7 @@ function hideVisualSections() {
     if (recsCard) recsCard.style.display = "none";
     if (scatterCard) scatterCard.style.display = "none";
     if (barCard) barCard.style.display = "none";
-
-    if (radarCard) {
-        radarCard.style.display = "block";
-        radarCard.classList.add("centered-message");
-    }
+    if (radarCard) radarCard.style.display = "none";
 
     if (noFeat) {
         noFeat.style.display = "block";

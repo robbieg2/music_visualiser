@@ -229,9 +229,9 @@ export function drawSimilarityBarChart(rows) {
     if (!container) return;
     container.innerHTML = "";
 
-    const width = Math.min(560, container.clientWidth || 560);
+    const width = Math.min(760, container.clientWidth || 760);
     const height = 360;
-    const margin = { top: 20, right: 20, bottom: 40, left: 220 };
+    const margin = { top: 20, right: 70, bottom: 40, left: 260 };
     const innerW = width - margin.left - margin.right;
     const innerH = height - margin.top - margin.bottom;
 

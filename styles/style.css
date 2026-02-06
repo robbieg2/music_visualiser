@@ -59,12 +59,16 @@ button {
 
 /* Charts: style all chart SVGs consistently */
 #visualisation svg,
-#sim-bar svg,
 #sim-scatter svg {
     background: #181818;
     border-radius: 12px;
     display: block;
     margin: 0 auto;
+}
+
+#sim-bar svg {
+	display: block;
+	max-width: 100%;
 }
 
 /* Responsive */
