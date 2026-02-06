@@ -233,7 +233,7 @@ async function init() {
 
     renderTrackHeader(track);
 
-    const sim-radar = document.getElementById("sim-radar");
+    const simRadar = document.getElementById("sim-radar");
 
     try {
         // 1) Seed features (required for this page)

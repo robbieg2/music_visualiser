@@ -2,7 +2,7 @@
 
 export function drawMultiRadarChart(series) {
     const container = document.getElementById("sim-radar");
-    d3.select("#visualisation").selectAll("svg").remove();
+    d3.select("#sim-radar").selectAll("svg").remove();
 
     const axes = [
         { key: "danceability", label: "Danceability" },
@@ -52,7 +52,7 @@ export function drawMultiRadarChart(series) {
     const levels = 5;
     const angleSlice = (Math.PI * 2) / axes.length;
 
-    const svg = d3.select("#visualisation")
+    const svg = d3.select("#sim-radar")
         .append("svg")
         .attr("width", width)
         .attr("height", height)
@@ -94,7 +94,7 @@ export function drawMultiRadarChart(series) {
         .angle((d, i) => i * angleSlice)
         .curve(d3.curveLinearClosed);
 		
-	const root = d3.select("#visualisation");	
+	const root = d3.select("#sim-radar");	
 	const palette = ["#ffffff", "#1db954", "#3ea6ff", "#ff7a00", "#b26bff", "#ff4d6d"];
 		
 	normalized.forEach((s, idx) => {
@@ -125,7 +125,7 @@ export function drawMultiRadarChart(series) {
 			.attr("fill", "#fff");
 	}
 	
-	const legend = d3.select("#visualisation")
+	const legend = d3.select("#sim-radar")
     .append("div")
     .style("display", "flex")
     .style("gap", "12px")
