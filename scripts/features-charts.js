@@ -1,7 +1,7 @@
 // features-charts.js
 
 export function drawMultiRadarChart(series) {
-    const container = document.getElementById("visualisation");
+    const container = document.getElementById("sim-radar");
     d3.select("#visualisation").selectAll("svg").remove();
 
     const axes = [

@@ -92,7 +92,7 @@ function showVisualSections() {
     if (radarCard) radarCard.style.display = "block";
 	
 	if (msgCard) msgCard.style.display = "none";
-    if (noFeat) noFeat.innerHTML = "";
+    if (noFeat) noFeat.innerHTML = "none";
 }
 
 function renderRecommendations(spotifyIds, { subtitle = "" } = {}) {
