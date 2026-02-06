@@ -46,17 +46,18 @@ function renderTrackHeader(track) {
 }
 
 function hideVisualSections() {
-    const vis = document.getElementById("visualisation");
+    const simRadar = document.getElementById("sim-radar");
     const simBar = document.getElementById("sim-bar");
     const simScatter = document.getElementById("sim-scatter");
     const noFeat = document.getElementById("no-features");
+	const msgCard = document.getElementById("card-message");
 
     const radarCard = document.getElementById("card-radar");
     const barCard = document.getElementById("card-bar");
     const scatterCard = document.getElementById("card-scatter");
     const recsCard = document.getElementById("recs-card");
 
-    if (vis) vis.innerHTML = "";
+    if (simRadar) simRadar.innerHTML = "";
     if (simBar) simBar.innerHTML = "";
     if (simScatter) simScatter.innerHTML = "";
 
@@ -65,6 +66,7 @@ function hideVisualSections() {
     if (barCard) barCard.style.display = "none";
     if (radarCard) radarCard.style.display = "none";
 
+	if (msgCard) msgCard.style.display = "flex";
     if (noFeat) {
         noFeat.style.display = "block";
         noFeat.innerHTML = `
@@ -76,27 +78,21 @@ function hideVisualSections() {
     }
 }
 
-function showVisualSections() {
-    const noFeat = document.getElementById("no-features");
-
+function showVisualSections() {   
     const radarCard = document.getElementById("card-radar");
     const barCard = document.getElementById("card-bar");
     const scatterCard = document.getElementById("card-scatter");
     const recsCard = document.getElementById("recs-card");
-
+	const noFeat = document.getElementById("no-features");
+	const msgCard = document.getElementById("card-message");
+	
     if (recsCard) recsCard.style.display = "block";
     if (scatterCard) scatterCard.style.display = "block";
     if (barCard) barCard.style.display = "block";
-
-    if (radarCard) {
-        radarCard.style.display = "block";
-        radarCard.classList.remove("centered-message");
-    }
-
-    if (noFeat) {
-        noFeat.style.display = "none";
-        noFeat.innerHTML = "";
-    }
+    if (radarCard) radarCard.style.display = "block";
+	
+	if (msgCard) msgCard.style.display = "none";
+    if (noFeat) noFeat.innerHTML = "";
 }
 
 function renderRecommendations(spotifyIds, { subtitle = "" } = {}) {
@@ -245,7 +241,7 @@ async function init() {
 
     renderTrackHeader(track);
 
-    const vis = document.getElementById("visualisation");
+    const vis = document.getElementById("sim-radar");
 //    if (vis) vis.innerHTML = "<p style='text-align:center;'>Loading audio features</p>";
 
     try {

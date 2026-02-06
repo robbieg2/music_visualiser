@@ -231,7 +231,7 @@ export function drawSimilarityBarChart(rows) {
 
     const width = Math.min(760, container.clientWidth || 760);
     const height = 360;
-    const margin = { top: 20, right: 70, bottom: 40, left: 260 };
+    const margin = { top: 20, right: 70, bottom: 40, left: 220 };
     const innerW = width - margin.left - margin.right;
     const innerH = height - margin.top - margin.bottom;
 
