@@ -233,7 +233,7 @@ function renderRecommendations(spotifyIds, { subtitle } = {}) {
 		card.addEventListener("mouseleave", () => {
 			hideTooltip();
 			window.dispatchEvent(new CustomEvent("rec-hover", { detail: { trackId: null } }));
-		});
+		}
 	}
         
 	const leftBtn = document.getElementById("recs-scroll-left");

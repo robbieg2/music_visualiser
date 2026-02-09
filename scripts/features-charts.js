@@ -230,7 +230,7 @@ export function drawMultiRadarChart(series) {
 		if (id) {
 			const key = cssSafeId(id);
 			root.selectAll(`.series-${key}`)
-				.style("opacity", 1);
+				.style("opacity", 1)
 				.style("stroke-width", 3.2);
 		}
 	};
