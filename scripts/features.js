@@ -233,8 +233,10 @@ function renderRecommendations(spotifyIds, { subtitle } = {}) {
 		card.addEventListener("mouseleave", () => {
 			hideTooltip();
 			window.dispatchEvent(new CustomEvent("rec-hover", { detail: { trackId: null } }));
-		}
-	}
+		});
+		
+		wrapper.appendChild(card);	
+	});
         
 	const leftBtn = document.getElementById("recs-scroll-left");
 	const rightBtn = document.getElementById("recs-scroll-right");
