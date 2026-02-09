@@ -152,7 +152,6 @@ async function init() {
 
 	await fetchSpotifyData(token);
 
-	// Search button
 	searchBtn.addEventListener("click", () => {
 		const query = searchInput.value.trim();
 		if (query) searchTracks(token, query);
@@ -171,7 +170,6 @@ async function init() {
 		window.location.href = "index.html";
 	});
 	
-	// Carousel scroll buttons
 	if (scrollLeftBtn && scrollRightBtn) {
 		scrollLeftBtn.addEventListener("click", () => scrollCarouselBy(-320));
 		scrollRightBtn.addEventListener("click", () => scrollCarouselBy(320));

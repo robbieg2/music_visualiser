@@ -1,4 +1,4 @@
-/* ===== Shared / Base ===== */
+/* Base CSS */
 body {
     background: #121212;
     color: #fff;
@@ -21,7 +21,6 @@ button {
     cursor: pointer;
 }
 
-/* Cards */
 .card {
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -35,7 +34,6 @@ button {
     padding: 12px;
 }
 
-/* ===== Features layout ===== */
 .grid-3 {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -57,35 +55,9 @@ button {
     justify-content: center;
 }
 
-/* Charts: style all chart SVGs consistently */
-#sim-radar svg,
-#sim-scatter svg {
-    background: #181818;
-    border-radius: 12px;
-    display: block;
-    margin: 0 auto;
-}
 
-#sim-bar {
-	overflow-x: hidden;
-}
 
-#sim-bar svg {
-	display: block;
-	max-width: 100%;
-}
-
-/* Responsive */
-@media (max-width: 1100px) {
-    .grid-3 {
-        grid-template-columns: 1fr;
-    }
-    .span-3 {
-        grid-column: auto;
-    }
-}
-
-/* ===== Home page (carousel/search) ===== */
+/* Home page functions */
 #search-section {
     margin: 20px;
     text-align: center;
@@ -165,6 +137,34 @@ button {
     background: #17a44d;
 }
 
+/* Visualisation cards */
+#sim-radar svg,
+#sim-scatter svg {
+    background: #181818;
+    border-radius: 12px;
+    display: block;
+    margin: 0 auto;
+}
+
+#sim-bar {
+	overflow-x: hidden;
+}
+
+#sim-bar svg {
+	display: block;
+	max-width: 100%;
+}
+
+@media (max-width: 1100px) {
+    .grid-3 {
+        grid-template-columns: 1fr;
+    }
+    .span-3 {
+        grid-column: auto;
+    }
+}
+
+/* Features page functions */
 .seed-header {
     display: flex;
     gap: 18px;
@@ -203,7 +203,6 @@ button {
     border-radius: 12px;
 }
 
-/* Stack on small screens */
 @media (max-width: 700px) {
     .seed-header {
         flex-direction: column;
@@ -238,10 +237,29 @@ button {
     padding: 10px 20px;
 }
 
-#recommendations .rec-card {
+.recs-strip {
+	display: flex;
+	gap: 16px;
+	overflow-x: auto;
+	padding: 12px 6px;
+}
+
+.rec-card {
 	flex: 0 0 auto;
 	width: 320px;
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	background: rgba(255, 255, 255, 0.03);
+	border-radius: 14px;
+	padding: 10px;
 }
+
+.rec-embed {
+	width: 100%;
+	height: 152px;
+	border-radius: 12px;
+}
+
+
 
 #recommendations .rec-card iframe {
 	width: 100%;
@@ -268,6 +286,16 @@ button {
 }
 .chart-tooltip .tt-sub {
     opacity: 0.85;
+}
+
+.chart-tooltip .tt-row {
+	font-size: 12px;
+	display: flex;
+	justify-content: space-between;
+}
+
+.chart-tooltip .tt-muted {
+	opacity: 0.8;
 }
 
 .loading-overlay {
@@ -310,4 +338,7 @@ button {
 	margin-top: 4px;
 	font-size: 13px;
 }
+
+.recs-strip {
+	display
 	

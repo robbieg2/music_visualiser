@@ -6,8 +6,7 @@ export const LASTFM_BASE = "https://ws.audioscrobbler.com/2.0/";
 // Cache audio features by Spotify track ID
 const audioFeatureCache = new Map();
 
-/* ----------------------------- Small utilities ----------------------------- */
-
+// Spotify helpers
 export function uniq(arr) {
     return [...new Set((arr || []).filter(Boolean))];
 }
@@ -25,8 +24,6 @@ function spotifySearchEscape(s) {
         .trim();
 }
 
-/* ------------------------------ Spotify helper ----------------------------- */
-
 export async function spotifyFetch(token, url) {
     const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
@@ -40,8 +37,7 @@ export async function spotifyFetch(token, url) {
     return res.json();
 }
 
-/* --------------------------- ReccoBeats features --------------------------- */
-
+// Get audio features from ReccoBeats
 export async function getTrackFeaturesFromReccoBeats(spotifyTrackId) {
     if (!spotifyTrackId) return null;
     if (audioFeatureCache.has(spotifyTrackId)) return audioFeatureCache.get(spotifyTrackId);
@@ -100,8 +96,7 @@ export async function getManyFeaturesFromReccoBeats(spotifyIds) {
     return map;
 }
 
-/* ------------------------ ReccoBeats recommendations ----------------------- */
-
+// Get recommendations from ReccoBeats 
 export async function fetchReccoBeatsRecommendations(spotifyTrackId, size = 20) {
     if (!spotifyTrackId) return [];
 
@@ -111,7 +106,6 @@ export async function fetchReccoBeatsRecommendations(spotifyTrackId, size = 20) 
 
     const res = await fetch(url.toString());
 
-    // Seed sometimes not found in ReccoBeats
     if (res.status === 400) return [];
 
     if (!res.ok) {
@@ -123,9 +117,7 @@ export async function fetchReccoBeatsRecommendations(spotifyTrackId, size = 20) 
     return data?.content || [];
 }
 
-/* ------------------------------- Last.fm API ------------------------------- */
-
-// 1) Get similar tracks from Last.fm
+// Get similar tracks from Last.fm API
 export async function lastfmGetSimilarTracks({ apiKey, artist, track, limit = 30 }) {
     if (!apiKey) throw new Error("Last.fm key missing");
 	
@@ -147,12 +139,10 @@ export async function lastfmGetSimilarTracks({ apiKey, artist, track, limit = 30
 	
 	console.log("[Last.fm] getSimilar request:", { artist: a, track: t, status: res.status, data });
 
-    // Last.fm uses { error, message } for failures
     if (!res.ok || data?.error) {
         throw new Error(`Last.fm getSimilar failed: ${data?.message || res.status}`);
     }
 
-    // Can be array OR object OR missing
     const raw = data?.similartracks?.track;
     const items = Array.isArray(raw) ? raw : raw ? [raw] : [];
 
@@ -165,7 +155,7 @@ export async function lastfmGetSimilarTracks({ apiKey, artist, track, limit = 30
         .filter((t) => t.name && t.artist);
 }
 
-// 1) FALLBACK: Get similar artists tracks from Last.fm
+// Fallback: Get similar artists if similar songs is unavailable
 export async function lastfmGetSimilarArtists({ apiKey, artist, limit = 10 }) {
     if (!apiKey) throw new Error("Last.fm key missing");
 	if (!artist) return [];
@@ -181,12 +171,10 @@ export async function lastfmGetSimilarArtists({ apiKey, artist, limit = 10 }) {
     const res = await fetch(url.toString());
     const data = await res.json();
 
-    // Last.fm uses { error, message } for failures
     if (!res.ok || data?.error) {
         throw new Error(`Last.fm artist.getSimilar failed: ${data?.message || res.status}`);
     }
 
-    // Can be array OR object OR missing
     const raw = data?.similarartists?.artist;
     const items = Array.isArray(raw) ? raw : raw ? [raw] : [];
 
@@ -198,7 +186,7 @@ export async function lastfmGetSimilarArtists({ apiKey, artist, limit = 10 }) {
         .filter(a => a.name);
 }
 
-// 1) FALLBACK: Get artists top tracks from Last.fm
+// Fallback: Get similar artists top tracks if similar songs is unavailable
 export async function lastfmGetArtistTopTracks({ apiKey, artist, limit = 10 }) {
     if (!apiKey) throw new Error("Last.fm key missing");
 	if (!artist) return [];
@@ -214,12 +202,10 @@ export async function lastfmGetArtistTopTracks({ apiKey, artist, limit = 10 }) {
     const res = await fetch(url.toString());
     const data = await res.json();
 
-    // Last.fm uses { error, message } for failures
     if (!res.ok || data?.error) {
         throw new Error(`Last.fm artist.getTopTracks failed: ${data?.message || res.status}`);
     }
 
-    // Can be array OR object OR missing
     const raw = data?.toptracks?.track;
     const items = Array.isArray(raw) ? raw : raw ? [raw] : [];
 
@@ -277,72 +263,6 @@ export async function spotifyResolveManyTrackIds(token, pairs, { market = "GB", 
     return [...best.values()];
 }
 
-/* ---------------------------- Spotify pool helpers ------------------------- */
-/*
-export function getSeedMarket(seedMeta) {
-    // Spotify requires a market param for top-tracks
-    return seedMeta?.available_markets?.[0] || "GB";
-}
-
-export async function getArtistTopTrackIds(token, artistId, market) {
-    if (!artistId) return [];
-    const data = await spotifyFetch(token, `https://api.spotify.com/v1/artists/${artistId}/top-tracks?market=${market}`);
-    return (data?.tracks || []).map((t) => t?.id).filter(Boolean);
-}
-
-export async function getAlbumTrackIds(token, albumId) {
-    if (!albumId) return [];
-    const data = await spotifyFetch(token, `https://api.spotify.com/v1/albums/${albumId}/tracks?limit=50`);
-    return (data?.items || []).map((t) => t?.id).filter(Boolean);
-}
-
-// Playlist harvesting helpers (Spotify search + playlist tracks)
-export async function searchPlaylistIds(token, query, limit = 5) {
-    const q = String(query || "").trim();
-    if (!q) return [];
-
-    const url = new URL("https://api.spotify.com/v1/search");
-    url.searchParams.set("q", q);
-    url.searchParams.set("type", "playlist");
-    url.searchParams.set("limit", String(limit));
-
-    const data = await spotifyFetch(token, url.toString());
-    return (data?.playlists?.items || []).map((p) => p?.id).filter(Boolean);
-}
-
-export async function getPlaylistTrackIds(token, playlistId, limit = 50) {
-    if (!playlistId) return [];
-
-    const url = new URL(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`);
-    url.searchParams.set("limit", String(limit));
-
-    const data = await spotifyFetch(token, url.toString());
-    return (data?.items || []).map((x) => x?.track?.id).filter(Boolean);
-}
-
-export function buildPlaylistQueries(seedMeta) {
-    const artistName = seedMeta?.artists?.[0]?.name || "";
-    const trackName = seedMeta?.name || "";
-
-    const queries = [
-        artistName,
-        `${artistName} radio`,
-        `${artistName} mix`,
-        `${trackName} mix`,
-        `${artistName} indie`,
-    ];
-
-    return uniq(queries.map((q) => String(q || "").trim()).filter(Boolean));
-} */
-
-/**
- * Build a broader candidate pool from:
- *  - ReccoBeats recommendations (variety)
- *  - Same artist top tracks (small sprinkle)
- *  - Same album tracks (small sprinkle)
- *  - Playlist harvesting (crowd signal)
- *  - (optional) Last.fm similar tracks resolved to Spotify IDs
- */
 export async function buildCandidatePool({
     token,
     trackId,
@@ -411,29 +331,7 @@ export async function buildCandidatePool({
     return candidateIds.slice(0, maxCandidates);
 }
 
-/* ------------------------------ Scoring utils ------------------------------ */
-
-export function getYearFromReleaseDate(dateStr) {
-    if (!dateStr) return null;
-    const y = Number(String(dateStr).slice(0, 4));
-    return Number.isFinite(y) ? y : null;
-}
-
-export function clamp01(x) {
-    return Math.max(0, Math.min(1, x));
-}
-
-export function popularitySimilarity(seedPop, recPop) {
-    if (!Number.isFinite(seedPop) || !Number.isFinite(recPop)) return 0.5;
-    return clamp01(1 - Math.abs(seedPop - recPop) / 100);
-}
-
-export function yearSimilarity(seedYear, recYear) {
-    if (!Number.isFinite(seedYear) || !Number.isFinite(recYear)) return 0.5;
-    const diff = Math.min(Math.abs(seedYear - recYear), 20);
-    return clamp01(1 - diff / 20);
-}
-
+// Similarity score for bar chart
 export function similarityScore(seed, rec) {
     const keys = ["danceability", "energy", "valence", "speechiness", "acousticness", "instrumentalness"];
     const weights = {

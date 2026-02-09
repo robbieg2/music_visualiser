@@ -20,8 +20,7 @@ const trackInfo = document.getElementById("track-info");
 const logoutBtn = document.getElementById("logout-btn");
 const backBtn = document.getElementById("back-btn");
 
-// --- UI helpers ---
-
+// Loading wheel while page renders
 function setLoading(on, sub = "") {
 	const overlay = document.getElementById("page-loading");
 	const subEl = document.getElementById("loading-sub");
@@ -55,6 +54,52 @@ function renderTrackHeader(track) {
     `;
 }
 
+// Tooltip helpers
+const tooltipEl = document.getElementById("chart-tooltip");
+
+function showTooltip(html) {
+	if (!tooltipEl) return;
+	tooltipEl.innerHTML = html;
+	tooltipEl.style.display = "block";
+}
+
+function moveTooltip(event) {
+	if (!tooltipEl) return;
+	const pad = 12;
+	tooltipEl.style.left = `${event.clientX + pad}px`;
+	tooltipEl.style.right = `${event.clientY + pad}px`;
+}
+
+function hideTooltip() {
+	if (!tooltipEl) return;
+	tooltipEl.style.display = "none";
+	tooltipEl.innerHTML = "";
+}
+
+function explainlosestDims(seed, rec) {
+	const dims = [
+		{ key: "danceability", label: "Danceability" },
+        { key: "energy", label: "Energy" },		
+        { key: "valence", label: "Valence" },
+        { key: "speechiness", label: "Speechiness" },
+        { key: "acousticness", label: "Acousticness" },
+		{ key: "instrumentalness", label: "Instrumental" },
+    ];
+	
+	const scored = dims
+		.map (d => {
+			const a = Number(seed?.[d.key]);
+			const b = Number(rec?.[d.key]);
+			if (!Number.isFinite(a) || !Number.isFinite(b)) return null;
+			return { ...d, diff: Math.abs(a - b) };
+		})
+		.filter(Boolean)
+		.sort((x, y) => x.diff - y.diff);
+	
+	return scored.slic(0, 3).map(x => x.label);
+}
+
+// Hide visualisations when no audio features are available
 function hideVisualSections() {
     const simRadar = document.getElementById("sim-radar");
     const simBar = document.getElementById("sim-bar");
@@ -88,6 +133,7 @@ function hideVisualSections() {
     }
 }
 
+// Show visualisations when audio features are available
 function showVisualSections() {   
     const radarCard = document.getElementById("card-radar");
     const barCard = document.getElementById("card-bar");
@@ -111,7 +157,8 @@ function showVisualSections() {
 	}
 }
 
-function renderRecommendations(spotifyIds, { subtitle = "" } = {}) {
+// Show recommendation embeds with tasters
+function renderRecommendations(spotifyIds, { subtitle } = {}) {
     const container = document.getElementById("recommendations");
     if (!container) return;
 
@@ -136,12 +183,19 @@ function renderRecommendations(spotifyIds, { subtitle = "" } = {}) {
 		</div>
 	`;
 	
+	const wrapper = document.createElement("div");
+	wrapper.className = "recs-strip";
+	container.appendChild(wrapper);
+	
 	const carousel = document.getElementById("recs-carousel");
 	if (!carousel) return;
 
-    spotifyIds.forEach((id) => {
+    rows.forEach((r) => {
+		const id = r.id;
+		
         const card = document.createElement("div");
 		card.className = "rec-card";
+		card.dataset.trackId = id;
 		card.innerHTML = `
 			<iframe
 				src="https://open.spotify.com/embed/track/${id}"
@@ -152,7 +206,35 @@ function renderRecommendations(spotifyIds, { subtitle = "" } = {}) {
 			</iframe>
 		`;
 		carousel.appendChild(card);
-	});
+		
+		card.addEventListener("mouseenter", (e) => {
+			const name = r.track?.name || "Unknown Track";
+			const artists = (r.track?.artists || []).join(", ") || "Unknown Artist";
+			const simPct = Number.isFinite(r.score) ? Math.round(r.score * 100) : null;
+			
+			const closest = explainClosestDims(window.__seedFeatures, r.features);
+			const closestText = closest.length ? closest.join(" * ") : "-";
+			
+			showTooltip(`
+				<div class="tt-title">${name}</div>
+				<div class="tt-sub">${artists}</div>
+				<div class="tt-row"><span class="tt-muted">Similarity</span><span>${simPct ?? "-"}%</span></div>
+				<div class="tt-row"><span class="tt-muted">Closest</span><span>${closestText}</span></div>
+			`);
+			
+			moveTooltip(e);
+			
+			
+			window.dispatchEvent(new CustomEvent("rec-hover", { detail: { trackId: id } }));
+		});
+		
+		card.addEventListener("mousemove", (e) => moveTooltip(e));
+		
+		card.addEventListener("mouseleave", () => {
+			hideTooltip();
+			window.dispatchEvent(new CustomEvent("rec-hover", { detail: { trackId: null } }));
+		});
+	}
         
 	const leftBtn = document.getElementById("recs-scroll-left");
 	const rightBtn = document.getElementById("recs-scroll-right");
@@ -171,7 +253,7 @@ function renderRecommendations(spotifyIds, { subtitle = "" } = {}) {
 	}
 }
 
-// --- data helpers ---
+// Functions to clean/aid API data
 function normalizeSpotifyIds(list) {
 	return (list || [])
 		.map(x => {
@@ -182,10 +264,7 @@ function normalizeSpotifyIds(list) {
 	.filter(id => typeof id === "string" && id.length > 0);
 }
 
-
 function getSeedMarketFromSeedMeta(seedMeta) {
-    // Spotify “top tracks” uses market; for searches it also helps consistency.
-    // If not present, default to GB.
     return (seedMeta?.available_markets && seedMeta.available_markets[0]) ? seedMeta.available_markets[0] : "GB";
 }
 
@@ -196,7 +275,6 @@ function cleanTrackName(name) {
 		.replace(/\s+/g, " ")
 		.trim();
 }
-
 
 async function getLastfmSimilarPairsSafe({ apiKey, artist, track, limit }) {
     try {
@@ -254,7 +332,6 @@ async function init() {
     try {	
 		setLoading(true, "Fetching audio features...");
 		
-        // 1) Seed features (required for this page)
         const seedFeatures = await getTrackFeaturesFromReccoBeats(track.id);
 
         if (!seedFeatures) {
@@ -263,15 +340,14 @@ async function init() {
         }
 
         showVisualSections();
-
-        // 2) Seed meta
+		
+		// Assorting recommendations
         const seedMeta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks/${track.id}`);
         const market = getSeedMarketFromSeedMeta(seedMeta);
 
         const seedArtistName = seedMeta?.artists?.[0]?.name || track.artists?.[0] || "";
         const seedTrackName = seedMeta?.name || track.name || "";
 
-        // 3) Last.fm similar tracks (pairs)
         const LASTFM_API_KEY = "2e23f6b1b4b3345ab5e33a788a072303";
 
 		const seedTrackNameClean = cleanTrackName(seedTrackName);
@@ -309,7 +385,6 @@ async function init() {
 		
 		console.log("Last.fm pairs:", similarPairs.length, similarPairs.slice(0, 5));
 		
-		// Stop here if Last.fm gives nothing (so you *know* it's the issue)
 		if (!similarPairs.length) {
 		    const recs = document.getElementById("recommendations");
 		    if (recs) {
@@ -326,26 +401,12 @@ async function init() {
 		return;
 		}
 		
-        // 4) Resolve to Spotify IDs
         let candidateIds = await spotifyResolveManyTrackIds(token, similarPairs, { market, concurrency: 5 });
 		
 		candidateIds = normalizeSpotifyIds(candidateIds);
 		
 		console.log("Resolved IDs:", candidateIds.length);
-/*
-        // 5) Fallback: ReccoBeats to keep UX alive
-        if (candidateIds.length < 12) {
-            const recommendations = await fetchReccoBeatsRecommendations(track.id, 40);
-            const recSpotifyIds = recommendations
-                .map((r) => r.spotifyId || extractSpotifyIdFromHref(r.href))
-                .filter(Boolean);
 
-            candidateIds = [...new Set([...candidateIds, ...recSpotifyIds])].slice(0, 40);
-        } else {
-            candidateIds = [...new Set(candidateIds)].slice(0, 40);
-        }
-*/
-        // Guard: no candidates
         if (candidateIds.length === 0) {
             renderRecommendations([]);
             drawMultiRadarChart([{ label: `Seed: ${track.name}`, id: track.id, features: seedFeatures, isSeed: true }]);
@@ -354,7 +415,6 @@ async function init() {
             return;
         }
 
-        // 6) Pull features + meta for candidates
         const recFeaturesMap = await getManyFeaturesFromReccoBeats(candidateIds);
 
         const meta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks?ids=${candidateIds.join(",")}`);
@@ -383,7 +443,6 @@ async function init() {
             })
             .filter(Boolean);
 
-        // Guard: none have features
         if (rows.length === 0) {
             renderRecommendations([]);
             drawMultiRadarChart([{ label: `Seed: ${track.name}`, id: track.id, features: seedFeatures, isSeed: true }]);
@@ -392,13 +451,12 @@ async function init() {
             return;
         }
 
-        // 7) Rank
+        // Ranking songs for best visualisations
         const reranked = rerankByAudioPlusMeta(seedFeatures, seedMeta, rows);
 
         const top10 = reranked.slice(0, 10);
         const top15 = reranked.slice(0, 15);
 
-        // 8) Radar series: seed + up to 4 best matches
         const radarSeries = [
             { label: `Seed: ${track.name}`, id: track.id, features: seedFeatures, isSeed: true },
             ...top10.slice(0, 4).map((r) => ({
@@ -409,8 +467,10 @@ async function init() {
             })),
         ];
 
-        // 9) Render UI
-        renderRecommendations(top10.map(r => r.id), {
+        // Render UI
+		window.__seedFeatures = seedFeatures;
+		
+        renderRecommendations(top10, {
 			subtitle: recMode === "similar tracks"
 				? "Based on similar songs"
 				: "Based on similar artists",

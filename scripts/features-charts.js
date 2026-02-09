@@ -1,5 +1,6 @@
 // features-charts.js
 
+// Radar chart comparing recommendations with seed song
 export function drawMultiRadarChart(series) {
     const container = document.getElementById("sim-radar");
     d3.select("#sim-radar").selectAll("svg").remove();
@@ -43,8 +44,6 @@ export function drawMultiRadarChart(series) {
         container.innerHTML += `<p>No usable feature values returned for this track</p>`;
         return;
     }
-
-	console.log("Radar series sample:", normalized[0]);
 	
     const width = 420;
     const height = 420;
@@ -125,6 +124,8 @@ export function drawMultiRadarChart(series) {
 			.attr("fill", "#fff");
 	}
 	
+
+	
 	const legend = d3.select("#sim-radar")
     .append("div")
     .style("display", "flex")
@@ -134,7 +135,7 @@ export function drawMultiRadarChart(series) {
     .style("margin-top", "10px");
 
 	const state = {
-		soloKey: null, // null = show all
+		soloKey: null,
 	};
 
 	function showAll() {
@@ -142,14 +143,11 @@ export function drawMultiRadarChart(series) {
 	}
 
 	function showSolo(key) {
-		// Always show seed
 		svg.selectAll(".radar-series:not(.seed-series").style("display", "none");
 
-		// Hide all non-seed series
 		svg.selectAll(".seed-series").style("display", null);
 		svg.selectAll(".seed-dot").style("display", null);
-
-		// Show chosen non-seed series
+	
 		svg.selectAll(`.series-${key}`).style("display", null);
 		
 		svg.selectAll(".seed-series").raise();
@@ -185,12 +183,10 @@ export function drawMultiRadarChart(series) {
 			.style("font-weight", s.isSeed ? "600" : "400")
 			.text(s.label.length > 34 ? s.label.slice(0, 34) + "…" : s.label);
 
-		// Seed legend item is informational only (not clickable)
 		if (s.isSeed) return;
 
 		item.on("click", () => {
 			if (state.soloKey === key) {
-				// turn solo OFF → show all
 				state.soloKey = null;
 				showAll();
 
@@ -198,7 +194,6 @@ export function drawMultiRadarChart(series) {
 					.style("opacity", "0.95")
 					.style("text-decoration", "none");
 			} else {
-				// turn solo ON → show seed + selected
 				state.soloKey = key;
 				showSolo(key);
 
@@ -206,7 +201,6 @@ export function drawMultiRadarChart(series) {
 					.style("opacity", "0.35")
 					.style("text-decoration", "line-through");
 
-				// keep seed legend prominent
 				legend.selectAll("button")
 					.filter(function () {
 						return this.textContent && this.textContent.startsWith("Seed");
@@ -214,16 +208,37 @@ export function drawMultiRadarChart(series) {
 					.style("opacity", "1")
 					.style("text-decoration", "none");
 
-				// keep selected item prominent
 				item
 					.style("opacity", "1")
 					.style("text-decoration", "none");
 			}
 		});
 	});
-
+	window.removeEventListener("rec-hover", window.__radarHoverHandler);
+	
+	window.__radarHoverHandler = (e) => {
+		const id = e.detail?.trackId;
+		const root = d3.select(container);
+		
+		root.selectAll("path-radar-series")
+			.style("opacity", id ? 0.12 : null);
+			
+		root.selectAll("path-seed-series")
+			.style("opacity", 1)
+			.style("stroke-width", 3.2);
+			
+		if (id) {
+			const key = cssSafeId(id);
+			root.selectAll(`.series-${key}`)
+				.style("opacity", 1);
+				.style("stroke-width", 3.2);
+		}
+	};
+	
+	window.addEventListener("rec-hover", window.__radarHoverHandler);
 }
 
+// Bar chart showing similarity scores
 export function drawSimilarityBarChart(rows) {
     const container = document.getElementById("sim-bar");
     if (!container) return;
@@ -273,6 +288,7 @@ export function drawSimilarityBarChart(rows) {
         .attr("width", (d) => x(d.score))
         .attr("height", y.bandwidth())
         .attr("fill", "#1db954")
+		.attr("class", d => `bar bar-${d.id}`)
         .style("cursor", "pointer")
         .on("click", (event, d) => {
             const trackParam = encodeURIComponent(JSON.stringify(d.track));
@@ -288,8 +304,24 @@ export function drawSimilarityBarChart(rows) {
         .attr("fill", "#fff")
         .attr("font-size", "12px")
         .text((d) => d.score.toFixed(2));
+		
+	window.removeEventListener("rec-hover", window.__barHoverHandler);
+	
+	window.__barHoverHandler = (e) => {
+		const id = e.detail?.trackId;
+		
+		d3.select(container).selectAll("rect")
+			.style("opacity", id ? 0.25 : 1);
+		if (id) {
+			d3.select(container).selectAll(`.bar-${id}`)
+				.style("opacity", 1);
+		}
+	};
+	
+	window.addEventListener("rec-hover", window.__barHoverHandler);
 }
 
+// Scatter chart showing recommended songs
 export function drawSimilarityScatter(seedFeatures, rows) {
     const container = document.getElementById("sim-scatter");
     if (!container) return;
@@ -402,6 +434,7 @@ export function drawSimilarityScatter(seedFeatures, rows) {
             .attr("cy", (d) => y(d.y))
             .attr("r", (d) => 6 + d.score * 6)
             .attr("fill", "#1db954")
+			.attr("class", d => `rec-dot-${d.id}`)
             .style("opacity", 0.75)
             .style("cursor", "pointer")
 			.on("mouseenter", (event, d) => {
@@ -437,6 +470,24 @@ export function drawSimilarityScatter(seedFeatures, rows) {
             g.append("circle").attr("cx", x(seedX)).attr("cy", y(seedY)).attr("r", 10).attr("fill", "#fff").style("opacity", 0.9);
             g.append("text").attr("x", x(seedX) + 12).attr("y", y(seedY) + 4).attr("fill", "#fff").attr("font-size", "12px").text("Seed");
         }
+		
+		window.removeEventListener("rec-hover", window.__scatterHoverHandler);
+	
+		window.__scatterHoverHandler = (e) => {
+			const id = e.detail?.trackId;
+			
+			d3.select(container).selectAll("circle-rect")
+				.style("opacity", id ? 0.25 : 0.75)
+				.attr("stroke", "none");
+			if (id) {
+				d3.select(container).selectAll(`.dot-${id}`)
+					.style("opacity", 1)
+					.attr("stoke", "#fff")
+					.attr("stroke-width", 1.5);
+			}
+		};
+		
+		window.addEventListener("rec-hover", window.__scatterHoverHandler);
     }
 
     render();
