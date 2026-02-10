@@ -249,9 +249,7 @@ function renderRecommendations(items = [], { subtitle } = {}) {
 		card.addEventListener("mouseleave", () => {
 			hideTooltip();
 			window.dispatchEvent(new CustomEvent("rec-hover", { detail: { trackId: null } }));
-		});
-		
-		wrapper.appendChild(card);	
+		});	
 	});
         
 	const leftBtn = document.getElementById("recs-scroll-left");
