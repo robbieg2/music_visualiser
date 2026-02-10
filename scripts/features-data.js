@@ -360,6 +360,12 @@ export function similarityScore(seed, rec) {
     return 1 - d / wsum;
 }
 
+export function getYearFromReleaseDate(dataStr) {
+	if (!dateStr) return null;
+	const y = Number(String(dateStr).slice(0, 4));
+	return Number.isFinite(y) ? y : null;
+}
+
 export function rerankByAudioPlusMeta(seedFeatures, seedMeta, rows) {
     const seedPop = Number(seedMeta?.popularity);
     const seedYear = getYearFromReleaseDate(seedMeta?.album?.release_date);
