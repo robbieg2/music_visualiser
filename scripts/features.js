@@ -191,6 +191,17 @@ function renderRecommendations(items = [], { subtitle } = {}) {
 		.map((x) => (typeof x === "string" ? { id: x } : x))
 		.filter((x) => x && x.id);
 		
+	if (rows.length === 0) {
+		container.innerHTML = `
+			<div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px;">
+			<h3 style="margin:0;">Recommended Tracks</h3>
+				${subtitle ? `<span class="muted" style="font-size:12px;">${subtitle}</span>` : ""}
+			</div>
+			<p class="muted" style="margin-top:10px;">No recommendations available</p>
+		`;
+		return;
+	}
+	
 	container.innerHTML = `
 		<div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px;">
 			<h3 style="margin:0;">Recommended Tracks</h3>
@@ -224,32 +235,44 @@ function renderRecommendations(items = [], { subtitle } = {}) {
 		`;
 		
 		card.addEventListener("mouseenter", (e) => {
-			const name = r.track?.name || "Unknown Track";
-			const artists = (r.track?.artists || []).join(", ") || "Unknown Artist";
-			const simPct = Number.isFinite(r.score) ? Math.round(r.score * 100) : null;
+			try {
+				const name = r.track?.name || "Unknown Track";
+				const artists = (r.track?.artists || []).join(", ") || "Unknown Artist";
+				const simPct = Number.isFinite(r.score) ? Math.round(r.score * 100) : null;
+				
+				const closest = 
+					typeof explainClosestDims === "function" && window.__seedFeatures && r.features
+						? explainClosestDims(windows.__seedFeatures, r.features)
+						: [];
+						
+				const closestText = closest.length ? closest.join(" * ") : "-";
 			
-			const closest = explainClosestDims(window.__seedFeatures, r.features);
-			const closestText = closest.length ? closest.join(" * ") : "-";
-			
-			showTooltip(`
-				<div class="tt-title">${name}</div>
-				<div class="tt-sub">${artists}</div>
-				<div class="tt-row"><span class="tt-muted">Similarity</span><span>${simPct ?? "-"}%</span></div>
-				<div class="tt-row"><span class="tt-muted">Closest</span><span>${closestText}</span></div>
-			`);
-			
-			moveTooltip(e);
-			
+				if (typeof showTooltip === "function") {
+					showTooltip(`
+						<div class="tt-title">${name}</div>
+						<div class="tt-sub">${artists}</div>
+						<div class="tt-row"><span class="tt-muted">Similarity</span><span>${simPct ?? "-"}%</span></div>
+						<div class="tt-row"><span class="tt-muted">Closest</span><span>${closestText}</span></div>
+					`);
+				}
+				if (typeof moveTooltip === "function") moveTooltip(e);
+			} catch (err) {
+				console.warn("Tooltip error:", err);
+			}
 			
 			window.dispatchEvent(new CustomEvent("rec-hover", { detail: { trackId: id } }));
 		});
 		
-		card.addEventListener("mousemove", (e) => moveTooltip(e));
+		card.addEventListener("mousemove", (e) => {
+			if (typeof moveTooltip === "function") moveTooltip(e);
+		});
 		
 		card.addEventListener("mouseleave", () => {
-			hideTooltip();
+			if (typeof hideTooltip === "function") hideTooltip();
 			window.dispatchEvent(new CustomEvent("rec-hover", { detail: { trackId: null } }));
 		});	
+		
+		carousel.appendChild(card);
 	});
         
 	const leftBtn = document.getElementById("recs-scroll-left");
