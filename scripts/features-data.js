@@ -95,7 +95,7 @@ export async function getManyFeaturesFromReccoBeats(spotifyIds) {
 
     return map;
 }
-
+/*
 // Get recommendations from ReccoBeats 
 export async function fetchReccoBeatsRecommendations(spotifyTrackId, size = 20) {
     if (!spotifyTrackId) return [];
@@ -116,7 +116,7 @@ export async function fetchReccoBeatsRecommendations(spotifyTrackId, size = 20) 
     const data = await res.json();
     return data?.content || [];
 }
-
+*/
 // Get similar tracks from Last.fm API
 export async function lastfmGetSimilarTracks({ apiKey, artist, track, limit = 30 }) {
     if (!apiKey) throw new Error("Last.fm key missing");
@@ -358,12 +358,6 @@ export function similarityScore(seed, rec) {
 
     if (wsum === 0) return 0;
     return 1 - d / wsum;
-}
-
-export function getYearFromReleaseDate(dataStr) {
-	if (!dateStr) return null;
-	const y = Number(String(dateStr).slice(0, 4));
-	return Number.isFinite(y) ? y : null;
 }
 
 export function rerankByAudioPlusMeta(seedFeatures, seedMeta, rows) {

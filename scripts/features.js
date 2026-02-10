@@ -2,10 +2,10 @@
 
 import {
     extractSpotifyIdFromHref,
-    fetchReccoBeatsRecommendations,
+//    fetchReccoBeatsRecommendations,
     getManyFeaturesFromReccoBeats,
     getTrackFeaturesFromReccoBeats,
-    rerankByAudioPlusMeta,
+//    rerankByAudioPlusMeta,
     similarityScore,
     spotifyFetch,
     spotifyResolveManyTrackIds,
@@ -480,7 +480,7 @@ async function init() {
         }
 
         // Ranking songs for best visualisations
-        const reranked = rerankByAudioPlusMeta(seedFeatures, seedMeta, rows);
+//        const reranked = rerankByAudioPlusMeta(seedFeatures, seedMeta, rows);
 
         const top10 = reranked.slice(0, 10);
         const top15 = reranked.slice(0, 15);
