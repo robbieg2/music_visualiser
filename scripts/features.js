@@ -445,8 +445,8 @@ async function init() {
 
         const recFeaturesMap = await getManyFeaturesFromReccoBeats(candidateIds);
 
-//        const meta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks?ids=${candidateIds.join(",")}`);
-//        const metaMap = new Map((meta.tracks || []).filter(Boolean).map((t) => [t.id, t]));
+        const meta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks?ids=${candidateIds.join(",")}`);
+        const metaMap = new Map((meta.tracks || []).filter(Boolean).map((t) => [t.id, t]));
 
         const rows = candidateIds
             .map((id) => {
