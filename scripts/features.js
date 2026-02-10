@@ -99,6 +99,27 @@ function explainlosestDims(seed, rec) {
 	return scored.slic(0, 3).map(x => x.label);
 }
 
+function attachSimilarityHelpPopover() {
+	const btn = document.getElementById("sim-help");
+	if (!btn) return;
+	
+	const html = `
+		<div class="tt-title">How similarity is calculated</div>
+		<div class="tt-sub">Key audio features are compared between your chosen track and each recommendation.</div>
+		<div class="tt-row"><span class="tt-muted">Features</span><span>Danceability, Energy, Valence</span></div>
+		<div class="tt-row"><span class="tt-muted">Lower weight</span><span>Speechiness, Acousticness, Instrumental</span></div>
+		<div style="margin-top:8px; font-size:12px; opacity:0.85;">Score = 1 - (weighted average of absolute differences).<br/>Higher score = more similar audio profile.</div>
+	`;
+	
+	btn.addEventListener("mouseenter", (e) => {
+		showTooltip(html);
+		moveTooltip(e);
+	});
+	
+	btn.addEventListener("mousemove", (e) => moveTooltip(e));
+	btn.addEventListener("mouseleave", () => hideTooltip());
+}
+
 // Hide visualisations when no audio features are available
 function hideVisualSections() {
     const simRadar = document.getElementById("sim-radar");
@@ -106,6 +127,7 @@ function hideVisualSections() {
     const simScatter = document.getElementById("sim-scatter");
 	const msgCard = document.getElementById("card-message");
     const noFeat = document.getElementById("no-features");
+	const tip = document.getElementById("sim-tip");
 	
     const radarCard = document.getElementById("card-radar");
     const barCard = document.getElementById("card-bar");
@@ -120,6 +142,7 @@ function hideVisualSections() {
     if (scatterCard) scatterCard.style.display = "none";
     if (barCard) barCard.style.display = "none";
     if (radarCard) radarCard.style.display = "none";
+	if (tip) tip.style.display = "none";
 
 	if (msgCard) msgCard.style.display = "flex";
     if (noFeat) {
@@ -141,6 +164,7 @@ function showVisualSections() {
     const recsCard = document.getElementById("recs-card");
 	const msgCard = document.getElementById("card-message");
 	const noFeat = document.getElementById("no-features");
+	const tip = document.getElementById("sim-tip");
 	
     if (recsCard) recsCard.style.display = "block";
     if (scatterCard) scatterCard.style.display = "block";
@@ -155,6 +179,7 @@ function showVisualSections() {
 		noFeat.style.display = "none";
 		noFeat.innerHTML = "";
 	}
+	if (tip) tip.style.display = "flex";
 }
 
 // Show recommendation embeds with tasters
@@ -328,6 +353,7 @@ async function init() {
     }
 
     renderTrackHeader(track);
+	attachSimilarityHelpPopover();
 
     const simRadar = document.getElementById("sim-radar");
 
