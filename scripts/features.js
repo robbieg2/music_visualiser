@@ -183,19 +183,15 @@ function showVisualSections() {
 }
 
 // Show recommendation embeds with tasters
-function renderRecommendations(spotifyIds, { subtitle } = {}) {
+function renderRecommendations(items = [], { subtitle } = {}) {
     const container = document.getElementById("recommendations");
     if (!container) return;
-
-    if (!spotifyIds || spotifyIds.length === 0) {
-        container.innerHTML = `
-            <h3>Recommended Tracks</h3>
-            <p class="muted">No recommendations available.</p>
-        `;
-        return;
-    }
-
-    container.innerHTML = `
+	
+	const rows = (items || [])
+		.map((x) => (typeof x === "string" ? { id: x } : x))
+		.filter((x) => x && x.id);
+		
+	container.innerHTML = `
 		<div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px;">
 			<h3 style="margin:0;">Recommended Tracks</h3>
 			${subtitle ? `<span class="muted" style="font-size:12px;">${subtitle}</span>` : ""}
@@ -207,10 +203,6 @@ function renderRecommendations(spotifyIds, { subtitle } = {}) {
 			<button class="scroll-btn" id="recs-scroll-right" aria-label="Scroll right">></button>
 		</div>
 	`;
-	
-	const wrapper = document.createElement("div");
-	wrapper.className = "recs-strip";
-	container.appendChild(wrapper);
 	
 	const carousel = document.getElementById("recs-carousel");
 	if (!carousel) return;
@@ -230,7 +222,6 @@ function renderRecommendations(spotifyIds, { subtitle } = {}) {
 				allow="encrypted-media">
 			</iframe>
 		`;
-		carousel.appendChild(card);
 		
 		card.addEventListener("mouseenter", (e) => {
 			const name = r.track?.name || "Unknown Track";
@@ -403,7 +394,7 @@ async function init() {
 				const tops = await lastfmGetArtistTopTracks({
 					apiKey: LASTFM_API_KEY,
 					artist: a.name,
-					limit: 4,
+					limit: 2,
 				});
 				topTrackPairs.push(...tops);
 			}
