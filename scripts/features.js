@@ -445,8 +445,8 @@ async function init() {
 
         const recFeaturesMap = await getManyFeaturesFromReccoBeats(candidateIds);
 
-        const meta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks?ids=${candidateIds.join(",")}`);
-        const metaMap = new Map((meta.tracks || []).filter(Boolean).map((t) => [t.id, t]));
+//        const meta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks?ids=${candidateIds.join(",")}`);
+//        const metaMap = new Map((meta.tracks || []).filter(Boolean).map((t) => [t.id, t]));
 
         const rows = candidateIds
             .map((id) => {
@@ -482,8 +482,12 @@ async function init() {
         // Ranking songs for best visualisations
 //        const reranked = rerankByAudioPlusMeta(seedFeatures, seedMeta, rows);
 
-        const top10 = reranked.slice(0, 10);
-        const top15 = reranked.slice(0, 15);
+		const ranked = rows
+			.slice()
+			.sort((a, b) => b.score - a.score);
+			
+        const top10 = ranked.slice(0, 10);
+        const top15 = ranked.slice(0, 15);
 
         const radarSeries = [
             { label: `Seed: ${track.name}`, id: track.id, features: seedFeatures, isSeed: true },
