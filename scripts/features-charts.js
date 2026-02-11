@@ -305,13 +305,15 @@ export function drawSimilarityBarChart(rows) {
 		.attr("class", d => `bar bar-${cssSafeId(d.id)}`)
         .style("cursor", "pointer")
 		
+		.on("mouseenter", (event, d) => linkHoverHighlight({ trackId: d.id, on: true }))
+		.on("mouseleave", (event, d) => linkHoverHighlight({ trackId: d.id, on: false }))
+		
         .on("click", (event, d) => {
             const trackParam = encodeURIComponent(JSON.stringify(d.track));
             window.location.href = `features.html?track=${trackParam}`;
         });
 		
-		.on("mouseenter", (event, d) => linkHoverHighlight({ trackId: d.id, on: true }))
-		.on("mouseleave", (event, d) => linkHoverHighlight({ trackId: d.id, on: false }))
+		
 
     g.selectAll(".score-label")
         .data(rows)
