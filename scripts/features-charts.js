@@ -1,5 +1,24 @@
 // features-charts.js
 
+function cssSafeId(id) {
+	return String(id || "")
+		.replace(/[^a-zA-Z0-9_-]/g, "_");
+}
+	
+export function linkHoverHighlight( { trackId, on }) {
+	const key = cssSafeId(trackId);
+		
+	d3.selectAll(`.scatter-dot.dot-${key}`)
+		.attr("stroke", on ? "#fff" : "none")
+		.attr("stroke-width", on ? 2 : 0)
+		.style("opacity", on ? 1 : null);
+			
+	d3.selectAll(`.bar-row.bar-${key}`)
+		.attr("stroke", on ? "#fff" : "none")
+		.attr("stroke-width", on ? 2 : 0)
+		.style("opacity", on ? 1 : null);
+}
+	
 // Radar chart comparing recommendations with seed song
 export function drawMultiRadarChart(series) {
     const container = document.getElementById("sim-radar");
@@ -13,25 +32,6 @@ export function drawMultiRadarChart(series) {
         { key: "acousticness", label: "Acousticness" },
 		{ key: "instrumentalness", label: "Instrumental" },
     ];
-	
-	function cssSafeId(id) {
-		return String(id || "")
-			.replace(/[^a-zA-Z0-9_-]/g, "_");
-	}
-	
-	function linkHoverHighlight( { trackId, on }) {
-		const key = cssSafeId(trackId);
-		
-		d3.selectAll(`.scatter-dot.dot-${key}`)
-			.attr("stroke", on ? "#fff" : "none")
-			.attr("stroke-width", on ? 2 : 0)
-			.style("opacity", on ? 1 : null);
-			
-		d3.selectAll(`.bar-row.bar-${key}`)
-			.attr("stroke", on ? "#fff" : "none")
-			.attr("stroke-width", on ? 2 : 0)
-			.style("opacity", on ? 1 : null);
-	}
 	
 	function setSeriesVisible(svgRoot, seriesId, visible) {
 		const key = cssSafeId(seriesId);
@@ -313,8 +313,6 @@ export function drawSimilarityBarChart(rows) {
             window.location.href = `features.html?track=${trackParam}`;
         });
 		
-		
-
     g.selectAll(".score-label")
         .data(rows)
         .enter()
