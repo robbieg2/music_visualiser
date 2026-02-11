@@ -63,20 +63,13 @@ function showTooltip(html) {
 	tooltipEl.style.display = "block";
 }
 
-function moveTooltip(event) {
-	if (!tooltipEl) return;
-	const pad = 12;
-	tooltipEl.style.left = `${event.clientX + pad}px`;
-	tooltipEl.style.right = `${event.clientY + pad}px`;
-}
-
 function hideTooltip() {
 	if (!tooltipEl) return;
 	tooltipEl.style.display = "none";
 	tooltipEl.innerHTML = "";
 }
 
-function explainlosestDims(seed, rec) {
+function explainClosestDims(seed, rec) {
 	const dims = [
 		{ key: "danceability", label: "Danceability" },
         { key: "energy", label: "Energy" },		
