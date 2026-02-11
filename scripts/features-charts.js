@@ -19,6 +19,20 @@ export function drawMultiRadarChart(series) {
 			.replace(/[^a-zA-Z0-9_-]/g, "_");
 	}
 	
+	export function linkHoverHighlight( { trackId, on }) {
+		const key = cssSafeId(trackId);
+		
+		d3.selectAll(`.scatter-dot.dot-${key}`)
+			.attr("stroke", on ? "#fff" : "none")
+			.attr("stroke-width", on ? 2 : 0)
+			.style("opacity", on ? 1 : null);
+			
+		d3.selectAll(`.bar-row.bar-${key}`)
+			.attr("stroke", on ? "#fff" : "none")
+			.attr("stroke-width", on ? 2 : 0)
+			.style("opacity", on ? 1 : null);
+	}
+	
 	function setSeriesVisible(svgRoot, seriesId, visible) {
 		const key = cssSafeId(seriesId);
 		svgRoot.selectAll(`.series-${key}`)
@@ -288,12 +302,16 @@ export function drawSimilarityBarChart(rows) {
         .attr("width", (d) => x(d.score))
         .attr("height", y.bandwidth())
         .attr("fill", "#1db954")
-		.attr("class", d => `bar bar-${d.id}`)
+		.attr("class", d => `bar bar-${cssSafeId(d.id)}`)
         .style("cursor", "pointer")
+		
         .on("click", (event, d) => {
             const trackParam = encodeURIComponent(JSON.stringify(d.track));
             window.location.href = `features.html?track=${trackParam}`;
         });
+		
+		.on("mouseenter", (event, d) => linkHoverHighlight({ trackId: d.id, on: true }))
+		.on("mouseleave", (event, d) => linkHoverHighlight({ trackId: d.id, on: false }))
 
     g.selectAll(".score-label")
         .data(rows)
@@ -343,9 +361,26 @@ export function drawSimilarityScatter(seedFeatures, rows) {
 	
 	function moveTooltip(event) {
 		if (!tooltip) return;
+		
 		const pad = 12;
-		tooltip.style.left = `${event.clientX + pad}px`;
-		tooltip.style.top = `${event.clientY + pad}px`;
+		const tw = tooltip.offsetWidth || 260;
+		const th = tooltipHeight || 80;
+		
+		const vw = window.innerWidth;
+		const vh = window.innerHeight;
+		
+		let x = event.clientX + pad;
+		let y = event.clientY + pad;
+		
+		if (x + tw + pad > vw) x = event.clientX - tw - pad;
+		if (y + th + pad > vh) y = event.clientY - th - pad;
+		
+		x = Math.max(pad, Math.min(vw - tw - pad, x));
+		y = Math.ax(pad, Math.min(vh - th - pad, y));
+		
+		tooltip.style.left = `${x}px`;
+		tooltip.style.top = `${y}px`;
+		tooltip.style.transform = "none";
 	}
 	
 	function hideTooltip() {
@@ -434,12 +469,14 @@ export function drawSimilarityScatter(seedFeatures, rows) {
             .attr("cy", (d) => y(d.y))
             .attr("r", (d) => 6 + d.score * 6)
             .attr("fill", "#1db954")
-			.attr("class", d => `rec-dot-${d.id}`)
+			.attr("class", d => `rec-dot-${cssSafeId(d.id)}`)
             .style("opacity", 0.75)
             .style("cursor", "pointer")
+			
 			.on("mouseenter", (event, d) => {
 				const name = d?.track?.name || "Unknown Track";
 				const artists = (d?.track?.artists || []).join(", ") || "Unknown Artist";
+				linkHoverHighlight({ trackId: d.id, on:true });
 				
 				showTooltip(`
 					<div class="tt-title">${name}</div>
@@ -457,6 +494,7 @@ export function drawSimilarityScatter(seedFeatures, rows) {
 
 			.on("mouseleave", (event) => {
 				hideTooltip();
+				linkHoverHighlight({ trackId: d.id, on:false });
 				d3.select(event.currentTarget)
 					.style("opacity", 0.75)
 					.attr("stroke", "none");
