@@ -19,7 +19,7 @@ export function drawMultiRadarChart(series) {
 			.replace(/[^a-zA-Z0-9_-]/g, "_");
 	}
 	
-	export function linkHoverHighlight( { trackId, on }) {
+	function linkHoverHighlight( { trackId, on }) {
 		const key = cssSafeId(trackId);
 		
 		d3.selectAll(`.scatter-dot.dot-${key}`)
