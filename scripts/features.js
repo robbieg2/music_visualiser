@@ -255,16 +255,11 @@ function renderRecommendations(items = [], { subtitle } = {}) {
 						<div class="tt-row"><span class="tt-muted">Closest</span><span>${closestText}</span></div>
 					`);
 				}
-				if (typeof moveTooltip === "function") moveTooltip(e);
 			} catch (err) {
 				console.warn("Tooltip error:", err);
 			}
 			
 			window.dispatchEvent(new CustomEvent("rec-hover", { detail: { trackId: id } }));
-		});
-		
-		card.addEventListener("mousemove", (e) => {
-			if (typeof moveTooltip === "function") moveTooltip(e);
 		});
 		
 		card.addEventListener("mouseleave", () => {

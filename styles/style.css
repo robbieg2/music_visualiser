@@ -270,6 +270,15 @@ button {
     }
 }
 
+.chart-tip {
+	display: flex;
+	justify-content: flex-end;
+	font-size: 13px;
+	opacity: 0.85;
+	margin: 6px 0 10px;
+	padding-right: 4px;
+}
+
 .card.centered-message {
 	grid-column: 1 / -1;
 	align-items: center;
@@ -313,8 +322,6 @@ button {
 	border-radius: 12px;
 }
 
-
-
 #recommendations .rec-card iframe {
 	width: 100%;
 	border-radius: 12px;
@@ -331,15 +338,22 @@ button {
     color: #fff;
     font-size: 12px;
     line-height: 1.25;
-    max-width: 260px;
+	min-width: 180px;
+    max-width: 320px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.35);
 }
 .chart-tooltip .tt-title {
     font-weight: 600;
     margin-bottom: 2px;
+	white-space: normal;
+	word-break: normal;
+	overflow-wrap: break-word;
 }
 .chart-tooltip .tt-sub {
     opacity: 0.85;
+	white-space: normal;
+	word-break: normal;
+	overflow-wrap: break-word;
 }
 
 .chart-tooltip .tt-row {
@@ -393,6 +407,4 @@ button {
 	font-size: 13px;
 }
 
-.recs-strip {
-	display
 	
