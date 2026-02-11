@@ -106,7 +106,6 @@ function attachSimilarityHelpPopover() {
 	
 	btn.addEventListener("mouseenter", (e) => {
 		showTooltip(html);
-		moveTooltip(e);
 	});
 	
 	btn.addEventListener("mousemove", (e) => moveTooltip(e));
@@ -120,7 +119,7 @@ function hideVisualSections() {
     const simScatter = document.getElementById("sim-scatter");
 	const msgCard = document.getElementById("card-message");
     const noFeat = document.getElementById("no-features");
-	const tip = document.getElementById("sim-tip");
+	const tip = document.getElementById("chart-tip");
 	
     const radarCard = document.getElementById("card-radar");
     const barCard = document.getElementById("card-bar");
@@ -157,7 +156,7 @@ function showVisualSections() {
     const recsCard = document.getElementById("recs-card");
 	const msgCard = document.getElementById("card-message");
 	const noFeat = document.getElementById("no-features");
-	const tip = document.getElementById("sim-tip");
+	const tip = document.getElementById("chart-tip");
 	
     if (recsCard) recsCard.style.display = "block";
     if (scatterCard) scatterCard.style.display = "block";
