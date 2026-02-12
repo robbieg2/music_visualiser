@@ -54,7 +54,7 @@ function renderTrackHeader(track) {
     `;
 }
 
-/*
+
 // Tooltip helpers
 const tooltipEl = document.getElementById("chart-tooltip");
 
@@ -69,7 +69,7 @@ function hideTooltip() {
 	tooltipEl.style.display = "none";
 	tooltipEl.innerHTML = "";
 }
-
+/*
 function explainClosestDims(seed, rec) {
 	const dims = [
 		{ key: "danceability", label: "Danceability" },
