@@ -53,7 +53,7 @@ function hideTooltip() {
 	tt.style.display = "none";
 }
 
-function showTooltip(html) {
+function showTooltipAtRect(html, rect) {
 	const tt = getTooltipEl();
 	if (!tt || !rect) return;
 	tt.innerHTML = html;
@@ -431,8 +431,9 @@ export function drawSimilarityBarChart(rows = []) {
 	window.removeEventListener("rec-hover", window.__barHoverHandler);
 	
 	window.__barHoverHandler = (e) => {
-		const id = e.detail?.trackId;
-		const payloadRow = e.detail?.payload.row || null;
+		const detail = e?.detail || {};
+		const id = detail.trackId || null;
+		const payloadRow = e.detail?.payload?.row || null;
 		
 		g.selectAll("rect.bar-rect").style("opacity", id ? 0.25 : 0.85).attr("stroke", "none");
 		d3.selectAll(".scatter-dot").style("opacity", id ? 0.25 : 0.75).attr("stroke", "none");
