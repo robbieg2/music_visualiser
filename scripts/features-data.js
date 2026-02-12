@@ -211,7 +211,7 @@ export async function spotifyResolveManyTrackIds(token, pairs, { market = "GB", 
     const list = Array.isArray(pairs) ? pairs : [];
     if (!list.length) return [];
 
-    const out = [];
+    const results = [];
     let i = 0;
 
     async function worker() {
