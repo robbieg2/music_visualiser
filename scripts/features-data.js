@@ -40,7 +40,9 @@ export async function spotifyFetch(token, url) {
 // Get audio features from ReccoBeats
 export async function getTrackFeaturesFromReccoBeats(spotifyTrackId) {
     if (!spotifyTrackId) return null;
-    if (audioFeatureCache.has(spotifyTrackId)) return audioFeatureCache.get(spotifyTrackId);
+    if (audioFeatureCache.has(spotifyTrackId)) {
+		return audioFeatureCache.get(spotifyTrackId);
+	}
 
     const url = `${RECCOBEATS_BASE}/audio-features?ids=${encodeURIComponent(spotifyTrackId)}`;
     const res = await fetch(url);
@@ -58,13 +60,10 @@ export async function getTrackFeaturesFromReccoBeats(spotifyTrackId) {
     const data = await res.json();
     const list = data?.content;
 
-    if (Array.isArray(list) && list.length > 0 && list[0]) {
-        const features = list[0];
-        audioFeatureCache.set(spotifyTrackId, features);
-        return features;
-    }
-
-    return null;
+    const features = Array.isArray(list) && list[0] : null;
+    if (features) audioFeatureCache.set(spotifyTrackId, features);
+     
+	return features;
 }
 
 export async function getManyFeaturesFromReccoBeats(spotifyIds) {
@@ -95,28 +94,7 @@ export async function getManyFeaturesFromReccoBeats(spotifyIds) {
 
     return map;
 }
-/*
-// Get recommendations from ReccoBeats 
-export async function fetchReccoBeatsRecommendations(spotifyTrackId, size = 20) {
-    if (!spotifyTrackId) return [];
 
-    const url = new URL(`${RECCOBEATS_BASE}/track/recommendation`);
-    url.searchParams.set("seeds", spotifyTrackId);
-    url.searchParams.set("size", String(size));
-
-    const res = await fetch(url.toString());
-
-    if (res.status === 400) return [];
-
-    if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`Recommendation failed: ${res.status} ${text}`);
-    }
-
-    const data = await res.json();
-    return data?.content || [];
-}
-*/
 // Get similar tracks from Last.fm API
 export async function lastfmGetSimilarTracks({ apiKey, artist, track, limit = 30 }) {
     if (!apiKey) throw new Error("Last.fm key missing");
@@ -136,8 +114,6 @@ export async function lastfmGetSimilarTracks({ apiKey, artist, track, limit = 30
 
     const res = await fetch(url.toString());
     const data = await res.json();
-	
-	console.log("[Last.fm] getSimilar request:", { artist: a, track: t, status: res.status, data });
 
     if (!res.ok || data?.error) {
         throw new Error(`Last.fm getSimilar failed: ${data?.message || res.status}`);
@@ -217,7 +193,6 @@ export async function lastfmGetArtistTopTracks({ apiKey, artist, limit = 10 }) {
         .filter(t => t.name && t.artist);
 }
 
-// 2) Resolve a (track, artist) pair to a Spotify track ID
 export async function spotifyResolveTrackId(token, { name, artist, market = "GB" }) {
     if (!name || !artist) return null;
 
@@ -232,7 +207,6 @@ export async function spotifyResolveTrackId(token, { name, artist, market = "GB"
     return data?.tracks?.items?.[0]?.id || null;
 }
 
-// 3) Resolve many pairs with throttling + de-dupe
 export async function spotifyResolveManyTrackIds(token, pairs, { market = "GB", concurrency = 5 } = {}) {
     const list = Array.isArray(pairs) ? pairs : [];
     if (!list.length) return [];
@@ -248,90 +222,16 @@ export async function spotifyResolveManyTrackIds(token, pairs, { market = "GB", 
                 const id = await spotifyResolveTrackId(token, { name: p.name, artist: p.artist, market });
                 if (id) out.push({ id, match: Number(p.match ?? 0) });
             } catch {
-                // ignore single lookup failures
+				
             }
         }
     }
 
     await Promise.all(Array.from({ length: Math.max(1, concurrency) }, worker));
-
-	const best = new Map();
-	for (const x of out) {
-		const prev = best.get(x.id);
-		if (!prev || x.match > prev.match) best.set(x.id, x);
-	}
-    return [...best.values()];
+	return uniq(results);
 }
 
-export async function buildCandidatePool({
-    token,
-    trackId,
-    seedMeta,
-    market,
-    maxCandidates = 120,
-    reccoSize = 40,
-    playlistQueryLimit = 4,
-    playlistsPerQuery = 3,
-    tracksPerPlaylist = 40,
-    sameArtistCap = 4,
-    sameAlbumCap = 2,
-
-    // Optional Last.fm
-    lastfmKey = null,
-    lastfmLimit = 30,
-} = {}) {
-    let candidateIds = [];
-
-    // 0) ReccoBeats (variety)
-    const recommendations = await fetchReccoBeatsRecommendations(trackId, reccoSize);
-    candidateIds.push(
-        ...recommendations.map((r) => r?.spotifyId || extractSpotifyIdFromHref(r?.href)).filter(Boolean)
-    );
-
-    // 0b) Last.fm similar -> resolve to Spotify IDs (adds “scene” relevance)
-    if (lastfmKey) {
-        const seedArtist = seedMeta?.artists?.[0]?.name || "";
-        const seedTrack = seedMeta?.name || "";
-        const pairs = await lastfmGetSimilarTracks({ apiKey, artist, track, limit: lastfmLimit });
-        const ids = await spotifyResolveManyTrackIds(token, pairs, { market, concurrency: 5 });
-        candidateIds.push(...ids);
-    }
-
-    // 1) Same artist top tracks (cap)
-    const primaryArtistId = seedMeta?.artists?.[0]?.id || null;
-    if (primaryArtistId) {
-        const topArtist = await getArtistTopTrackIds(token, primaryArtistId, market);
-        candidateIds.push(...topArtist.slice(0, sameArtistCap));
-    }
-
-    // 2) Same album tracks (cap)
-    const albumId = seedMeta?.album?.id || null;
-    if (albumId) {
-        const albumTracks = await getAlbumTrackIds(token, albumId);
-        candidateIds.push(...albumTracks.slice(0, sameAlbumCap));
-    }
-
-    // 3) Playlist harvesting (crowd/scene signal)
-    const queries = buildPlaylistQueries(seedMeta).slice(0, playlistQueryLimit);
-
-    for (const q of queries) {
-        const pids = await searchPlaylistIds(token, q, playlistsPerQuery);
-        for (const pid of pids) {
-            const ids = await getPlaylistTrackIds(token, pid, tracksPerPlaylist);
-            candidateIds.push(...ids);
-
-            if (candidateIds.length >= maxCandidates * 2) break;
-        }
-        if (candidateIds.length >= maxCandidates * 2) break;
-    }
-
-    // Clean
-    candidateIds = uniq(candidateIds).filter((id) => id && id !== trackId);
-
-    return candidateIds.slice(0, maxCandidates);
-}
-
-// Similarity score for bar chart
+// Similarity scoring
 export function similarityScore(seed, rec) {
     const keys = ["danceability", "energy", "valence", "speechiness", "acousticness", "instrumentalness"];
     const weights = {
@@ -358,25 +258,5 @@ export function similarityScore(seed, rec) {
 
     if (wsum === 0) return 0;
     return 1 - d / wsum;
-}
-
-export function rerankByAudioPlusMeta(seedFeatures, seedMeta, rows) {
-    const seedPop = Number(seedMeta?.popularity);
-    const seedYear = getYearFromReleaseDate(seedMeta?.album?.release_date);
-
-    return (rows || [])
-        .map((r) => {
-            const recPop = Number(r?.meta?.popularity);
-            const recYear = getYearFromReleaseDate(r?.meta?.album?.release_date);
-
-            const audio = Number(r?.score) || 0;
-            const pop = popularitySimilarity(seedPop, recPop);
-            const year = yearSimilarity(seedYear, recYear);
-
-            const finalScore = 0.75 * audio + 0.15 * pop + 0.10 * year;
-
-            return { ...r, finalScore, pop, year };
-        })
-        .sort((a, b) => (b.finalScore ?? 0) - (a.finalScore ?? 0));
 }
 
