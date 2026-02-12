@@ -534,7 +534,7 @@ export function drawSimilarityScatter(seedFeatures, rows = []) {
 				
 				window.dispatchEvent(
 					new CustomEvent("rec-hover", {
-						detail: { track.id: d.id, source: "scatter", payload: { row: d }, showTooltip: true },
+						detail: { trackId: d.id, source: "scatter", payload: { row: d }, showTooltip: true },
 					})
 				);
 				
