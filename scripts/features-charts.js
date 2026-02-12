@@ -237,7 +237,7 @@ export function drawMultiRadarChart(series) {
 	function showSolo(key) {
 		svg.selectAll(".radar-series:not(.seed-series").style("display", "none");
 
-		svg.selectAll(".seed-series", .seed-dot).style("display", null);
+		svg.selectAll(".seed-series, .seed-dot").style("display", null);
 		svg.selectAll(`.series-${key}`).style("display", null);
 		
 		svg.selectAll(".seed-series").raise();
