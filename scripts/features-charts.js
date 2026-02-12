@@ -422,7 +422,7 @@ export function drawSimilarityBarChart(rows = []) {
 		const wantsTooltip = Boolean(detail?.showTooltip);
 
 		if (wantsTooltip && payloadRow) {
-			const barEl = container.querySelector(`.bar-${key}`);
+			const barEl = container.querySelector(`.bar-${id}`);
 			if (barEl) showTooltipAtRect(buildTooltipHtml(payloadRow), barEl.getBoundingClientRect());
 		} else {
 			hideTooltip();
