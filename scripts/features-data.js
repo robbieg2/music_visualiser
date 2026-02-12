@@ -227,7 +227,7 @@ export async function spotifyResolveManyTrackIds(token, pairs, { market = "GB", 
         }
     }
 
-    await Promise.all(Array.from({ length: Math.max(1, concurrency) }, worker));
+    await Promise.all(Array.from({ length: Math.max(1, concurrency) }, () => worker()));
 	return uniq(results);
 }
 
