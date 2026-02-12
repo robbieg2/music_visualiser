@@ -1,11 +1,8 @@
 // features.js
 
 import {
-    extractSpotifyIdFromHref,
-//    fetchReccoBeatsRecommendations,
     getManyFeaturesFromReccoBeats,
     getTrackFeaturesFromReccoBeats,
-//    rerankByAudioPlusMeta,
     similarityScore,
     spotifyFetch,
     spotifyResolveManyTrackIds,
@@ -14,7 +11,11 @@ import {
 	lastfmGetArtistTopTracks,
 } from "./features-data.js";
 
-import { drawMultiRadarChart, drawSimilarityBarChart, drawSimilarityScatter } from "./features-charts.js";
+import {
+	drawMultiRadarChart,
+	drawSimilarityBarChart,
+	drawSimilarityScatter
+} from "./features-charts.js";
 
 const trackInfo = document.getElementById("track-info");
 const logoutBtn = document.getElementById("logout-btn");
@@ -26,11 +27,11 @@ function setLoading(on, sub = "") {
 	const subEl = document.getElementById("loading-sub");
 	if (!overlay) return;
 	
-	if (subEl && sub) subEl.textContent = sub;
-	
+	if (subEl) subEl.textContent = sub || "";
 	overlay.style.display = on ? "flex" : "none";
 }
-	
+
+// Track header with embed	
 function renderTrackHeader(track) {
     const artists = (track.artists || []).join(", ");
 
@@ -56,43 +57,34 @@ function renderTrackHeader(track) {
 
 
 // Tooltip helpers
-const tooltipEl = document.getElementById("chart-tooltip");
+function tooltipEl() {
+	let tooltipEl = document.getElementById("chart-tooltip");
+	if(!el) {
+		el = document.createElement("div");
+		el.id = "chart-tooltip";
+		document.body.appendChild(el);
+	}
+	
+	el.style.position = "fixed";
+	el.style.zIndex = "9999";
+	if (!el.style.display) el.style.display = "none";
+	return el;
+}
 
 function showTooltip(html) {
-	if (!tooltipEl) return;
+	const tooltipEl = tooltipEl();
 	tooltipEl.innerHTML = html;
 	tooltipEl.style.display = "block";
 }
 
 function hideTooltip() {
+	const tooltipEl = document.getElementById("chart-tooltip");
 	if (!tooltipEl) return;
 	tooltipEl.style.display = "none";
 	tooltipEl.innerHTML = "";
 }
-/*
-function explainClosestDims(seed, rec) {
-	const dims = [
-		{ key: "danceability", label: "Danceability" },
-        { key: "energy", label: "Energy" },		
-        { key: "valence", label: "Valence" },
-        { key: "speechiness", label: "Speechiness" },
-        { key: "acousticness", label: "Acousticness" },
-		{ key: "instrumentalness", label: "Instrumental" },
-    ];
-	
-	const scored = dims
-		.map (d => {
-			const a = Number(seed?.[d.key]);
-			const b = Number(rec?.[d.key]);
-			if (!Number.isFinite(a) || !Number.isFinite(b)) return null;
-			return { ...d, diff: Math.abs(a - b) };
-		})
-		.filter(Boolean)
-		.sort((x, y) => x.diff - y.diff);
-	
-	return scored.slice(0, 3).map(x => x.label);
-} */
 
+// Tooltip explaining similarity
 function attachSimilarityHelpPopover() {
 	const btn = document.getElementById("sim-help");
 	if (!btn) return;
@@ -110,8 +102,7 @@ function attachSimilarityHelpPopover() {
 			<p>
 				For each feature the distance between the two values is measured (0–1).
 				The closer they are, the higher the similarity
-				The distances are then averaged with a few weights:
-				danceability/energy/valence count most, the others count slightly less.
+				Those distances are then averaged to give an overall score
 			</p>
 
 			<p>
@@ -190,7 +181,7 @@ function showVisualSections() {
 	if (tip) tip.style.display = "flex";
 }
 
-// Show recommendation embeds with tasters
+// Show recommendation embeds
 function renderRecommendations(items = [], { subtitle } = {}) {
     const container = document.getElementById("recommendations");
     if (!container) return;
@@ -243,32 +234,7 @@ function renderRecommendations(items = [], { subtitle } = {}) {
 		`;
 	
 		card.addEventListener("mouseenter", (e) => {
-/*			try {
-				const name = r.track?.name || "Unknown Track";
-				const artists = (r.track?.artists || []).join(", ") || "Unknown Artist";
-				const simPct = Number.isFinite(r.score) ? Math.round(r.score * 100) : null;
-				
-				const closest = 
-					typeof explainClosestDims === "function" && window.__seedFeatures && r.features
-						? explainClosestDims(window.__seedFeatures, r.features)
-						: [];
-						
-				const closestText = closest.length ? closest.join(" * ") : "-";
-			
-				if (typeof showTooltip === "function") {
-					showTooltip(`
-						<div class="tt-title">${name}</div>
-						<div class="tt-sub">${artists}</div>
-						<div class="tt-row"><span class="tt-muted">Similarity</span><span>${simPct ?? "-"}%</span></div>
-						<div class="tt-row"><span class="tt-muted">Closest</span><span>${closestText}</span></div>
-					`);
-				}
-			} catch (err) {
-				console.warn("Tooltip error:", err);
-			} */
-			
-			window.dispatchEvent(new CustomEvent("rec-hover", { detail: { trackId: id, payload: { row: r } }
-			}));
+			window.dispatchEvent(new CustomEvent("rec-hover", { detail: { trackId: id } }));
 		}); 
 		
 		card.addEventListener("mouseleave", () => {
@@ -307,32 +273,7 @@ function normalizeSpotifyIds(list) {
 }
 
 function getSeedMarketFromSeedMeta(seedMeta) {
-    return (seedMeta?.available_markets && seedMeta.available_markets[0]) ? seedMeta.available_markets[0] : "GB";
-}
-
-function cleanTrackName(name) {
-	return String(name || "")
-		.replace(/\s*\(.*?\)\s*/g, " ")
-		.replace(/\s*-\s*(remaster(ed)?|live|mono|radio edit|edit|version|mix).*$/i, "")
-		.replace(/\s+/g, " ")
-		.trim();
-}
-
-async function getLastfmSimilarPairsSafe({ apiKey, artist, track, limit }) {
-    try {
-        return await lastfmGetSimilarTracks({
-            apiKey,
-            artist,
-            track,
-            limit,
-        });
-    } catch (e) {
-        return await lastfmGetSimilarTracks({
-            LASTFM_KEY: apiKey,
-            seedArtist: artist,
-            seedTrack: track,
-        });
-    }
+    return seedMeta?.available_markets?.[0] || "GB";
 }
 
 async function init() {
@@ -368,9 +309,8 @@ async function init() {
     }
 
     renderTrackHeader(track);
+	tooltipEl();
 	attachSimilarityHelpPopover();
-
-    const simRadar = document.getElementById("sim-radar");
 
     try {	
 		setLoading(true, "Fetching audio features...");
@@ -384,7 +324,6 @@ async function init() {
 
         showVisualSections();
 		
-		// Assorting recommendations
         const seedMeta = await spotifyFetch(token, `https://api.spotify.com/v1/tracks/${track.id}`);
         const market = getSeedMarketFromSeedMeta(seedMeta);
 
@@ -392,8 +331,6 @@ async function init() {
         const seedTrackName = seedMeta?.name || track.name || "";
 
         const LASTFM_API_KEY = "2e23f6b1b4b3345ab5e33a788a072303";
-
-		const seedTrackNameClean = cleanTrackName(seedTrackName);
 		
 		let recMode = "similar tracks";
 		
@@ -426,32 +363,23 @@ async function init() {
 			similarPairs = topTrackPairs;
 		}
 		
-		console.log("Last.fm pairs:", similarPairs.length, similarPairs.slice(0, 5));
-		
 		if (!similarPairs.length) {
-		    const recs = document.getElementById("recommendations");
-		    if (recs) {
-			recs.innerHTML = `
-				<h3>Recommended Tracks</h3>
-				<p style="opacity:0.85; text-align:center;">
-					Last.fm couldn't find similar tracks for this seed.
-					<br/>Try another song (or a more popular track).
-			  </p>
-			`;
-		}
-
-		drawMultiRadarChart([{ label:`Seed: ${track.name}`, id: track.id, features: seedFeatures, isSeed:true }]);
-		return;
+			renderRecommendations([], {
+				"Last.fm couldn't find similar tracks for this seed";
+			});
+			drawMultiRadarChart([{ label:`Seed: ${track.name}`, id: track.id, features: seedFeatures, isSeed:true }]);
+			drawSimilarityBarChart([]);
+			drawSimilarityScatter(seedFeatures, []);
+			return;
 		}
 		
-        let candidateIds = await spotifyResolveManyTrackIds(token, similarPairs, { market, concurrency: 5 });
-		
+        let candidateIds = await spotifyResolveManyTrackIds(token, similarPairs, { market, concurrency: 5 });	
 		candidateIds = normalizeSpotifyIds(candidateIds);
-		
-		console.log("Resolved IDs:", candidateIds.length);
 
-        if (candidateIds.length === 0) {
-            renderRecommendations([]);
+        if (!candidateIds.length) {
+            renderRecommendations([], {
+				subtitle: "Couldn't resolve Last.fm tracks on Spotify",
+			});
             drawMultiRadarChart([{ label: `Seed: ${track.name}`, id: track.id, features: seedFeatures, isSeed: true }]);
             drawSimilarityBarChart([]);
             drawSimilarityScatter(seedFeatures, []);
@@ -486,8 +414,8 @@ async function init() {
             })
             .filter(Boolean);
 
-        if (rows.length === 0) {
-            renderRecommendations([]);
+        if (!rows.length) {
+            renderRecommendations([], { subtitle: "No candidates had audio features" });
             drawMultiRadarChart([{ label: `Seed: ${track.name}`, id: track.id, features: seedFeatures, isSeed: true }]);
             drawSimilarityBarChart([]);
             drawSimilarityScatter(seedFeatures, []);
@@ -495,8 +423,6 @@ async function init() {
         }
 
         // Ranking songs for best visualisations
-//        const reranked = rerankByAudioPlusMeta(seedFeatures, seedMeta, rows);
-
 		const ranked = rows
 			.slice()
 			.sort((a, b) => b.score - a.score);
@@ -514,7 +440,6 @@ async function init() {
             })),
         ];
 
-        // Render UI
 		window.__seedFeatures = seedFeatures;
 		
         renderRecommendations(top10, {
@@ -530,6 +455,7 @@ async function init() {
         console.error(err);
     } finally {
 		setLoading(false);
+		hideTooltip();
 	}
 }
 
