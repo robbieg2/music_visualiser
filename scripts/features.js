@@ -54,6 +54,7 @@ function renderTrackHeader(track) {
     `;
 }
 
+/*
 // Tooltip helpers
 const tooltipEl = document.getElementById("chart-tooltip");
 
@@ -90,36 +91,32 @@ function explainClosestDims(seed, rec) {
 		.sort((x, y) => x.diff - y.diff);
 	
 	return scored.slice(0, 3).map(x => x.label);
-}
+} */
 
 function attachSimilarityHelpPopover() {
 	const btn = document.getElementById("sim-help");
 	if (!btn) return;
 	
 	const html = `
-		<div class="help-title">How similarity is calculated</div>
+		<div class="tt-title">How similarity is calculated</div>
 
-		<div class="help-body">
+		<div class="tt-sub">
 			<p>
-				We compare the seed track to each recommendation using these audio features:
+				The seed track is compared to each recommendation using these audio features:
 				<b>danceability</b>, <b>energy</b>, <b>valence</b>, <b>speechiness</b>,
-				<b>acousticness</b>, and <b>instrumentalness</b>.
+				<b>acousticness</b>, and <b>instrumentalness</b>
 			</p>
 
 			<p>
-				For each feature we measure the distance between the two values (0–1).
-				The closer they are, the higher the similarity.
+				For each feature the distance between the two values is measured (0–1).
+				The closer they are, the higher the similarity
 				We then average the distances with a few weights:
 				danceability/energy/valence count most, the others count slightly less.
 			</p>
 
 			<p>
 				<b>Similarity Score</b> = <b>100%</b> means “very similar features” and
-				<b>0%</b> means “very different”.
-			</p>
-
-			<p style="margin-bottom:0;">
-				<b>Closest</b> in the tooltip lists the 3 features where the two tracks match most closely.
+				<b>0%</b> means “very different”
 			</p>
 		</div>
 	`;
