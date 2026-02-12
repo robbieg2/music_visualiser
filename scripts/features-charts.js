@@ -364,7 +364,7 @@ export function drawSimilarityScatter(seedFeatures, rows) {
 		
 		const pad = 12;
 		const tw = tooltip.offsetWidth || 260;
-		const th = tooltipHeight || 80;
+		const th = tooltip.offsetHeight || 80;
 		
 		const vw = window.innerWidth;
 		const vh = window.innerHeight;
@@ -376,7 +376,7 @@ export function drawSimilarityScatter(seedFeatures, rows) {
 		if (y + th + pad > vh) y = event.clientY - th - pad;
 		
 		x = Math.max(pad, Math.min(vw - tw - pad, x));
-		y = Math.ax(pad, Math.min(vh - th - pad, y));
+		y = Math.max(pad, Math.min(vh - th - pad, y));
 		
 		tooltip.style.left = `${x}px`;
 		tooltip.style.top = `${y}px`;
@@ -469,7 +469,7 @@ export function drawSimilarityScatter(seedFeatures, rows) {
             .attr("cy", (d) => y(d.y))
             .attr("r", (d) => 6 + d.score * 6)
             .attr("fill", "#1db954")
-			.attr("class", d => `rec-dot-${cssSafeId(d.id)}`)
+			.attr("class", d => `rec scatter-dot dot-${cssSafeId(d.id)}`)
             .style("opacity", 0.75)
             .style("cursor", "pointer")
 			
@@ -492,7 +492,7 @@ export function drawSimilarityScatter(seedFeatures, rows) {
 			})
 			.on("mousemove", (event) => moveTooltip(event))
 
-			.on("mouseleave", (event) => {
+			.on("mouseleave", (event, d) => {
 				hideTooltip();
 				linkHoverHighlight({ trackId: d.id, on:false });
 				d3.select(event.currentTarget)
@@ -512,9 +512,9 @@ export function drawSimilarityScatter(seedFeatures, rows) {
 		window.removeEventListener("rec-hover", window.__scatterHoverHandler);
 	
 		window.__scatterHoverHandler = (e) => {
-			const id = e.detail?.trackId;
+			const id = e.detail?.trackId ? cssSafeId(e.detail.trackId) : null;
 			
-			d3.select(container).selectAll("circle-rect")
+			d3.select(container).selectAll("circle-scatter-dot")
 				.style("opacity", id ? 0.25 : 0.75)
 				.attr("stroke", "none");
 			if (id) {

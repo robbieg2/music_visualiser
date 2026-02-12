@@ -108,7 +108,6 @@ function attachSimilarityHelpPopover() {
 		showTooltip(html);
 	});
 	
-	btn.addEventListener("mousemove", (e) => moveTooltip(e));
 	btn.addEventListener("mouseleave", () => hideTooltip());
 }
 
