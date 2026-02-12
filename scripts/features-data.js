@@ -219,8 +219,8 @@ export async function spotifyResolveManyTrackIds(token, pairs, { market = "GB", 
             const idx = i++;
 			const p = list[idx];
             try {
-                const id = await spotifyResolveTrackId(token, { name: p.name, artist: p.artist, market });
-                if (id) out.push({ id, match: Number(p.match ?? 0) });
+                const id = await spotifyResolveTrackId(token, { name: p?.name, artist: p?.artist, market });
+                if (id) results.push(id);
             } catch {
 				
             }
