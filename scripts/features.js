@@ -251,7 +251,7 @@ function renderRecommendations(items = [], { subtitle } = {}) {
 			}
 			
 			window.dispatchEvent(new CustomEvent("rec-hover", { detail: { trackId: id } }));
-		});
+		}); 
 		
 		card.addEventListener("mouseleave", () => {
 			if (typeof hideTooltip === "function") hideTooltip();

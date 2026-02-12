@@ -302,9 +302,42 @@ export function drawSimilarityBarChart(rows) {
         .attr("width", (d) => x(d.score))
         .attr("height", y.bandwidth())
         .attr("fill", "#1db954")
-		.attr("class", d => `bar bar-${cssSafeId(d.id)}`)
+		.attr("class", d => `bar-rect bar-${cssSafeId(d.id)}`)
         .style("cursor", "pointer")
+/*		
+		card.addEventListener("mouseenter", (e) => {
+			try {
+				const name = r.track?.name || "Unknown Track";
+				const artists = (r.track?.artists || []).join(", ") || "Unknown Artist";
+				const simPct = Number.isFinite(r.score) ? Math.round(r.score * 100) : null;
+				
+				const closest = 
+					typeof explainClosestDims === "function" && window.__seedFeatures && r.features
+						? explainClosestDims(window.__seedFeatures, r.features)
+						: [];
+						
+				const closestText = closest.length ? closest.join(" * ") : "-";
+			
+				if (typeof showTooltip === "function") {
+					showTooltip(`
+						<div class="tt-title">${name}</div>
+						<div class="tt-sub">${artists}</div>
+						<div class="tt-row"><span class="tt-muted">Similarity</span><span>${simPct ?? "-"}%</span></div>
+						<div class="tt-row"><span class="tt-muted">Closest</span><span>${closestText}</span></div>
+					`);
+				}
+			} catch (err) {
+				console.warn("Tooltip error:", err);
+			}
+			
+			window.dispatchEvent(new CustomEvent("rec-hover", { detail: { trackId: id } }));
+		});
 		
+		card.addEventListener("mouseleave", () => {
+			if (typeof hideTooltip === "function") hideTooltip();
+			window.dispatchEvent(new CustomEvent("rec-hover", { detail: { trackId: null } }));
+		});	
+*/		
 		.on("mouseenter", (event, d) => linkHoverHighlight({ trackId: d.id, on: true }))
 		.on("mouseleave", (event, d) => linkHoverHighlight({ trackId: d.id, on: false }))
 		
