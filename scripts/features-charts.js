@@ -4,7 +4,8 @@ function cssSafeId(id) {
 	return String(id || "")
 		.replace(/[^a-zA-Z0-9_-]/g, "_");
 }
-	
+
+// Highlight same track on other visualisations
 export function linkHoverHighlight( { trackId, on }) {
 	const key = cssSafeId(trackId);
 		
@@ -51,6 +52,7 @@ function hideTooltip() {
 	const tt = getTooltipEl();
 	if (!tt) return;
 	tt.style.display = "none";
+	tt.innerHTML = "";
 }
 
 function showTooltipAtRect(html, rect) {
@@ -85,7 +87,7 @@ function buildTooltipHtml(r) {
 	const simPct = Number.isFinite(r.score) ? Math.round(r.score * 100) : null;
 	
 	const closest = 
-		typeof explainClosestDims === "function" && window.__seedFeatures && r?.features
+		window.__seedFeatures && r?.features
 			? explainClosestDims(window.__seedFeatures, r.features)
 			: [];
 			
@@ -102,7 +104,10 @@ function buildTooltipHtml(r) {
 // Radar chart comparing recommendations with seed song
 export function drawMultiRadarChart(series) {
     const container = document.getElementById("sim-radar");
-    d3.select("#sim-radar").selectAll("svg").remove();
+	if (!container) return;
+	
+    d3.select(container).selectAll("svg").remove();
+	d3.select(container).selectAll("div").remove();
 
     const axes = [
         { key: "danceability", label: "Danceability" },
@@ -112,20 +117,14 @@ export function drawMultiRadarChart(series) {
         { key: "acousticness", label: "Acousticness" },
 		{ key: "instrumentalness", label: "Instrumental" },
     ];
-	
-	function setSeriesVisible(svgRoot, seriesId, visible) {
-		const key = cssSafeId(seriesId);
-		svgRoot.selectAll(`.series-${key}`)
-			.style("display", visible ? null : "none");
-	}
 
-	const normalized = series
+	const normalized = (series || [])
 		.map(s => {
-			const points = axes.map(a => ({
+			const points = axes.map((a) => ({
 				axis: a.label,
 				key: a.key,
 				value: Number(s.features?.[a.key])
-			})).map(p => ({
+			})).map((p) => ({
 				...p,
 				value: Number.isFinite(p.value) ? Math.max(0, Math.min(1, p.value)) : 0
 			}));
@@ -145,7 +144,7 @@ export function drawMultiRadarChart(series) {
     const levels = 5;
     const angleSlice = (Math.PI * 2) / axes.length;
 
-    const svg = d3.select("#sim-radar")
+    const svg = d3.select(container)
         .append("svg")
         .attr("width", width)
         .attr("height", height)
@@ -218,9 +217,8 @@ export function drawMultiRadarChart(series) {
 			.attr("fill", "#fff");
 	}
 	
-
-	
-	const legend = d3.select("#sim-radar")
+	// Chart legend
+	const legend = d3.select(container)
     .append("div")
     .style("display", "flex")
     .style("gap", "12px")
@@ -239,9 +237,7 @@ export function drawMultiRadarChart(series) {
 	function showSolo(key) {
 		svg.selectAll(".radar-series:not(.seed-series").style("display", "none");
 
-		svg.selectAll(".seed-series").style("display", null);
-		svg.selectAll(".seed-dot").style("display", null);
-	
+		svg.selectAll(".seed-series", .seed-dot).style("display", null);
 		svg.selectAll(`.series-${key}`).style("display", null);
 		
 		svg.selectAll(".seed-series").raise();
@@ -308,28 +304,6 @@ export function drawMultiRadarChart(series) {
 			}
 		});
 	});
-/*	window.removeEventListener("rec-hover", window.__radarHoverHandler);
-	
-	window.__radarHoverHandler = (e) => {
-		const id = e.detail?.trackId;
-		const root = d3.select(container);
-		
-		root.selectAll("path-radar-series")
-			.style("opacity", id ? 0.12 : null);
-			
-		root.selectAll("path-seed-series")
-			.style("opacity", 1)
-			.style("stroke-width", 3.2);
-			
-		if (id) {
-			const key = cssSafeId(id);
-			root.selectAll(`.series-${key}`)
-				.style("opacity", 1)
-				.style("stroke-width", 3.2);
-		}
-	};
-	
-	window.addEventListener("rec-hover", window.__radarHoverHandler); */
 }
 
 // Bar chart showing similarity scores
@@ -364,7 +338,7 @@ export function drawSimilarityBarChart(rows = []) {
     g.append("g")
         .call(
             d3.axisLeft(y).tickFormat((id) => {
-                const r = rows.find((x) => x.id === id);
+                const r = safeRows.find((x) => x.id === id);
                 const name = r?.track?.name || id;
                 const artists = (r?.track?.artists || []).join(", ");
                 const label = `${name} — ${artists}`;
@@ -374,8 +348,7 @@ export function drawSimilarityBarChart(rows = []) {
         .selectAll("text")
         .style("fill", "#fff");
 
-    const bars = g
-	.selectAll("rect.bar-rect")
+    g.selectAll("rect.bar-rect")
         .data(safeRows, (d) => d.id)
         .enter()
         .append("rect")
@@ -396,7 +369,7 @@ export function drawSimilarityBarChart(rows = []) {
 			
 			window.dispatchEvent(
 				new CustomEvent("rec-hover", {
-					detail: { trackId: d.id, paylod: { row: d } },
+					detail: { trackId: d.id, source: "bar", payload: { row: d }, showTooltip: true },
 				})
 			);
 		})
@@ -407,7 +380,7 @@ export function drawSimilarityBarChart(rows = []) {
 			
 			window.dispatchEvent(
 				new CustomEvent("rec-hover", {
-					detail: { trackId: d.null }
+					detail: { trackId: d.null, source: "bar" },
 				})
 			);
 		})
@@ -432,8 +405,7 @@ export function drawSimilarityBarChart(rows = []) {
 	
 	window.__barHoverHandler = (e) => {
 		const detail = e?.detail || {};
-		const id = detail.trackId || null;
-		const payloadRow = e.detail?.payload?.row || null;
+		const id = detail.trackId ? cssSafeId(detail.trackId) : null;
 		
 		g.selectAll("rect.bar-rect").style("opacity", id ? 0.25 : 0.85).attr("stroke", "none");
 		d3.selectAll(".scatter-dot").style("opacity", id ? 0.25 : 0.75).attr("stroke", "none");
@@ -442,25 +414,18 @@ export function drawSimilarityBarChart(rows = []) {
 			hideTooltip();
 			return;
 		}
-
-		const key = cssSafeId(id);
 		
-		g.selectAll(`.bar-${key}`)
-			.style("opacity", 1)
-			.attr("stroke", "#fff")
-			.attr("stroke-width", 1.5);
+		g.selectAll(`.bar-${id}`).style("opacity", 1).attr("stroke", "#fff").attr("stroke-width", 1.5);
+		d3.selectAll(`.scatter-dot.dot-${id}`).style("opacity", 1).attr("stroke", "#fff").attr("stroke-width", 1.5);
+		
+		const payloadRow = detail?.payload?.row || null;
+		const wantsTooltip = Boolean(detail?.showTooltip);
 
-		d3.selectAll(`.scatter-dot.dot-${key}`)
-			.style("opacity", 1)
-			.attr("stroke", "#fff")
-			.attr("stroke-width", 1.5);
-
-		// If payload includes the row (e.g., from recommendation hover), show tooltip on bar
-		if (payloadRow) {
+		if (wantsTooltip && payloadRow) {
 			const barEl = container.querySelector(`.bar-${key}`);
-			if (barEl) {
-				showTooltipAtRect(buildTooltipHtml(payloadRow), barEl.getBoundingClientRect());
-			}
+			if (barEl) showTooltipAtRect(buildTooltipHtml(payloadRow), barEl.getBoundingClientRect());
+		} else {
+			hideTooltip();
 		}
 	};
 	
@@ -468,7 +433,7 @@ export function drawSimilarityBarChart(rows = []) {
 }
 
 // Scatter chart showing recommended songs
-export function drawSimilarityScatter(seedFeatures, rows) {
+export function drawSimilarityScatter(seedFeatures, rows = []) {
     const container = document.getElementById("sim-scatter");
     if (!container) return;
 
@@ -478,43 +443,6 @@ export function drawSimilarityScatter(seedFeatures, rows) {
     const width = Math.min(560, container.clientWidth || 560);
     const height = 420;
     const margin = { top: 20, right: 20, bottom: 50, left: 60 };
-	
-	const tooltip = document.getElementById("chart-tooltip");
-	
-	function showTooltip(html) {
-		if (!tooltip) return;
-		tooltip.innerHTML = html;
-		tooltip.style.display = "block";
-	}
-	
-	function moveTooltip(event) {
-		if (!tooltip) return;
-		
-		const pad = 12;
-		const tw = tooltip.offsetWidth || 260;
-		const th = tooltip.offsetHeight || 80;
-		
-		const vw = window.innerWidth;
-		const vh = window.innerHeight;
-		
-		let x = event.clientX + pad;
-		let y = event.clientY + pad;
-		
-		if (x + tw + pad > vw) x = event.clientX - tw - pad;
-		if (y + th + pad > vh) y = event.clientY - th - pad;
-		
-		x = Math.max(pad, Math.min(vw - tw - pad, x));
-		y = Math.max(pad, Math.min(vh - th - pad, y));
-		
-		tooltip.style.left = `${x}px`;
-		tooltip.style.top = `${y}px`;
-		tooltip.style.transform = "none";
-	}
-	
-	function hideTooltip() {
-		if (!tooltip) return;
-		tooltip.style.display = "none";
-	}
 
     function getVal(f, key) {
         const v = Number(f?.[key]);
@@ -527,7 +455,7 @@ export function drawSimilarityScatter(seedFeatures, rows) {
         const xKey = xSel?.value || "energy";
         const yKey = ySel?.value || "valence";
 
-        const points = rows
+        const points = (Array.isArray(rows) ? rows : [])
             .map((r) => ({
                 ...r,
                 x: getVal(r.features, xKey),
@@ -588,69 +516,80 @@ export function drawSimilarityScatter(seedFeatures, rows) {
             .attr("fill", "#fff")
             .text(yKey);
 
-        g.selectAll("circle.rec")
-            .data(points)
+        const dots = g
+			.selectAll("circle.scatter-dot")
+            .data(points, (d) => d.id)
             .enter()
             .append("circle")
-            .attr("class", "rec")
+			.attr("class", d => `scatter-dot dot-${cssSafeId(d.id)}`)
             .attr("cx", (d) => x(d.x))
             .attr("cy", (d) => y(d.y))
             .attr("r", (d) => 6 + d.score * 6)
             .attr("fill", "#1db954")
-			.attr("class", d => `scatter-dot dot-${cssSafeId(d.id)}`)
             .style("opacity", 0.75)
             .style("cursor", "pointer")
 			
 			.on("mouseenter", (event, d) => {
-				const name = d?.track?.name || "Unknown Track";
-				const artists = (d?.track?.artists || []).join(", ") || "Unknown Artist";
 				linkHoverHighlight({ trackId: d.id, on:true });
 				
-				showTooltip(`
-					<div class="tt-title">${name}</div>
-					<div class="tt-sub">${artists}</div>
-				`);
+				window.dispatchEvent(
+					new CustomEvent("rec-hover", {
+						detail: { track.id: d.id, source: "scatter", payload: { row: d }, showTooltip: true },
+					})
+				);
 				
-				moveTooltip(event);
-				
-				d3.select(event.currentTarget)
-					.style("opacity", 1)
-					.attr("stroke", "#fff")
-					.attr("stroke-width", 1.5);
+				d3.select(event.currentTarget).style("opacity", 1).attr("stroke", "#fff").attr("stroke-width", 1.5);
 			})
-			.on("mousemove", (event) => moveTooltip(event))
 
 			.on("mouseleave", (event, d) => {
-				hideTooltip();
 				linkHoverHighlight({ trackId: d.id, on:false });
-				d3.select(event.currentTarget)
-					.style("opacity", 0.75)
-					.attr("stroke", "none");
+				
+				window.dispatchEvent(
+					new CustomEvent("rec-hover", {
+						detail: { track.id: null, source: "scatter" },
+					})
+				);
+
+				d3.select(event.currentTarget).style("opacity", 0.75).attr("stroke", "none");
 			})		
+			
             .on("click", (event, d) => {
                 const trackParam = encodeURIComponent(JSON.stringify(d.track));
                 window.location.href = `features.html?track=${trackParam}`;
             });
 
         if (seedX != null && seedY != null) {
-            g.append("circle").attr("cx", x(seedX)).attr("cy", y(seedY)).attr("r", 10).attr("fill", "#fff").style("opacity", 0.9);
-            g.append("text").attr("x", x(seedX) + 12).attr("y", y(seedY) + 4).attr("fill", "#fff").attr("font-size", "12px").text("Seed");
+            g.append("circle")
+				.attr("cx", x(seedX))
+				.attr("cy", y(seedY))
+				.attr("r", 10)
+				.attr("fill", "#fff")
+				.style("opacity", 0.9);
+				
+            g.append("text")
+				.attr("x", x(seedX) + 12)
+				.attr("y", y(seedY) + 4)
+				.attr("fill", "#fff")
+				.attr("font-size", "12px")
+				.text("Seed");
         }
 		
 		window.removeEventListener("rec-hover", window.__scatterHoverHandler);
 	
 		window.__scatterHoverHandler = (e) => {
+			const detail = e?.detail || {};
 			const id = e.detail?.trackId ? cssSafeId(e.detail.trackId) : null;
 			
 			d3.select(container).selectAll("circle-scatter-dot")
 				.style("opacity", id ? 0.25 : 0.75)
 				.attr("stroke", "none");
-			if (id) {
-				d3.select(container).selectAll(`.dot-${id}`)
-					.style("opacity", 1)
-					.attr("stoke", "#fff")
-					.attr("stroke-width", 1.5);
-			}
+				
+			if (id) return;
+			
+			d3.select(container).selectAll(`.scatter-dot.dot-${id}`)
+				.style("opacity", 1)
+				.attr("stroke", "#fff")
+				.attr("stroke-width", 1.5);
 		};
 		
 		window.addEventListener("rec-hover", window.__scatterHoverHandler);
