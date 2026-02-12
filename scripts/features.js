@@ -365,7 +365,7 @@ async function init() {
 		
 		if (!similarPairs.length) {
 			renderRecommendations([], {
-				"Last.fm couldn't find similar tracks for this seed";
+				subtitle: "Last.fm couldn't find similar tracks for this seed";
 			});
 			drawMultiRadarChart([{ label:`Seed: ${track.name}`, id: track.id, features: seedFeatures, isSeed:true }]);
 			drawSimilarityBarChart([]);
