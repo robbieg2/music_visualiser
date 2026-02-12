@@ -110,7 +110,7 @@ function attachSimilarityHelpPopover() {
 			<p>
 				For each feature the distance between the two values is measured (0–1).
 				The closer they are, the higher the similarity
-				We then average the distances with a few weights:
+				The distances are then averaged with a few weights:
 				danceability/energy/valence count most, the others count slightly less.
 			</p>
 

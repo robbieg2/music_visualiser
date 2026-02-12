@@ -338,9 +338,9 @@ export function similarityScore(seed, rec) {
         danceability: 1,
         energy: 1,
         valence: 1,
-        speechiness: 0.7,
-        acousticness: 0.7,
-        instrumentalness: 0.7,
+        speechiness: 1,
+        acousticness: 1,
+        instrumentalness: 1,
     };
 
     let d = 0;
