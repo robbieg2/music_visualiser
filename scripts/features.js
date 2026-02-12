@@ -89,7 +89,7 @@ function explainClosestDims(seed, rec) {
 		.filter(Boolean)
 		.sort((x, y) => x.diff - y.diff);
 	
-	return scored.slic(0, 3).map(x => x.label);
+	return scored.slice(0, 3).map(x => x.label);
 }
 
 function attachSimilarityHelpPopover() {
