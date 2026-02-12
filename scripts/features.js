@@ -224,9 +224,9 @@ function renderRecommendations(items = [], { subtitle } = {}) {
 				allow="encrypted-media">
 			</iframe>
 		`;
-		
+	
 		card.addEventListener("mouseenter", (e) => {
-			try {
+/*			try {
 				const name = r.track?.name || "Unknown Track";
 				const artists = (r.track?.artists || []).join(", ") || "Unknown Artist";
 				const simPct = Number.isFinite(r.score) ? Math.round(r.score * 100) : null;
@@ -248,13 +248,13 @@ function renderRecommendations(items = [], { subtitle } = {}) {
 				}
 			} catch (err) {
 				console.warn("Tooltip error:", err);
-			}
+			} */
 			
-			window.dispatchEvent(new CustomEvent("rec-hover", { detail: { trackId: id } }));
+			window.dispatchEvent(new CustomEvent("rec-hover", { detail: { trackId: id, payload: { row: r } }
+			}));
 		}); 
 		
 		card.addEventListener("mouseleave", () => {
-			if (typeof hideTooltip === "function") hideTooltip();
 			window.dispatchEvent(new CustomEvent("rec-hover", { detail: { trackId: null } }));
 		});	
 		

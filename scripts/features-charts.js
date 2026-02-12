@@ -13,10 +13,90 @@ export function linkHoverHighlight( { trackId, on }) {
 		.attr("stroke-width", on ? 2 : 0)
 		.style("opacity", on ? 1 : null);
 			
-	d3.selectAll(`.bar-row.bar-${key}`)
+	d3.selectAll(`.bar-rect.bar-${key}`)
 		.attr("stroke", on ? "#fff" : "none")
 		.attr("stroke-width", on ? 2 : 0)
 		.style("opacity", on ? 1 : null);
+}
+
+export function explainClosestDims(seed, rec) {
+	const dims = [
+		{ key: "danceability", label: "Danceability" },
+        { key: "energy", label: "Energy" },		
+        { key: "valence", label: "Valence" },
+        { key: "speechiness", label: "Speechiness" },
+        { key: "acousticness", label: "Acousticness" },
+		{ key: "instrumentalness", label: "Instrumental" },
+    ];
+	
+	const scored = dims
+		.map (d => {
+			const a = Number(seed?.[d.key]);
+			const b = Number(rec?.[d.key]);
+			if (!Number.isFinite(a) || !Number.isFinite(b)) return null;
+			return { ...d, diff: Math.abs(a - b) };
+		})
+		.filter(Boolean)
+		.sort((x, y) => x.diff - y.diff);
+	
+	return scored.slice(0, 3).map(x => x.label);
+}
+
+// Tooltips
+function getTooltipEl() {
+	return document.getElementById("chart-tooltip");
+}
+
+function hideTooltip() {
+	const tt = getTooltipEl();
+	if (!tt) return;
+	tt.style.display = "none";
+}
+
+function showTooltip(html) {
+	const tt = getTooltipEl();
+	if (!tt || !rect) return;
+	tt.innerHTML = html;
+	tt.style.display = "block";
+	
+	const tw = tt.offsetWidth || 260;
+	const th = tt.offsetHeight || 90;
+	
+	const pad = 10;
+	const vw = window.innerWidth;
+	const vh = window.innerHeight;
+	
+	let x = rect.right + pad;
+	let y = rect.top + rect.height / 2 - th / 2;
+	
+	if (x + tw + pad > vw) x = rect.left - tw - pad;
+	
+	x = Math.max(pad, Math.min(vw - tw - pad, x));
+	y = Math.max(pad, Math.min(vh - th - pad, y));
+		
+	tt.style.left = `${x}px`;
+	tt.style.top = `${y}px`;
+	tt.style.transform = "none";
+}
+
+function buildTooltipHtml(r) {
+	const name = r.track?.name || "Unknown Track";
+	const artists = (r.track?.artists || []).join(", ") || "Unknown Artist";
+	const simPct = Number.isFinite(r.score) ? Math.round(r.score * 100) : null;
+	
+	const closest = 
+		typeof explainClosestDims === "function" && window.__seedFeatures && r?.features
+			? explainClosestDims(window.__seedFeatures, r.features)
+			: [];
+			
+	const closestText = closest.length ? closest.join(" • ") : "-";
+
+	return `
+		<div class="tt-title">${name}</div>
+		<div class="tt-sub">${artists}</div>
+		<div class="tt-row"><span class="tt-muted">Similarity</span><span>${simPct ?? "-"}%</span></div>
+		<div class="tt-row"><span class="tt-muted">Closest</span><span>${closestText}</span></div>
+	`;
 }
 	
 // Radar chart comparing recommendations with seed song
@@ -253,11 +333,12 @@ export function drawMultiRadarChart(series) {
 }
 
 // Bar chart showing similarity scores
-export function drawSimilarityBarChart(rows) {
+export function drawSimilarityBarChart(rows = []) {
     const container = document.getElementById("sim-bar");
     if (!container) return;
     container.innerHTML = "";
-
+	
+	const safeRows = Array.isArray(rows) ? rows : [];
     const width = Math.min(760, container.clientWidth || 760);
     const height = 360;
     const margin = { top: 20, right: 70, bottom: 40, left: 220 };
@@ -293,53 +374,43 @@ export function drawSimilarityBarChart(rows) {
         .selectAll("text")
         .style("fill", "#fff");
 
-    g.selectAll("rect")
-        .data(rows)
+    const bars = g
+	.selectAll("rect.bar-rect")
+        .data(safeRows, (d) => d.id)
         .enter()
         .append("rect")
+		.attr("class", d => `bar-rect bar-${cssSafeId(d.id)}`)
         .attr("x", 0)
         .attr("y", (d) => y(d.id))
         .attr("width", (d) => x(d.score))
         .attr("height", y.bandwidth())
         .attr("fill", "#1db954")
-		.attr("class", d => `bar-rect bar-${cssSafeId(d.id)}`)
+		.style("opacity", 0.85)
         .style("cursor", "pointer")
-/*		
-		card.addEventListener("mouseenter", (e) => {
-			try {
-				const name = r.track?.name || "Unknown Track";
-				const artists = (r.track?.artists || []).join(", ") || "Unknown Artist";
-				const simPct = Number.isFinite(r.score) ? Math.round(r.score * 100) : null;
-				
-				const closest = 
-					typeof explainClosestDims === "function" && window.__seedFeatures && r.features
-						? explainClosestDims(window.__seedFeatures, r.features)
-						: [];
-						
-				const closestText = closest.length ? closest.join(" * ") : "-";
-			
-				if (typeof showTooltip === "function") {
-					showTooltip(`
-						<div class="tt-title">${name}</div>
-						<div class="tt-sub">${artists}</div>
-						<div class="tt-row"><span class="tt-muted">Similarity</span><span>${simPct ?? "-"}%</span></div>
-						<div class="tt-row"><span class="tt-muted">Closest</span><span>${closestText}</span></div>
-					`);
-				}
-			} catch (err) {
-				console.warn("Tooltip error:", err);
-			}
-			
-			window.dispatchEvent(new CustomEvent("rec-hover", { detail: { trackId: id } }));
-		});
 		
-		card.addEventListener("mouseleave", () => {
-			if (typeof hideTooltip === "function") hideTooltip();
-			window.dispatchEvent(new CustomEvent("rec-hover", { detail: { trackId: null } }));
-		});	
-*/		
-		.on("mouseenter", (event, d) => linkHoverHighlight({ trackId: d.id, on: true }))
-		.on("mouseleave", (event, d) => linkHoverHighlight({ trackId: d.id, on: false }))
+		.on("mouseenter", (event, d) => {
+			linkHoverHighlight({ trackId: d.id, on: true });
+			
+			const rect = event.currentTarget.getBoundingClientRect();
+			showTooltipAtRect(buildTooltipHtml(d), rect);
+			
+			window.dispatchEvent(
+				new CustomEvent("rec-hover", {
+					detail: { trackId: d.id, paylod: { row: d } },
+				})
+			);
+		})
+			
+		.on("mouseleave", (event, d) => {
+			linkHoverHighlight({ trackId: d.id, on: false });
+			hideTooltip();
+			
+			window.dispatchEvent(
+				new CustomEvent("rec-hover", {
+					detail: { trackId: d.null }
+				})
+			);
+		})
 		
         .on("click", (event, d) => {
             const trackParam = encodeURIComponent(JSON.stringify(d.track));
@@ -347,25 +418,48 @@ export function drawSimilarityBarChart(rows) {
         });
 		
     g.selectAll(".score-label")
-        .data(rows)
+        .data(safeRows)
         .enter()
         .append("text")
+		.attr("class", "score-label")
         .attr("x", (d) => x(d.score) + 6)
         .attr("y", (d) => y(d.id) + y.bandwidth() / 2 + 4)
         .attr("fill", "#fff")
         .attr("font-size", "12px")
-        .text((d) => d.score.toFixed(2));
+        .text((d) => (Number.isFinite(d.score) ? d.score.toFixed(2) : "-"));
 		
 	window.removeEventListener("rec-hover", window.__barHoverHandler);
 	
 	window.__barHoverHandler = (e) => {
 		const id = e.detail?.trackId;
+		const payloadRow = e.detail?.payload.row || null;
 		
-		d3.select(container).selectAll("rect")
-			.style("opacity", id ? 0.25 : 1);
-		if (id) {
-			d3.select(container).selectAll(`.bar-${id}`)
-				.style("opacity", 1);
+		g.selectAll("rect.bar-rect").style("opacity", id ? 0.25 : 0.85).attr("stroke", "none");
+		d3.selectAll(".scatter-dot").style("opacity", id ? 0.25 : 0.75).attr("stroke", "none");
+
+		if (!id) {
+			hideTooltip();
+			return;
+		}
+
+		const key = cssSafeId(id);
+		
+		g.selectAll(`.bar-${key}`)
+			.style("opacity", 1)
+			.attr("stroke", "#fff")
+			.attr("stroke-width", 1.5);
+
+		d3.selectAll(`.scatter-dot.dot-${key}`)
+			.style("opacity", 1)
+			.attr("stroke", "#fff")
+			.attr("stroke-width", 1.5);
+
+		// If payload includes the row (e.g., from recommendation hover), show tooltip on bar
+		if (payloadRow) {
+			const barEl = container.querySelector(`.bar-${key}`);
+			if (barEl) {
+				showTooltipAtRect(buildTooltipHtml(payloadRow), barEl.getBoundingClientRect());
+			}
 		}
 	};
 	
@@ -502,7 +596,7 @@ export function drawSimilarityScatter(seedFeatures, rows) {
             .attr("cy", (d) => y(d.y))
             .attr("r", (d) => 6 + d.score * 6)
             .attr("fill", "#1db954")
-			.attr("class", d => `rec scatter-dot dot-${cssSafeId(d.id)}`)
+			.attr("class", d => `scatter-dot dot-${cssSafeId(d.id)}`)
             .style("opacity", 0.75)
             .style("cursor", "pointer")
 			
