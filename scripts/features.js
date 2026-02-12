@@ -233,7 +233,7 @@ function renderRecommendations(items = [], { subtitle } = {}) {
 				
 				const closest = 
 					typeof explainClosestDims === "function" && window.__seedFeatures && r.features
-						? explainClosestDims(windows.__seedFeatures, r.features)
+						? explainClosestDims(window.__seedFeatures, r.features)
 						: [];
 						
 				const closestText = closest.length ? closest.join(" * ") : "-";
