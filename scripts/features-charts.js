@@ -228,7 +228,7 @@ export function drawMultiRadarChart(series) {
 			}
 		});
 	});
-	window.removeEventListener("rec-hover", window.__radarHoverHandler);
+/*	window.removeEventListener("rec-hover", window.__radarHoverHandler);
 	
 	window.__radarHoverHandler = (e) => {
 		const id = e.detail?.trackId;
@@ -249,7 +249,7 @@ export function drawMultiRadarChart(series) {
 		}
 	};
 	
-	window.addEventListener("rec-hover", window.__radarHoverHandler);
+	window.addEventListener("rec-hover", window.__radarHoverHandler); */
 }
 
 // Bar chart showing similarity scores

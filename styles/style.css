@@ -277,6 +277,7 @@ button {
 	opacity: 0.85;
 	margin: 6px 0 10px;
 	padding-right: 8px;
+	padding-bottom: 2px;
 }
 
 .card.centered-message {
