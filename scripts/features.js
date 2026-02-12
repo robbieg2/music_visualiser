@@ -59,16 +59,16 @@ function renderTrackHeader(track) {
 // Tooltip helpers
 function tooltipEl() {
 	let tooltipEl = document.getElementById("chart-tooltip");
-	if(!el) {
-		el = document.createElement("div");
-		el.id = "chart-tooltip";
-		document.body.appendChild(el);
+	if(!tooltipEl) {
+		tooltipEl = document.createElement("div");
+		tooltipEl.id = "chart-tooltip";
+		document.body.appendChild(tooltipEl);
 	}
 	
-	el.style.position = "fixed";
-	el.style.zIndex = "9999";
-	if (!el.style.display) el.style.display = "none";
-	return el;
+	tooltipEl.style.position = "fixed";
+	tooltipEl.style.zIndex = "9999";
+	if (!tooltipEl.style.display) tooltipEl.style.display = "none";
+	return tooltipEl;
 }
 
 function showTooltip(html) {
