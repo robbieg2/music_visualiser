@@ -60,7 +60,7 @@ export async function getTrackFeaturesFromReccoBeats(spotifyTrackId) {
     const data = await res.json();
     const list = data?.content;
 
-    const features = Array.isArray(list) && list[0] : null;
+    const features = Array.isArray(list) && list[0] ? list[0] : null;
     if (features) audioFeatureCache.set(spotifyTrackId, features);
      
 	return features;
