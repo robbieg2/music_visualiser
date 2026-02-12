@@ -359,7 +359,9 @@ button {
 
 .chart-tooltip .tt-row {
 	font-size: 12px;
-	display: flex;
+	display: grid;
+	grid-template-columns: 92px 1fr;
+	column-gap: 10px;
 	justify-content: space-between;
 }
 

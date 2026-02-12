@@ -95,7 +95,7 @@ function buildTooltipHtml(r) {
 		<div class="tt-title">${name}</div>
 		<div class="tt-sub">${artists}</div>
 		<div class="tt-row"><span class="tt-muted">Similarity</span><span>${simPct ?? "-"}%</span></div>
-		<div class="tt-row"><span class="tt-muted">Closest </span><span>${closestText}</span></div>
+		<div class="tt-row"><span class="tt-muted">Closest</span><span>${closestText}</span></div>
 	`;
 }
 	
