@@ -408,7 +408,7 @@ export function drawSimilarityBarChart(rows = []) {
 		const source = detail.source || null;
 		
 		const idRaw = detail.trackId || null;
-		const id = idraw ? cssSafeId(idRaw) : null;
+		const id = idRaw ? cssSafeId(idRaw) : null;
 		
 		g.selectAll("rect.bar-rect").style("opacity", id ? 0.25 : 0.85).attr("stroke", "none");
 		d3.selectAll(".scatter-dot").style("opacity", id ? 0.25 : 0.75).attr("stroke", "none");
@@ -583,6 +583,16 @@ export function drawSimilarityScatter(seedFeatures, rows = []) {
 				showTooltip(`
 					<div class="tt-title">${name}</div>
 					<div class="tt-sub">${artists}</div>
+					
+					<div class="tt-row">
+						<span class="tt-muted">${xkey.toUpperCase()}</span>
+						<span>${fmt(xKey, d.x)}</span>
+					</div>
+					
+					<div class="tt-row">
+						<span class="tt-muted">${yKey.toUpperCase()}</span>
+						<span>${fmt(yKey, d.y)}</span>
+					</div>
 				`);
 
 				moveTooltip(event);
