@@ -63,7 +63,6 @@ button {
 	border-radius: 50%;
 	opacity: 0.35;
 	filter: blur(90px);
-/*	box-shadow: 0 0 40px rgba(255, 255, 255, 0.08); */
 	animation: float 20s ease-in-out infinite alternate;
 }
 
@@ -79,43 +78,6 @@ button {
 	from { transform: translateY(0px); }
 	to { transform: translateY(40px); }
 
-}
-
-.circle-green  {
-	background: radial-gradient(circle, #1db954, rgba(29,185,84,0.5));
-
-}
-
-.circle-blue   {
-	background: radial-gradient(circle, #7bb3c9, rgba(123,179,201,0.5)); 	
-}
-
-.circle-red    {
-	background: radial-gradient(circle, #e3113a, rgba(227,17,58,0.5)); 
-}
-
-.circle-pink   {
-	background: radial-gradient(circle, #ea5fa2, rgba(234,95,162,0.5)); 
-}
-
-.circle-purple {
-	background: radial-gradient(circle, #ff00cc, rgba(255,0,204,0.5)); 
-}
-
-.circle-teal   {
-	background: radial-gradient(circle, #3ec6bb, rgba(62,198,187,0.5));
-}
-
-.circle-lime   {
-	background: radial-gradient(circle, #a3ff00, rgba(163,255,0,0.5)); 
-}
-
-.circle-yellow {
-	background: radial-gradient(circle, #fff400, rgba(255,244,0,0.5)); 
-}
-
-.circle-cyan   {
-	background: radial-gradient(circle, #19d3d3, rgba(25,211,211,0.5)); 
 }
 	
 .bg-circle.c1 {
@@ -159,7 +121,7 @@ button {
 }
 
 #card-radar, #card-bar, #card-scatter {
-	min-height: 600px;
+	min-height: 540px;
 }
 
 .card.centered-message {
