@@ -57,7 +57,7 @@ function renderTrackHeader(track) {
 
 
 // Tooltip helpers
-function tooltipEl() {
+function getTooltipEl() {
 	let el = document.getElementById("chart-tooltip");
 	if(!el) {
 		el = document.createElement("div");
