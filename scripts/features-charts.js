@@ -448,6 +448,46 @@ export function drawSimilarityScatter(seedFeatures, rows = []) {
         const v = Number(f?.[key]);
         return Number.isFinite(v) ? v : null;
     }
+	
+	const tooltip = document.getElementById("chart-tooltip");
+
+	function showTooltip(html) {
+		if (!tooltip) return;
+		tooltip.innerHTML = html;
+		tooltip.style.display = "block";
+	}
+
+	function moveTooltip(event) {
+		if (!tooltip) return;
+
+		const pad = 12;
+
+		// ensure tooltip has size before measuring
+		const tw = tooltip.offsetWidth || 260;
+		const th = tooltip.offsetHeight || 90;
+
+		const vw = window.innerWidth;
+		const vh = window.innerHeight;
+
+		let x = event.clientX + pad;
+		let y = event.clientY + pad;
+
+		if (x + tw + pad > vw) x = event.clientX - tw - pad;
+		if (y + th + pad > vh) y = event.clientY - th - pad;
+
+		x = Math.max(pad, Math.min(vw - tw - pad, x));
+		y = Math.max(pad, Math.min(vh - th - pad, y));
+
+		tooltip.style.left = `${x}px`;
+		tooltip.style.top = `${y}px`;
+		tooltip.style.transform = "none";
+	}
+
+	function hideTooltip() {
+		if (!tooltip) return;
+		tooltip.style.display = "none";
+		tooltip.innerHTML = "";
+	}
 
     function render() {
         container.innerHTML = "";
@@ -532,17 +572,30 @@ export function drawSimilarityScatter(seedFeatures, rows = []) {
 			.on("mouseenter", (event, d) => {
 				linkHoverHighlight({ trackId: d.id, on:true });
 				
+				const name = d?.track?.name || "Unknown Track";
+				const artists = (d?.track?.artists || []).join(", ") || "Unknown Artist";
+
+				showTooltip(`
+					<div class="tt-title">${name}</div>
+					<div class="tt-sub">${artists}</div>
+				`);
+
+				moveTooltip(event);
+						
 				window.dispatchEvent(
 					new CustomEvent("rec-hover", {
-						detail: { trackId: d.id, source: "scatter", payload: { row: d }, showTooltip: true },
+						detail: { trackId: d.id, source: "scatter", payload: { row: d } },
 					})
 				);
 				
 				d3.select(event.currentTarget).style("opacity", 1).attr("stroke", "#fff").attr("stroke-width", 1.5);
 			})
+			
+			.om("mousemove", (event) => moveTooltip(event))
 
 			.on("mouseleave", (event, d) => {
 				linkHoverHighlight({ trackId: d.id, on:false });
+				hideTooltip();
 				
 				window.dispatchEvent(
 					new CustomEvent("rec-hover", {
