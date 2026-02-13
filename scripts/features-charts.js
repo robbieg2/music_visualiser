@@ -585,7 +585,7 @@ export function drawSimilarityScatter(seedFeatures, rows = []) {
 					<div class="tt-sub">${artists}</div>
 					
 					<div class="tt-row">
-						<span class="tt-muted">${xkey.toUpperCase()}</span>
+						<span class="tt-muted">${xKey.toUpperCase()}</span>
 						<span>${fmt(xKey, d.x)}</span>
 					</div>
 					
