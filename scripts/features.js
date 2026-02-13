@@ -449,7 +449,7 @@ async function init() {
 		});
 		
         drawMultiRadarChart(radarSeries);
-        drawSimilarityBarChart(top10);
+        drawSimilarityBarChart(top15);
         drawSimilarityScatter(seedFeatures, top15);
     } catch (err) {
         console.error(err);
