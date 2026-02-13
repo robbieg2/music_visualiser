@@ -580,6 +580,12 @@ export function drawSimilarityScatter(seedFeatures, rows = []) {
 				const name = d?.track?.name || "Unknown Track";
 				const artists = (d?.track?.artists || []).join(", ") || "Unknown Artist";
 
+				const fmt = (key, v) => {
+					if (!Number.isFinite(v)) return "-";
+					if (key === "tempo") return `${Math.round(v)} BPM`;
+					return `${Math.round(v * 100)}%`;
+				};
+				
 				showTooltip(`
 					<div class="tt-title">${name}</div>
 					<div class="tt-sub">${artists}</div>
