@@ -414,7 +414,7 @@ export function drawSimilarityBarChart(rows = []) {
 		d3.selectAll(".scatter-dot").style("opacity", id ? 0.25 : 0.75).attr("stroke", "none");
 
 		if (!id) {
-			if (cource === "bar" || source "recs") hideTooltip();
+			if (source === "bar" || source "recs") hideTooltip();
 			return;
 		}
 		
