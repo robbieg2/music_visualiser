@@ -57,7 +57,7 @@ button {
 }
 
 #card-radar, #card-bar, #card-scatter {
-	min-height: 510px;
+	min-height: 600px;
 }
 
 .card.centered-message {
@@ -79,7 +79,7 @@ button {
 
 .card-title {
 	display: flex;
-	align-items: left;
+	align-items: center;
 	justify-content: space-between;
 	gap: 12px;
 }
