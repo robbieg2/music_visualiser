@@ -1,4 +1,4 @@
-/* Base CSS */
+/* Base */
 body {
     background: #121212;
     color: #fff;
@@ -14,74 +14,11 @@ header {
 
 button {
     background: #1db954;
-    color: white;
+    color: #fff;
     border: none;
     border-radius: 20px;
     padding: 10px 20px;
     cursor: pointer;
-}
-
-.card {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 14px;
-    padding: 16px;
-}
-
-.card-head {
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-	margin-bottom: 10px;
-}
-
-.card-title {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 12px;
-}
-
-.help-btn {
-	width: 28px;
-	height: 28px;
-	border-radius: 999px;
-	border: 1px solid rgba(255, 255, 255, 0.18);
-	background: rgba(255, 255, 255, 0.5);
-	color: #fff;
-	cursor: pointer;
-	font-weight: 700;
-	line-height: 1;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	transform: transform 0.12s ease, background 0.12s ease;
-}
-
-.tip-row {
-	display: flex;
-	align-items: flex-start;
-	gap: 10px;
-	padding: 10px 12px;
-	border-radius: 12px;
-	background: rgba(0, 0, 0, 0.25);
-	border: 1px solid rgba(255, 255, 255, 0.10);
-	font-size: 12px;
-	opacity: 0.9;
-}
-
-.tip-pill {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	font-size: 11px;
-	padding: 2px 8px;
-	border-radius: 999px;
-	background: rgba(29, 185, 84, 0.20);
-	border: 1px solid rgba(29, 185, 84, 0.35);
-	color: #fff;
-	height: 18px;
-	flex: 0 0 auto;
 }
 
 .muted {
@@ -102,6 +39,47 @@ button {
     grid-column: 1 / -1;
 }
 
+@media (max-width: 1100px) {
+    .grid-3 {
+        grid-template-columns: 1fr;
+    }
+    .span-3 {
+        grid-column: auto;
+    }
+}
+
+/* Visualisation cards */
+.card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 16px;
+}
+
+.card.centered-message {
+	grid-column: 1 / -1;
+	align-items: center;
+	justify-content: center;
+	min-height: 420px;
+	text-align: center;
+	max-width: 520px;
+	margin: 0 auto;
+}
+
+.card-head {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	margin-bottom: 10px;
+}
+
+.card-title {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
 .controls {
     display: flex;
     gap: 12px;
@@ -111,11 +89,89 @@ button {
     justify-content: center;
 }
 
-/* Home page functions */
+.help-btn {
+	width: 28px;
+	height: 28px;
+	border-radius: 999px;
+	border: 1px solid rgba(255, 255, 255, 0.18);
+	background: rgba(255, 255, 255, 0.5);
+	color: #fff;
+	cursor: pointer;
+	font-weight: 700;
+	line-height: 1;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	transition: transform 0.12s ease, background 0.12s ease;
+}
+
+.help-btn:hover {
+	background: rgba(255, 255, 255, 0.10);
+	transform: translateY(-1px);
+}
+
+.tip-row {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	padding: 8px 10px;
+	border-radius: 10px;
+	background: transparent;
+	border: 1px solid rgba(255, 255, 255, 0.10);
+	font-size: 12px;
+	opacity: 0.9;
+}
+
+.tip-pill {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 11px;
+	padding: 2px 8px;
+	border-radius: 999px;
+	background: rgba(29, 185, 84, 0.20);
+	border: 1px solid rgba(29, 185, 84, 0.35);
+	color: #fff;
+	height: 18px;
+	flex: 0 0 auto;
+}
+
+/* Home page */
 #search-section {
     margin: 20px;
     text-align: center;
     border-radius: 20px;
+}
+
+.track-result {
+    background: #1db954;
+    border-radius: 12px;
+    padding: 10px;
+    text-align: center;
+    color: #fff;
+    width: 320px;
+    flex: 0 0 auto;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.track-result:hover {
+    transform: translateY(-5px);
+}
+
+.features-btn {
+    background: #1db954;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    margin-top: 5px;
+}
+
+.features-btn:hover {
+    background: #17a44d;
 }
 
 .carousel-wrapper {
@@ -135,25 +191,9 @@ button {
     padding: 10px 20px;
 }
 
-.track-result {
-    background: #1db954;
-    border-radius: 12px;
-    padding: 10px;
-    text-align: center;
-    color: white;
-    width: 320px;
-    flex: 0 0 auto;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.track-result:hover {
-    transform: translateY(-5px);
-}
-
 .scroll-btn {
     background: rgba(0, 0, 0, 0.6);
-    color: white;
+    color: #fff;
     border: none;
     border-radius: 50%;
     width: 40px;
@@ -176,49 +216,12 @@ button {
     margin-left: 5px;
 }
 
-.features-btn {
-    background: #1db954;
-    color: white;
-    border: none;
-    border-radius: 20px;
-    padding: 6px 12px;
-    font-size: 13px;
-    cursor: pointer;
-    margin-top: 5px;
+#recommendations .carousel-wrapper {
+    width: 100%;
+    margin: 10px 0 0;
 }
 
-.features-btn:hover {
-    background: #17a44d;
-}
-
-/* Visualisation cards */
-#sim-radar svg,
-#sim-scatter svg {
-    background: #181818;
-    border-radius: 12px;
-    display: block;
-    margin: 0 auto;
-}
-
-#sim-bar {
-	overflow-x: hidden;
-}
-
-#sim-bar svg {
-	display: block;
-	max-width: 100%;
-}
-
-@media (max-width: 1100px) {
-    .grid-3 {
-        grid-template-columns: 1fr;
-    }
-    .span-3 {
-        grid-column: auto;
-    }
-}
-
-/* Features page functions */
+/* Features page */
 .seed-header {
     display: flex;
     gap: 18px;
@@ -280,34 +283,25 @@ button {
 	padding-bottom: 2px;
 }
 
-.card.centered-message {
-	grid-column: 1 / -1;
-	align-items: center;
-	justify-content: center;
-	min-height: 420px;
-	text-align: center;
-	max-width: 520px;
-	margin: 0 auto;
+/* Charts */
+#sim-radar svg,
+#sim-scatter svg {
+    background: #181818;
+    border-radius: 12px;
+    display: block;
+    margin: 0 auto;
 }
 
-#recommendations .carousel-wrapper {
-    width: 100%;
-    margin: 10px;
+#sim-bar {
+	overflow-x: hidden;
 }
 
-#recommendations .carousel {
-    display: flex;
-    overflow: hidden;
-    padding: 10px 20px;
+#sim-bar svg {
+	display: block;
+	max-width: 100%;
 }
 
-.recs-strip {
-	display: flex;
-	gap: 16px;
-	overflow-x: auto;
-	padding: 12px 6px;
-}
-
+/* Recommendation cards */
 .rec-card {
 	flex: 0 0 auto;
 	width: 320px;
@@ -317,17 +311,12 @@ button {
 	padding: 10px;
 }
 
-.rec-embed {
-	width: 100%;
-	height: 152px;
-	border-radius: 12px;
-}
-
 #recommendations .rec-card iframe {
 	width: 100%;
 	border-radius: 12px;
 }
 
+/* Tooltips */
 .chart-tooltip {
     position: fixed;
     z-index: 9999;
@@ -353,22 +342,21 @@ button {
 .chart-tooltip .tt-sub {
     opacity: 0.85;
 	white-space: normal;
-	word-break: normal;
 	overflow-wrap: break-word;
 }
 
 .chart-tooltip .tt-row {
 	font-size: 12px;
 	display: grid;
-	grid-template-columns: 92px 1fr;
+	grid-template-columns: 120px 1fr;
 	column-gap: 10px;
-	justify-content: space-between;
 }
 
 .chart-tooltip .tt-muted {
 	opacity: 0.8;
 }
 
+/* Loading circle */
 .loading-overlay {
 	position: fixed;
 	inset: 0;
