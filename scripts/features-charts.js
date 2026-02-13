@@ -235,7 +235,7 @@ export function drawMultiRadarChart(series) {
 	}
 
 	function showSolo(key) {
-		svg.selectAll(".radar-series:not(.seed-series").style("display", "none");
+		svg.selectAll(".radar-series:not(.seed-series)").style("display", "none");
 
 		svg.selectAll(".seed-series, .seed-dot").style("display", null);
 		svg.selectAll(`.series-${key}`).style("display", null);
@@ -380,7 +380,7 @@ export function drawSimilarityBarChart(rows = []) {
 			
 			window.dispatchEvent(
 				new CustomEvent("rec-hover", {
-					detail: { trackId: d.null, source: "bar" },
+					detail: { trackId: null, source: "bar" },
 				})
 			);
 		})
@@ -405,18 +405,23 @@ export function drawSimilarityBarChart(rows = []) {
 	
 	window.__barHoverHandler = (e) => {
 		const detail = e?.detail || {};
-		const id = detail.trackId ? cssSafeId(detail.trackId) : null;
+		const source = detail.source || null;
+		
+		const idRaw = detail.trackId || null;
+		const id = idraw ? cssSafeId(idRaw) : null;
 		
 		g.selectAll("rect.bar-rect").style("opacity", id ? 0.25 : 0.85).attr("stroke", "none");
 		d3.selectAll(".scatter-dot").style("opacity", id ? 0.25 : 0.75).attr("stroke", "none");
 
 		if (!id) {
-			hideTooltip();
+			if (cource === "bar" || source "recs") hideTooltip();
 			return;
 		}
 		
 		g.selectAll(`.bar-${id}`).style("opacity", 1).attr("stroke", "#fff").attr("stroke-width", 1.5);
 		d3.selectAll(`.scatter-dot.dot-${id}`).style("opacity", 1).attr("stroke", "#fff").attr("stroke-width", 1.5);
+		
+		if (source !== "bar" && source !== "recs") return;
 		
 		const payloadRow = detail?.payload?.row || null;
 		const wantsTooltip = Boolean(detail?.showTooltip);
