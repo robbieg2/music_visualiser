@@ -7,6 +7,7 @@ body {
     text-align: center;
     margin: 0;
     padding: 0;
+	position: relative;
 }
 
 body::before {
@@ -58,15 +59,16 @@ button {
 }
 
 .bg-circle {
-	position: fixed;
+	position: absolute;
 	border-radius: 50%;
-	opacity: 0.65;
-	box-shadow: 0 0 40px rgba(255, 255, 255, 0.08);
-	animation: float 12s ease-in-out infinite;
+	opacity: 0.35;
+	filter: blur(90px);
+/*	box-shadow: 0 0 40px rgba(255, 255, 255, 0.08); */
+	animation: float 20s ease-in-out infinite alternate; */
 }
 
 .bg-layer {
-	position: fixed;
+	position: absolute;
 	inset: 0;
 	z-index: -1;
 	pointer-events: none;
@@ -74,9 +76,9 @@ button {
 }
 
 @keyframes float {
-	0% { transform: translateY(0px); }
-	50% { transform: translateY(-12px); }
-	100% { transform: translateY(0px); }
+	from { transform: translateY(0px); }
+	to { transform: translateY(40px); }
+
 }
 
 .circle-green  {
@@ -116,6 +118,38 @@ button {
 	background: radial-gradient(circle, #19d3d3, rgba(25,211,211,0.5)); 
 }
 	
+.bg-circle.c1 {
+    width: 520px;
+    height: 520px;
+    background: #1db954;
+    top: -120px;
+    left: -140px;
+}
+
+.bg-circle.c2 {
+    width: 420px;
+    height: 420px;
+    background: #3ea6ff;
+    top: 35%;
+    right: -160px;
+}
+
+.bg-circle.c3 {
+    width: 360px;
+    height: 360px;
+    background: #ff4d6d;
+    bottom: -120px;
+    left: 20%;
+}
+
+.bg-circle.c4 {
+    width: 300px;
+    height: 300px;
+    background: #b26bff;
+    bottom: 10%;
+    right: 10%;
+}	
+
 /* Visualisation cards */
 .card {
     background: rgba(255, 255, 255, 0.04);
