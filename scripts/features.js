@@ -57,7 +57,7 @@ function renderTrackHeader(track) {
 
 
 // Tooltip helpers
-function getTooltipEl() {
+function tooltipEl() {
 	let el = document.getElementById("chart-tooltip");
 	if(!el) {
 		el = document.createElement("div");
@@ -85,7 +85,7 @@ function hideTooltip() {
 }
 
 function positionTooltipAtElement(anchorEl) {
-	const el = getTooltipEl();
+	const el = tooltipEl();
 	if (!anchorEl) return;
 	
 	const rect = anchorEl.getBoundingClientRect();
