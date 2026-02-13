@@ -64,7 +64,7 @@ button {
 	opacity: 0.35;
 	filter: blur(90px);
 /*	box-shadow: 0 0 40px rgba(255, 255, 255, 0.08); */
-	animation: float 20s ease-in-out infinite alternate; */
+	animation: float 20s ease-in-out infinite alternate;
 }
 
 .bg-layer {
