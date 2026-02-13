@@ -591,7 +591,7 @@ export function drawSimilarityScatter(seedFeatures, rows = []) {
 				d3.select(event.currentTarget).style("opacity", 1).attr("stroke", "#fff").attr("stroke-width", 1.5);
 			})
 			
-			.om("mousemove", (event) => moveTooltip(event))
+			.on("mousemove", (event) => moveTooltip(event))
 
 			.on("mouseleave", (event, d) => {
 				linkHoverHighlight({ trackId: d.id, on:false });
@@ -630,19 +630,18 @@ export function drawSimilarityScatter(seedFeatures, rows = []) {
 		window.removeEventListener("rec-hover", window.__scatterHoverHandler);
 	
 		window.__scatterHoverHandler = (e) => {
-			const detail = e?.detail || {};
 			const id = e.detail?.trackId ? cssSafeId(e.detail.trackId) : null;
 			
-			d3.select(container).selectAll("circle-scatter-dot")
+			d3.select(container).selectAll("circle.scatter-dot")
 				.style("opacity", id ? 0.25 : 0.75)
 				.attr("stroke", "none");
 				
-			if (id) return;
-			
-			d3.select(container).selectAll(`.scatter-dot.dot-${id}`)
-				.style("opacity", 1)
-				.attr("stroke", "#fff")
-				.attr("stroke-width", 1.5);
+			if (id) {
+				d3.select(container).selectAll(`.scatter-dot.dot-${id}`)
+					.style("opacity", 1)
+					.attr("stroke", "#fff")
+					.attr("stroke-width", 1.5);
+			}
 		};
 		
 		window.addEventListener("rec-hover", window.__scatterHoverHandler);
