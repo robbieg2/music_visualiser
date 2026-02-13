@@ -85,7 +85,7 @@ function hideTooltip() {
 }
 
 function positionTooltipAtElement(anchorEl) {
-	const el = getTooltip();
+	const el = getTooltipEl();
 	if (!anchorEl) return;
 	
 	const rect = anchorEl.getBoundingClientRect();
