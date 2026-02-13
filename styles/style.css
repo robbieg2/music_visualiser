@@ -57,7 +57,7 @@ button {
 }
 
 #card-radar, #card-bar, #card-scatter {
-	min-height: 460px;
+	min-height: 510px;
 }
 
 .card.centered-message {
