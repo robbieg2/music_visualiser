@@ -1,6 +1,7 @@
 /* Base */
 body {
     background: #121212;
+	min-height: 100vh;
     color: #fff;
     font-family: "Poppins", sans-serif;
     text-align: center;
@@ -57,7 +58,7 @@ button {
 }
 
 .bg-circle {
-	position: absolute;
+	position: fixed;
 	border-radius: 50%;
 	opacity: 0.65;
 	box-shadow: 0 0 40px rgba(255, 255, 255, 0.08);
