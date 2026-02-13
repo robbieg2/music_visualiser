@@ -84,6 +84,32 @@ function hideTooltip() {
 	el.innerHTML = "";
 }
 
+function positionTooltipAtElement(anchorEl) {
+	const el = getTooltip();
+	if (!anchorEl) return;
+	
+	const rect = anchorEl.getBoundingClientRect();
+	
+	const pad = 10;
+	const vw = window.innerWidth;
+	const vh = window.innerHeight;
+
+	const tw = el.offsetWidth || 280;
+	const th = el.offsetHeight || 140;
+
+	let x = rect.right + pad;
+	let y = rect.top + rect.height / 2 - th / 2;
+
+	if (x + tw + pad > vw) x = rect.left - tw - pad;
+
+	x = Math.max(pad, Math.min(vw - tw - pad, x));
+	y = Math.max(pad, Math.min(vh - th - pad, y));
+
+	el.style.left = `${x}px`;
+	el.style.top = `${y}px`;
+	el.style.transform = "none";
+}
+
 // Tooltip explaining similarity
 function attachSimilarityHelpPopover() {
 	const btn = document.getElementById("sim-help");
@@ -114,6 +140,7 @@ function attachSimilarityHelpPopover() {
 	
 	btn.addEventListener("mouseenter", (e) => {
 		showTooltip(html);
+		positionTooltipAtElement(btn);
 	});
 	
 	btn.addEventListener("mouseleave", () => hideTooltip());
