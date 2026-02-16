@@ -8,6 +8,7 @@ const searchInput = document.getElementById("search-input");
 const searchBtn = document.getElementById("search-btn");
 const resultsDiv = document.getElementById("search-results");
 const logoutBtn = document.getElementById("logout-btn");
+const infoBtn = document.getElementById("info-btn");
 const scrollLeftBtn = document.getElementById("scroll-left");
 const scrollRightBtn = document.getElementById("scroll-right");
 
@@ -166,6 +167,46 @@ async function init() {
 			if (query) searchTracks(token, query);
 		}
 	});
+	
+	// Website info button
+	infoBtn.addEventListener("click", () => {
+		let modal = document.getElementById("site-info-modal");
+		
+		if  (!modal) {
+			modal = document.createElement("div");
+			modal.id = "site-info-modal";
+			modal.className = "site-info-modal";
+			
+			modal.innerHTML = `
+				<div class="site-info-card">
+					<button class="site-info-close" aria-label="Close">X</button>
+					
+					<h2>About TuneVis</h2>
+					<p>
+						TuneVis compares songs using audio features such as energy, danceability and acousticness and recommends similar songs based on the similarity of these features
+					</p>
+					<p>
+						Recommendations are filtered either by 'similar songs' or 'similar artists' based on availability, but unfortunately not all songs are available to view
+					</p>
+					<p>
+						Explore recommendations, compare similarity scores, and visualise how tracks relate to each other
+					</p>
+				</div>
+			`;
+			
+			document.body.appendChild(modal);
+			
+			modal.querySelector(".site-info-close")
+				.addEventListener("click", () => modal.classList.rempve("open"));
+				
+			modal.addEventListener("click", (e) => {
+				if (e.target === modal) modal.classList.remove("open");
+			});
+		}
+		
+		modal.classList.add("open");
+	});
+		
 
 	// Logout
 	logoutBtn.addEventListener("click", () => {

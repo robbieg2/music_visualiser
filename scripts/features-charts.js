@@ -1,5 +1,4 @@
 // features-charts.js
-
 function cssSafeId(id) {
 	return String(id || "")
 		.replace(/[^a-zA-Z0-9_-]/g, "_");
