@@ -229,8 +229,12 @@ function renderRecommendations(items = [], { subtitle } = {}) {
 	
 	container.innerHTML = `
 		<div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px;">
-			<h3 style="margin:0;">Recommended Tracks</h3>
-			${subtitle ? `<span class="muted" style="font-size:12px;">${subtitle}</span>` : ""}
+			<div style="display:flex; align-items:baseline; gap:10px;">
+				<h3 style="margin:0;">Recommended Tracks</h3>
+				${subtitle ? `<span class="muted" style="font-size:12px;">${subtitle}</span>` : ""}
+			</div>
+		
+			<button id="shuffle-recs" class="shuffle-btn" type="button">Shuffle</button>
 		</div>
 		
 		<div class="carousel-wrapper">
@@ -269,6 +273,15 @@ function renderRecommendations(items = [], { subtitle } = {}) {
 		
 		carousel.appendChild(card);
 	});
+	
+	const shuffleBtn = document.getElementById("shuffle-recs");
+	if (shuffleBtn) {
+		shuffleBtn.onclick = () => {
+			hideTooltip?.();
+			window.dispatchEvent(new CustomEvent("rec-hover", {detail: { trackId: null } }));
+			renderShuffleView();
+		};
+	}
         
 	const leftBtn = document.getElementById("recs-scroll-left");
 	const rightBtn = document.getElementById("recs-scroll-right");
@@ -301,6 +314,62 @@ function normalizeSpotifyIds(list) {
 function getSeedMarketFromSeedMeta(seedMeta) {
     return seedMeta?.available_markets?.[0] || "GB";
 }
+
+function shuffleInPlace(arr) {
+	for (let i = arr.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[arr[i], arr[j] = [arr[j], arr[i]];
+	}
+	return arr;
+}
+
+function weightedSample(pool, n) {
+	const iteams = pool.slice();
+	const k = 2;
+	
+	const picked = [];
+	while (picked.length < n && items.length) {
+		const weights = items.map(r => Math.pow(Math.max(0, r.score || 0), k) + 0.01);
+		const total = weights.reduce((a, b) => a + b, 0);
+		let roll = Math.random() * total;
+		
+		let idx = 0;
+		for (; idx < items.length; idx++) {
+			roll -= weights[idx];
+			if (rool <= 0) break;
+		}
+		
+		const [chosen] = items.splice(Math.min(idx, items.length - 1), 1);
+		picked.push(chosen);
+	}
+	return picked;
+}
+
+function renderShuffleView() {
+	const pool = window.__recPool || [];
+	const seed = window.__seedFeatures;
+	const seedTrack = window.__seedtrack;
+	if (!pool.length || !seed || !seedTrack) return;
+	
+	const scatterRows = shuffleInPlace(pool.slice()).slic(0, 20);
+	
+	const top10 = weightedSample(pool, 10).sort((a, b) => (b.score || 0) - (a.score || 0));
+	
+	const radarSeries = [
+		{ label: `Seed: ${seedTrack.name}`, id: seedTrack.id, features: seed, isSeed: true },
+		...top1p.slice(0, 4).map(r => ({
+			label: r.track?.name || "Track",
+			id: r.id,
+			features: r.features,
+			isSeed: false,
+		})),
+	];
+
+	renderRecommendations(top10, { subtitle: window.__recModeSubtitle });
+	drawMultiRadarChart(radarSeries);
+	drawSimilarityBarChart(top10);
+	drawSimilarityScatter(seed, scatterRows);
+}	
 
 // Main function
 async function init() {
@@ -467,17 +536,12 @@ async function init() {
             })),
         ];
 
+		window.__seedTrack = track;
 		window.__seedFeatures = seedFeatures;
+		window.__recModeSubtitle = recoMode === "similar tracks" ? "Based on similar songs" : "Based on similar artists";
 		
-        renderRecommendations(top10, {
-			subtitle: recMode === "similar tracks"
-				? "Based on similar songs"
-				: "Based on similar artists",
-		});
+        renderShuffleView();
 		
-        drawMultiRadarChart(radarSeries);
-        drawSimilarityBarChart(top10);
-        drawSimilarityScatter(seedFeatures, top15);
     } catch (err) {
         console.error(err);
     } finally {

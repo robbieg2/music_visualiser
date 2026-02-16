@@ -8,7 +8,6 @@ body {
     margin: 0;
     padding: 0;
 	position: relative;
-	overflow-x: hidden;
 }
 
 body::before {
@@ -434,6 +433,19 @@ button {
 	width: 100%;
 	border-radius: 12px;
 }
+
+.shuffle-btn{
+	background: rgba(255,255,255,0.08);
+	border: 1px solid rgba(255,255,255,0.14);
+	color:#fff;
+	border-radius: 999px;
+	padding: 6px 12px;
+	cursor:pointer;
+	font-size: 12px;
+}
+
+.shuffle-btn:hover{ background: rgba(255,255,255,0.14); }
+
 
 /* Tooltips */
 .chart-tooltip {
