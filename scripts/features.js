@@ -346,18 +346,18 @@ function weightedSample(pool, n) {
 }
 
 function renderShuffleView() {
-	const pool = window.__recPool || [];
+	const pool = Array.isArray(window.__recPool) ? window.__recPool : [];
 	const seed = window.__seedFeatures;
-	const seedTrack = window.__seedtrack;
+	const seedTrack = window.__seedTrack;
 	if (!pool.length || !seed || !seedTrack) return;
 	
-	const scatterRows = shuffleInPlace(pool.slice()).slic(0, 20);
+	const scatterRows = shuffleInPlace(pool.slice()).slice(0, 20);
 	
 	const top10 = weightedSample(pool, 10).sort((a, b) => (b.score || 0) - (a.score || 0));
 	
 	const radarSeries = [
 		{ label: `Seed: ${seedTrack.name}`, id: seedTrack.id, features: seed, isSeed: true },
-		...top1p.slice(0, 4).map(r => ({
+		...top10.slice(0, 4).map(r => ({
 			label: r.track?.name || "Track",
 			id: r.id,
 			features: r.features,
@@ -538,6 +538,7 @@ async function init() {
 
 		window.__seedTrack = track;
 		window.__seedFeatures = seedFeatures;
+		window.__recPool = ranked;
 		window.__recModeSubtitle = recMode === "similar tracks" ? "Based on similar songs" : "Based on similar artists";
 		
         renderShuffleView();
