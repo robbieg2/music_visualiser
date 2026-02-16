@@ -183,7 +183,7 @@ async function init() {
 					
 					<h2>About TuneVis</h2>
 					<p>
-						TuneVis compares songs using audio features such as energy, danceability and acousticness and recommends similar songs based on the similarity of these features
+						TuneVis compares songs using audio features such as energy, danceability and acousticness. It then ranks similar songs based on the scores of these features
 					</p>
 					<p>
 						Recommendations are filtered either by 'similar songs' or 'similar artists' based on availability, but unfortunately not all songs are available to view
