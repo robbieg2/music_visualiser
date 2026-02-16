@@ -538,7 +538,7 @@ async function init() {
 
 		window.__seedTrack = track;
 		window.__seedFeatures = seedFeatures;
-		window.__recModeSubtitle = recoMode === "similar tracks" ? "Based on similar songs" : "Based on similar artists";
+		window.__recModeSubtitle = recMode === "similar tracks" ? "Based on similar songs" : "Based on similar artists";
 		
         renderShuffleView();
 		
