@@ -80,6 +80,7 @@ async function searchTracks(token, query) {
 	}
 }
 
+// Show search results
 function displaySearchResults(tracks) {
 	resultsDiv.innerHTML = "";
 	
@@ -124,6 +125,7 @@ function displaySearchResults(tracks) {
 	updateScrollButtons();
 }
 
+// Scroll buttons for search results
 function scrollCarouselBy(offset) {
 	resultsDiv.scrollBy({ left: offset, behavior: "smooth" });
 }
@@ -136,6 +138,7 @@ function updateScrollButtons() {
 	scrollRightBtn.style.display = resultsDiv.clientWidth >= resultsDiv.scrollWidth - 1 ? "none" : "block";
 }
 
+// Main function
 async function init() {
 	let token = localStorage.getItem("access_token");
 

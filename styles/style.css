@@ -8,6 +8,7 @@ body {
     margin: 0;
     padding: 0;
 	position: relative;
+	overflow-x: hidden;
 }
 
 body::before {
@@ -68,10 +69,10 @@ button {
 
 .bg-layer {
 	position: absolute;
-	inset: 0;
+	inset: -160;
 	z-index: -1;
 	pointer-events: none;
-	overflow: hidden;
+	overflow: visible;
 }
 
 @keyframes float {
@@ -216,34 +217,37 @@ button {
 }
 
 .track-result {
-    background: #1db954;
-    border-radius: 12px;
-    padding: 10px;
-    text-align: center;
+    background: rgba(255, 255, 255, 0.04);
+	border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 14px;
+    padding: 12px;
+    text-align: left;
     color: #fff;
     width: 320px;
     flex: 0 0 auto;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 .track-result:hover {
     transform: translateY(-5px);
+	background: rgba(255, 255, 255, 0.06);
+	border-color: rgba(29, 185, 84, 0.35);
 }
 
 .features-btn {
-    background: #1db954;
+    background: rgba(29, 185, 84, 0.95);
     color: #fff;
     border: none;
-    border-radius: 20px;
-    padding: 6px 12px;
+    border-radius: 999px;
+    padding: 8px 12px;
     font-size: 13px;
     cursor: pointer;
-    margin-top: 5px;
+    margin-top: 8px;
 }
 
 .features-btn:hover {
-    background: #17a44d;
+    background: rgba(29, 185, 84, 1);
 }
 
 .carousel-wrapper {

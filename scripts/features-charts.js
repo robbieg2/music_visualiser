@@ -467,7 +467,6 @@ export function drawSimilarityScatter(seedFeatures, rows = []) {
 
 		const pad = 12;
 
-		// ensure tooltip has size before measuring
 		const tw = tooltip.offsetWidth || 260;
 		const th = tooltip.offsetHeight || 90;
 

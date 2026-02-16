@@ -303,6 +303,7 @@ function getSeedMarketFromSeedMeta(seedMeta) {
     return seedMeta?.available_markets?.[0] || "GB";
 }
 
+// Main function
 async function init() {
     if (backBtn) backBtn.addEventListener("click", () => (window.location.href = "home.html"));
 
