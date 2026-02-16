@@ -318,13 +318,13 @@ function getSeedMarketFromSeedMeta(seedMeta) {
 function shuffleInPlace(arr) {
 	for (let i = arr.length - 1; i > 0; i--) {
 		const j = Math.floor(Math.random() * (i + 1));
-		[arr[i], arr[j] = [arr[j], arr[i]];
+		[arr[i], arr[j]] = [arr[j], arr[i]];
 	}
 	return arr;
 }
 
 function weightedSample(pool, n) {
-	const iteams = pool.slice();
+	const items = pool.slice();
 	const k = 2;
 	
 	const picked = [];
@@ -336,7 +336,7 @@ function weightedSample(pool, n) {
 		let idx = 0;
 		for (; idx < items.length; idx++) {
 			roll -= weights[idx];
-			if (rool <= 0) break;
+			if (roll <= 0) break;
 		}
 		
 		const [chosen] = items.splice(Math.min(idx, items.length - 1), 1);
