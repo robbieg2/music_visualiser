@@ -95,7 +95,7 @@ export async function getManyFeaturesFromReccoBeats(spotifyIds) {
 }
 
 // Get similar tracks from Last.fm API
-export async function lastfmGetSimilarTracks({ apiKey, artist, track, limit = 30 }) {
+export async function lastfmGetSimilarTracks({ apiKey, artist, track, limit = 50 }) {
     if (!apiKey) throw new Error("Last.fm key missing");
 	
 	const a = String(artist || "").trim();

@@ -355,21 +355,6 @@ function renderShuffleView() {
 	
 	const top10 = weightedSample(pool, 10).sort((a, b) => (b.score || 0) - (a.score || 0));
 	
-	console.log("pool:", pool.length, "recent:", (window.__recentShown?.size || 0));
-	
-	const wantNew = 10;
-	const recent = window.__recentShown ?? new Set();
-	const newOnes = top10.filter(r => !recent.has(r.id));
-	if (newOnes.length < wantNew) {
-		const filler = pool.filter(r => !recent.has(r.id) && !top10.some(x => x.id === r.id));
-		shuffleInPlace(filler);
-		for (const r of filler) {
-			if (newOnes.length >= wantNew) break;
-			top10[top10.length - 1 - newOnes.length] = r;
-			newOnes.push(r);
-		}
-	}
-	
 	const radarSeries = [
 		{ label: `Seed: ${seedTrack.name}`, id: seedTrack.id, features: seed, isSeed: true },
 		...top10.slice(0, 4).map(r => ({
