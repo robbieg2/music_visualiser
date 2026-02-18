@@ -56,18 +56,19 @@ header h3 {
 .logo-bars {
 	position: absolute;
 	left: 50%;
-	top: 50%;
+	top: 45%;
 	transform: translate(-50%, -50%);
-	width: min(900px, 90vw);
+	width: min(780px, 92vw);
 	height: auto;
 	opacity: 0.85;
 	z-index: 0;
+	pointer-events: none;
 }
 
 .audio-bars rect {
 	fill: #1db954;
 	filter: drop-shadow(0 0 10px rgba(29,185,84,0.35));
-	animation: eqPulse 2.4s ease-in-out infinite alternate;
+	animation: audioPulse 2.4s ease-in-out infinite alternate;
 	transform-origin: center;
 }
 
