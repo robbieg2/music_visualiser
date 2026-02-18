@@ -234,7 +234,7 @@ function renderRecommendations(items = [], { subtitle } = {}) {
 				${subtitle ? `<span class="muted" style="font-size:12px;">${subtitle}</span>` : ""}
 			</div>
 		
-			<button id="shuffle-recs" class="shuffle-btn" type="button">Shuffle</button>
+			<button id="shuffle-recs" class="shuffle-btn" type="button">Shuffle Recommendations</button>
 		</div>
 		
 		<div class="carousel-wrapper">
@@ -355,7 +355,9 @@ function renderShuffleView() {
 	
 	const top10 = weightedSample(pool, 10).sort((a, b) => (b.score || 0) - (a.score || 0));
 	
-	const wantNew = 8;
+	console.log("pool:", pool.length, "recent:", (window.__recentShown?.size || 0));
+	
+	const wantNew = 10;
 	const recent = window.__recentShown ?? new Set();
 	const newOnes = top10.filter(r => !recent.has(r.id));
 	if (newOnes.length < wantNew) {
