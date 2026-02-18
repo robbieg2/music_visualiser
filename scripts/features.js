@@ -277,7 +277,7 @@ function renderRecommendations(items = [], { subtitle } = {}) {
 	const shuffleBtn = document.getElementById("shuffle-recs");
 	if (shuffleBtn) {
 		shuffleBtn.onclick = () => {
-			hideTooltip?.();
+			hideTooltip();
 			window.dispatchEvent(new CustomEvent("rec-hover", {detail: { trackId: null } }));
 			renderShuffleView();
 		};
@@ -290,12 +290,12 @@ function renderRecommendations(items = [], { subtitle } = {}) {
 	
 	if (leftBtn) {
 		leftBtn.addEventListener("click", () => {
-			carousel.scrollBy({ left: -scrollByAmount(), behaviour: "smooth" });
+			carousel.scrollBy({ left: -scrollByAmount(), behavior: "smooth" });
 		});
 	}
 	if (rightBtn) {
 		rightBtn.addEventListener("click", () => {
-			carousel.scrollBy({ left: scrollByAmount(), behaviour: "smooth" });
+			carousel.scrollBy({ left: scrollByAmount(), behavior: "smooth" });
 		});
 	}
 }
@@ -345,6 +345,9 @@ function weightedSample(pool, n) {
 	return picked;
 }
 
+window.__recentShown = window.__recentShown || [];
+const RECENT_LIMIT = 15;
+
 function renderShuffleView() {
 	const pool = Array.isArray(window.__recPool) ? window.__recPool : [];
 	const seed = window.__seedFeatures;
@@ -353,7 +356,20 @@ function renderShuffleView() {
 	
 	const scatterRows = shuffleInPlace(pool.slice()).slice(0, 20);
 	
-	const top10 = weightedSample(pool, 10).sort((a, b) => (b.score || 0) - (a.score || 0));
+	const recent = Arrsy..isArray(window.__recentShown) ? winodw.__recentShown : [];
+	
+	let freshPool = pool.filter(r => !recent.includes(r.id));
+	if (freshPool.length < 10) {
+		freshPool = pool.slice();
+	}
+	
+	let top10 = weightedSample(FreshPool, 10).sort((a, b) => (b.score || 0) - (a.score || 0));
+	
+	const nextRecent = [...top10.map(r => r.id), ...recent]
+		.filter((v, i, arr) => arr.indexOf(v) === i)
+		.slice(0, RECENT_LIMIT);
+		
+	window.__recentShown = nextRecent;
 	
 	const radarSeries = [
 		{ label: `Seed: ${seedTrack.name}`, id: seedTrack.id, features: seed, isSeed: true },
@@ -524,7 +540,6 @@ async function init() {
 			.sort((a, b) => b.score - a.score);
 			
         const top10 = ranked.slice(0, 10);
-        const top15 = ranked.slice(0, 15);
 
         const radarSeries = [
             { label: `Seed: ${track.name}`, id: track.id, features: seedFeatures, isSeed: true },
