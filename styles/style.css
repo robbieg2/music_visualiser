@@ -1,4 +1,8 @@
 /* Base */
+html, body {
+	height: 100%;
+}
+
 body {
     background: #121212;
 	min-height: 100vh;
@@ -9,8 +13,6 @@ body {
     padding: 0;
 	position: relative;
 	overflow-x: hidden;
-	display: flex;
-	flex-direction: column;
 }
 
 body::before {
@@ -19,10 +21,6 @@ body::before {
 	inset: 0;
 	background: radial-gradient(circle at 50% 30%, rgba(255,255,255,0.05), transparent 60%);
 	pointer-events: none;
-}
-
-main {
-	flex: 1;
 }
 
 header {
