@@ -46,6 +46,62 @@ header h3 {
     letter-spacing: 0.04em;
 }
 
+.logo {
+	position: relative;
+	padding: 60px 20px 20px;
+	overflow: hidden;
+}
+
+.logo-wave {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	width: 900px;
+	height: 220px;
+	opacity: 0.18;
+	pointer-events: none;
+
+	background:
+		repeating-linear-gradient(
+			90deg,
+			transparent 0px,
+			transparent 14px,
+			rgba(29,185,84,0.4) 15px,
+			transparent 16px
+		);
+
+	filter: blur(1px);
+	animation: waveMove 6s linear infinite;
+}
+
+@keyframes waveMove {
+	from { transform: translate(-52%, -50%); }
+	to   { transform: translate(-48%, -50%); }
+}
+
+.logo-title {
+	margin: 0;
+	font-size: clamp(42px, 6vw, 64px);
+	font-weight: 700;
+	letter-spacing: -0.02em;
+	position: relative;
+	z-index: 1;
+
+	background: linear-gradient(90deg,#fff,#1db954);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+}
+
+.logo-sub {
+	margin-top: 10px;
+	font-size: clamp(14px,1.5vw,18px);
+	opacity: 0.75;
+	position: relative;
+	z-index: 1;
+}
+
+
 footer {
 	margin-top: auto;
 	opacity: 0.7;
