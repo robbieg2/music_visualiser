@@ -68,9 +68,10 @@ header h3 {
 	width: min(780px, 92vw);
 	height: auto;
 	opacity: 0.75;
-	filter: blue(0.3px);
+	filter: blur(0.3px);
 	z-index: 0;
 	pointer-events: none;
+	overflow: visible;
 }
 
 .audio-bars rect {
@@ -88,15 +89,16 @@ header h3 {
 	to   { transform: scaleY(1.15); }
 }
 
-.logo-title {
+header.logo .logo-title {
 	margin: 0;
 	font-size: clamp(56px, 9vw, 92px);
-	font-weight: 700;
+	font-weight: 800;
 	letter-spacing: -0.02em;
 	position: relative;
 	z-index: 2;
-	background: liner-gradient (90deg, #ff7aff 0%, #d65cff 40%, #1db954 100%);
+	background: linear-gradient(90deg, #ff7aff 0%, #d65cff 40%, #1db954 100%);
 	-webkit-background-clip: text;
+	background-clip: text;
 	-webkit-text-fill-color: transparent;
 	text-shadow: 0 0 30px rgba(29, 185, 84, 0.15), 0 0 60px rgba(214, 92, 255, 0.08);
 }
@@ -107,6 +109,7 @@ header h3 {
 	opacity: 0.85;
 	position: relative;
 	z-index: 2;
+	letter-spacing: 0.08em;
 }
 
 footer {
