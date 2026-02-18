@@ -46,6 +46,12 @@ header h3 {
     letter-spacing: 0.04em;
 }
 
+.login {
+	margin-top: 50px;
+	position: relative;
+	z-index: 3;
+}
+
 .logo {
 	position: relative;
 	padding: 140px 20px 30px;
@@ -57,11 +63,12 @@ header h3 {
 .logo-bars {
 	position: absolute;
 	left: 50%;
-	top: 48%;
+	top: 60%;
 	transform: translate(-50%, -50%);
 	width: min(780px, 92vw);
 	height: auto;
-	opacity: 0.85;
+	opacity: 0.75;
+	filter: blue(0.3px);
 	z-index: 0;
 	pointer-events: none;
 }
@@ -83,18 +90,21 @@ header h3 {
 
 .logo-title {
 	margin: 0;
-	font-size: clamp(42px, 6vw, 64px);
+	font-size: clamp(56px, 9vw, 92px);
 	font-weight: 700;
 	letter-spacing: -0.02em;
 	position: relative;
 	z-index: 2;
-	color: #d65cff;
+	background: liner-gradient (90deg, #ff7aff 0%, #d65cff 40%, #1db954 100%);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	text-shadow: 0 0 30px rgba(29, 185, 84, 0.15), 0 0 60px rgba(214, 92, 255, 0.08);
 }
 
 .logo-sub {
-	margin-top: 10px;
+	margin-top: 14px;
 	font-size: 18px;
-	opacity: 0.75;
+	opacity: 0.85;
 	position: relative;
 	z-index: 2;
 }
