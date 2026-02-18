@@ -356,14 +356,14 @@ function renderShuffleView() {
 	
 	const scatterRows = shuffleInPlace(pool.slice()).slice(0, 20);
 	
-	const recent = Arrsy..isArray(window.__recentShown) ? winodw.__recentShown : [];
+	const recent = Array.isArray(window.__recentShown) ? window.__recentShown : [];
 	
 	let freshPool = pool.filter(r => !recent.includes(r.id));
 	if (freshPool.length < 10) {
 		freshPool = pool.slice();
 	}
 	
-	let top10 = weightedSample(FreshPool, 10).sort((a, b) => (b.score || 0) - (a.score || 0));
+	let top10 = weightedSample(freshPool, 10).sort((a, b) => (b.score || 0) - (a.score || 0));
 	
 	const nextRecent = [...top10.map(r => r.id), ...recent]
 		.filter((v, i, arr) => arr.indexOf(v) === i)

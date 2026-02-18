@@ -179,6 +179,8 @@ async function init() {
 			
 			modal.innerHTML = `
 				<div class="site-info-card">
+					<button class="site-info-close" aria-label="Close">X</button>
+					
 					<h2>About TuneVis</h2>
 					<p>
 						TuneVis compares songs using audio features such as energy, danceability and acousticness. It then ranks similar songs based on the scores of these features
