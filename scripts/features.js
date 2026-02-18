@@ -450,7 +450,7 @@ async function init() {
             apiKey: LASTFM_API_KEY,
             artist: seedArtistName,
             track: seedTrackName,
-            limit: 30,
+            limit: 35,
         });
 		
 		if (!similarPairs.length) {
@@ -459,7 +459,7 @@ async function init() {
 			const similarArtists = await lastfmGetSimilarArtists({
 				apiKey: LASTFM_API_KEY,
 				artist: seedArtistName,
-				limit: 8,
+				limit: 10,
 			});
 			
 			const topTrackPairs = [];
@@ -467,7 +467,7 @@ async function init() {
 				const tops = await lastfmGetArtistTopTracks({
 					apiKey: LASTFM_API_KEY,
 					artist: a.name,
-					limit: 2,
+					limit: 3,
 				});
 				topTrackPairs.push(...tops);
 			}
