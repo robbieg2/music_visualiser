@@ -48,36 +48,35 @@ header h3 {
 
 .logo {
 	position: relative;
-	padding: 60px 20px 20px;
+	padding: 80px 20px 30px;
 	overflow: hidden;
+	text-align: center;
 }
 
-.logo-wave {
+.logo-bars {
 	position: absolute;
 	left: 50%;
 	top: 50%;
 	transform: translate(-50%, -50%);
-	width: 900px;
-	height: 220px;
-	opacity: 0.18;
-	pointer-events: none;
-
-	background:
-		repeating-linear-gradient(
-			90deg,
-			transparent 0px,
-			transparent 14px,
-			rgba(29,185,84,0.4) 15px,
-			transparent 16px
-		);
-
-	filter: blur(1px);
-	animation: waveMove 6s linear infinite;
+	width: min(900px, 90vw);
+	height: auto;
+	opacity: 0.85;
+	z-index: 0;
 }
 
-@keyframes waveMove {
-	from { transform: translate(-52%, -50%); }
-	to   { transform: translate(-48%, -50%); }
+.audio-bars rect {
+	fill: #1db954;
+	filter: drop-shadow(0 0 10px rgba(29,185,84,0.35));
+	animation: eqPulse 2.4s ease-in-out infinite alternate;
+	transform-origin: center;
+}
+
+.audio-bars rect:nth-child(2n) { animation-duration: 1.8s; }
+.audio-bars rect:nth-child(3n) { animation-duration: 2.1s; }
+
+@keyframes audioPulse {
+	from { transform: scaleY(0.85); }
+	to   { transform: scaleY(1.15); }
 }
 
 .logo-title {
@@ -86,21 +85,17 @@ header h3 {
 	font-weight: 700;
 	letter-spacing: -0.02em;
 	position: relative;
-	z-index: 1;
-
-	background: linear-gradient(90deg,#fff,#1db954);
-	-webkit-background-clip: text;
-	-webkit-text-fill-color: transparent;
+	z-index: 2;
+	color: #d65cff;
 }
 
 .logo-sub {
 	margin-top: 10px;
-	font-size: clamp(14px,1.5vw,18px);
+	font-size: 18px;
 	opacity: 0.75;
 	position: relative;
-	z-index: 1;
+	z-index: 2;
 }
-
 
 footer {
 	margin-top: auto;
