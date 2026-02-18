@@ -346,7 +346,7 @@ function weightedSample(pool, n) {
 }
 
 window.__recentShown = window.__recentShown || [];
-const RECENT_LIMIT = 15;
+const RECENT_LIMIT = 10;
 
 function renderShuffleView() {
 	const pool = Array.isArray(window.__recPool) ? window.__recPool : [];

@@ -197,7 +197,7 @@ async function init() {
 			document.body.appendChild(modal);
 			
 			modal.querySelector(".site-info-close")
-				.addEventListener("click", () => modal.classList.rempve("open"));
+				.addEventListener("click", () => modal.classList.remove("open"));
 				
 			modal.addEventListener("click", (e) => {
 				if (e.target === modal) modal.classList.remove("open");
