@@ -24,11 +24,32 @@ body::before {
 }
 
 header {
-    padding: 20px;
+    padding: 40px 20px 10px;
+}
+
+header h1 {
+    margin: 0;
+    font-size: clamp(36px, 5vw, 56px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    background: linear-gradient(90deg, #ffffff, #1db954);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+header h3 {
+    margin: 8px 0 0;
+    font-size: clamp(14px, 1.6vw, 18px);
+    font-weight: 400;
+    opacity: 0.75;
+    letter-spacing: 0.04em;
 }
 
 footer {
 	margin-top: auto;
+	opacity: 0.7;
+	padding: 14px 0;
 }
 
 button {
