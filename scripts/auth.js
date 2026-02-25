@@ -1,6 +1,6 @@
 // Authorization handlers
 const clientId = "de2b80fd8ec441fab7a41253c8a2ba35"; 
-const redirectUri = "https://robbieg2.github.io/tunevis/home.html";
+const redirectUri = "https://robbieg2.github.io/TuneVis/home.html";
 
 const scopes = [
   "user-top-read",
